@@ -63,6 +63,8 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 	private int numberToSend = 1;
 	/** The boolean stipulating whether the recipient field should be displayed */
 	private boolean shouldDisplayRecipientField;
+	/** The boolean stipulating whether the recipient field should be cleared after a message is sent*/
+	private boolean shouldClearRecipientField;
 	/** The boolean stipulating whether we should check the length of the message (we don't in the auto-reply, for example) */
 	private boolean shouldCheckMaxMessageLength;
 	/** The number of recipients, used to estimate the cost of the message */
@@ -75,6 +77,7 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 	private MessagePanelHandler(UiGeneratorController uiController, boolean shouldDisplay, boolean shouldCheckMaxMessageLength, int numberOfRecipients) {
 		this.uiController 				 = uiController;
 		this.shouldDisplayRecipientField = shouldDisplay;
+		this.shouldClearRecipientField = true;
 		this.shouldCheckMaxMessageLength = shouldCheckMaxMessageLength;
 		this.numberOfRecipients 		 = numberOfRecipients; 
 	}
@@ -146,7 +149,9 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 	
 	private void clearComponents() {
 		// We clear the components
-		uiController.setText(find(COMPONENT_TF_RECIPIENT), "");
+		if(shouldClearRecipientField){
+			uiController.setText(find(COMPONENT_TF_RECIPIENT), "");
+		}
 		uiController.setText(find(COMPONENT_TF_MESSAGE), "");
 		uiController.setText(find(COMPONENT_LB_REMAINING_CHARS), String.valueOf(FrontlineMessage.SMS_LENGTH_LIMIT));
 		uiController.setText(find(COMPONENT_LB_MSG_NUMBER), "0");
@@ -361,6 +366,14 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 		this.uiController.setText(find(COMPONENT_LB_COST), InternationalisationUtils.formatCurrency(AppProperties.getInstance().getCostPerSmsSent() * numberToSend));
 		
 		LOG.trace("EXIT");
+	}
+	
+	public boolean shouldClearRecipientField(){
+		return shouldClearRecipientField;
+	}
+	
+	public void setShouldClearRecipientField(boolean shouldClearRecipientField){
+		this.shouldClearRecipientField = shouldClearRecipientField;
 	}
 
 //> INSTANCE HELPER METHODS
