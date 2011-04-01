@@ -64,7 +64,7 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 	/** The boolean stipulating whether the recipient field should be displayed */
 	private boolean shouldDisplayRecipientField;
 	/** The boolean stipulating whether the recipient field should be cleared after a message is sent*/
-	private boolean shouldClearRecipientField;
+	private boolean clearRecipientFieldOnSend;
 	/** The boolean stipulating whether we should check the length of the message (we don't in the auto-reply, for example) */
 	private boolean shouldCheckMaxMessageLength;
 	/** The number of recipients, used to estimate the cost of the message */
@@ -77,7 +77,7 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 	private MessagePanelHandler(UiGeneratorController uiController, boolean shouldDisplay, boolean shouldCheckMaxMessageLength, int numberOfRecipients) {
 		this.uiController 				 = uiController;
 		this.shouldDisplayRecipientField = shouldDisplay;
-		this.shouldClearRecipientField = true;
+		this.clearRecipientFieldOnSend = true;
 		this.shouldCheckMaxMessageLength = shouldCheckMaxMessageLength;
 		this.numberOfRecipients 		 = numberOfRecipients; 
 	}
@@ -149,7 +149,7 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 	
 	private void clearComponents() {
 		// We clear the components
-		if(shouldClearRecipientField){
+		if(clearRecipientFieldOnSend){
 			uiController.setText(find(COMPONENT_TF_RECIPIENT), "");
 		}
 		uiController.setText(find(COMPONENT_TF_MESSAGE), "");
@@ -368,12 +368,8 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 		LOG.trace("EXIT");
 	}
 	
-	public boolean shouldClearRecipientField(){
-		return shouldClearRecipientField;
-	}
-	
-	public void setShouldClearRecipientField(boolean shouldClearRecipientField){
-		this.shouldClearRecipientField = shouldClearRecipientField;
+	public void setClearRecipientFieldOnSend(boolean clearRecipientFieldOnSend) {
+		this.clearRecipientFieldOnSend = clearRecipientFieldOnSend;
 	}
 
 //> INSTANCE HELPER METHODS
