@@ -29,16 +29,16 @@ public class ContactImportDialogHandler extends ImportDialogHandler {
 	private int columnCount;
 	
 	public ContactImportDialogHandler(UiGeneratorController ui) {
-		super(ui, EntityType.CONTACTS);
+		super(ui);
 	}
 	
 	@Override
-	String getWizardTitleI18nKey() {
+	protected String getWizardTitleI18nKey() {
 		return MESSAGE_IMPORTING_SELECTED_CONTACTS;
 	}
 	
 	@Override
-	String getOptionsFilePath() {
+	protected String getOptionsFilePath() {
 		return UI_FILE_OPTIONS_PANEL_CONTACT;
 	}
 	
@@ -53,7 +53,7 @@ public class ContactImportDialogHandler extends ImportDialogHandler {
 	}
 
 	@Override
-	void doSpecialImport(String dataPath) {
+	protected void doSpecialImport(String dataPath) {
 		CsvRowFormat rowFormat = getRowFormatForContact();
 		this.importer.importContacts(this.contactDao, this.groupMembershipDao, this.groupDao, rowFormat);
 		this.uiController.refreshContactsTab();
@@ -66,8 +66,7 @@ public class ContactImportDialogHandler extends ImportDialogHandler {
 		for (Object checkbox : getCheckboxes()) {
 			if (this.uiController.isSelected(checkbox)) {
 				String attributeName = this.uiController.getText(checkbox);
-				if (this.uiController.getName(checkbox).equals(COMPONENT_CB_STATUS)
-						&& this.type.equals(EntityType.CONTACTS)) {
+				if (this.uiController.getName(checkbox).equals(COMPONENT_CB_STATUS)) {
 					attributeName = InternationalisationUtils.getI18nString(I18N_COMMON_ACTIVE);
 				}
 				this.uiController.add(header, this.uiController.createColumn(attributeName, attributeName));

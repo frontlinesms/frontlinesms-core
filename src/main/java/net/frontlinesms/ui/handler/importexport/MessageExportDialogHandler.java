@@ -25,12 +25,12 @@ public class MessageExportDialogHandler extends ExportDialogHandler<FrontlineMes
 	}
 	
 	@Override
-	String getWizardTitleI18nKey() {
+	protected String getWizardTitleI18nKey() {
 		return MESSAGE_EXPORTING_SELECTED_MESSAGES;
 	}
 	
 	@Override
-	String getOptionsFilePath() {
+	protected String getOptionsFilePath() {
 		return UI_FILE_OPTIONS_PANEL_MESSAGE;
 	}
 	

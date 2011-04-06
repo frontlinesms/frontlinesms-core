@@ -135,9 +135,9 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 	 * Gets the title to use for the title of Export wizard
 	 * @return i18n key for fetching the title of the wizard
 	 */
-	abstract String getWizardTitleI18nKey();
-	abstract String getOptionsFilePath();
-	abstract String getDialogFile();
+	protected abstract String getWizardTitleI18nKey();
+	protected abstract String getOptionsFilePath();
+	protected abstract String getDialogFile();
 	
 	/** Show the wizard for importing or exporting a particular type of entity. */
 	protected void _showWizard() {

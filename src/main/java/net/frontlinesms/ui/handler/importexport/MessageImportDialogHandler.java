@@ -26,16 +26,16 @@ public class MessageImportDialogHandler extends ImportDialogHandler {
 	private int columnCount;
 	
 	public MessageImportDialogHandler(UiGeneratorController ui) {
-		super(ui, EntityType.MESSAGES);
+		super(ui);
 	}
 	
 	@Override
-	String getWizardTitleI18nKey() {
+	protected String getWizardTitleI18nKey() {
 		return MESSAGE_IMPORTING_SELECTED_MESSAGES;
 	}
 	
 	@Override
-	String getOptionsFilePath() {
+	protected String getOptionsFilePath() {
 		return UI_FILE_OPTIONS_PANEL_MESSAGE;
 	}
 	
@@ -50,7 +50,7 @@ public class MessageImportDialogHandler extends ImportDialogHandler {
 	}
 	
 	@Override
-	void doSpecialImport(String dataPath) throws CsvParseException {
+	protected void doSpecialImport(String dataPath) throws CsvParseException {
 		CsvRowFormat rowFormat = getRowFormatForMessage();
 		int multimediaMessagesCount = importer.importMessages(this.messageDao, rowFormat).getMultimediaMessageCount(); // FIXME importer should be of known type depending on the handler we are in
 		
