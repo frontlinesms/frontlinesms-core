@@ -39,6 +39,7 @@ import net.frontlinesms.messaging.MessageFormatter;
  * These methods follow RFC 4180.  This can be read at http://tools.ietf.org/html/rfc4180.
  * 
  * @author Alex
+ * @author Ian Onesmus Mukewa <ian@credit.frontlinesms.com>
  */
 public class CsvUtils {
 	
@@ -98,6 +99,11 @@ public class CsvUtils {
 	@SuppressWarnings("unused")
 	private static final char[] RESTRICTED_CHARS = {CR, LF, QUOTE, SEPARATOR};
 
+	//Provision for Runtime manipulation
+	public static void writeLine(Writer out, CsvRowFormat rowFormat, String... markersAndReplacements) throws IOException {
+		_writeLine(out, rowFormat, markersAndReplacements);
+	}
+	
 	/**
 	 * Writes a line of CSV, substituting markers for replacements where this is requested.
 	 * @param out The {@link Writer} to write the line of CSV to.
@@ -105,7 +111,7 @@ public class CsvUtils {
 	 * @param markersAndReplacements List of markers and their replacements.  Each marker should be followed directly by its replacement in this list.
 	 * @throws IOException 
 	 */
-	public static void writeLine(Writer out, CsvRowFormat rowFormat, String... markersAndReplacements) throws IOException {
+	public static void _writeLine(Writer out, CsvRowFormat rowFormat, String[] markersAndReplacements) throws IOException {
 		if((markersAndReplacements.length&1) == 1) throw new IllegalArgumentException("Each marker must have a replacement!  Odd number of markers+replacements provided: " + markersAndReplacements.length);
 
 		for(Iterator<String> format = rowFormat.format(markersAndReplacements).iterator(); format.hasNext(); ) {
