@@ -5,6 +5,7 @@ package net.frontlinesms.ui;
 
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Rectangle;
 
 import thinlet.Thinlet;
 import thinlet.ThinletText;
@@ -50,6 +51,35 @@ private static final String START = "start";
 		for(Object component : getItems(parent)) {
 			if(!getClass(parent).equals(TABLE)) setEditableRecursively(component, value);
 		}
+	}
+	
+	/**
+	 * Repaint the given component's area later
+	 * @param component
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 */
+	public void repaint(Object component, int x, int y, int width, int height) {
+		while ((component = getParent(component)) != null) {
+			Rectangle bounds = this.getRectangle(component, BOUNDS);
+			x += bounds.x; y += bounds.y;
+			Rectangle view = this.getRectangle(component, ":view");
+			if (view != null) {
+				Rectangle port = this.getRectangle(component, ":port");
+				x += -view.x + port.x; y += -view.y + port.y; //+ clip :port
+			}
+		}
+		repaint(x, y, width, height);
+	}
+	
+	protected Rectangle getRectangle(Object component, String key) {
+		return (Rectangle) get(component, key);
+	}
+	
+	public Rectangle getBounds(Object component){
+		return this.getRectangle(component, BOUNDS);
 	}
 	
 	/**
@@ -192,6 +222,11 @@ private static final String START = "start";
 	public void setWidth(Object component, int width) {
 		setInteger(component, Thinlet.ATTRIBUTE_WIDTH, width);
 	}
+	
+	public int getHeight(Object component) {
+		return getInteger(component, Thinlet.ATTRIBUTE_HEIGHT);
+	}
+	
 	/**
 	 * Sets the height of a thinlet component.
 	 * @param component
@@ -500,6 +535,20 @@ private static final String START = "start";
 			setFont(item, boldFont);
 		}
 		
+		return item;
+	}
+	
+	/**
+	 * Creates a Thinlet UI Component of type COMBOBOX CHOICE, set's the component's
+	 * TEXT attribute to the supplied text and attaches the supplied OBJECT.
+	 * @param text
+	 * @param attachedObject
+	 * @return
+	 */
+	public final Object createCombobox(String name, String text) {
+		Object item = Thinlet.create(COMBOBOX);
+		setString(item, TEXT, text);
+		setName(item, name);
 		return item;
 	}
 	
