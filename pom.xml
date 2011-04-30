@@ -10,7 +10,6 @@
 		<version>1.7.00-beta-6-SNAPSHOT</version>
 		<relativePath>../pom-parent</relativePath>
 	</parent>
-	<version>1.7.00-beta-6-SNAPSHOT</version>
 	
 	<scm>
 		<connection>scm:git://github.com/frontlinesms/frontlinesms-core.git</connection>
