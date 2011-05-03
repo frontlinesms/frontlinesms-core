@@ -215,7 +215,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			add(desktopUiComponent);
 			
 			// Remove the debug menu if this build is a proper release
-			if(!BuildProperties.getInstance().getVersion().contains("SNAPSHOT")) {
+			if(!BuildProperties.getInstance().isSnapshot()) {
 				Object debugMenuComponent = find(desktopUiComponent, "mnDebug");
 				if(debugMenuComponent != null) {
 					remove(debugMenuComponent);
