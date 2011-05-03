@@ -105,6 +105,7 @@ public class DeviceManualConfigDialogHandler implements ThinletUiEventHandler {
 			ui.add(handlerList, ui.createComboboxChoice(handlerName, handler));
 		}
 		
+		
 		if (device instanceof SmsModem) {
 			SmsModem modem = (SmsModem) device;
 			ui.setText(find(COMPONENT_PORT_NAME_COMBOBOX), modem.getPort());
