@@ -54,35 +54,6 @@ private static final String START = "start";
 	}
 	
 	/**
-	 * Repaint the given component's area later
-	 * @param component
-	 * @param x
-	 * @param y
-	 * @param width
-	 * @param height
-	 */
-	public void repaint(Object component, int x, int y, int width, int height) {
-		while ((component = getParent(component)) != null) {
-			Rectangle bounds = this.getRectangle(component, BOUNDS);
-			x += bounds.x; y += bounds.y;
-			Rectangle view = this.getRectangle(component, ":view");
-			if (view != null) {
-				Rectangle port = this.getRectangle(component, ":port");
-				x += -view.x + port.x; y += -view.y + port.y; //+ clip :port
-			}
-		}
-		repaint(x, y, width, height);
-	}
-	
-	protected Rectangle getRectangle(Object component, String key) {
-		return (Rectangle) get(component, key);
-	}
-	
-	public Rectangle getBounds(Object component){
-		return this.getRectangle(component, BOUNDS);
-	}
-	
-	/**
 	 * @param component
 	 * @return The current position on an editable component
 	 */
@@ -221,10 +192,6 @@ private static final String START = "start";
 	 */
 	public void setWidth(Object component, int width) {
 		setInteger(component, Thinlet.ATTRIBUTE_WIDTH, width);
-	}
-	
-	public int getHeight(Object component) {
-		return getInteger(component, Thinlet.ATTRIBUTE_HEIGHT);
 	}
 	
 	/**
