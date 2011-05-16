@@ -13,9 +13,8 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.i18n.TextResourceKeyOwner;
 
 import org.apache.log4j.Logger;
-import org.smslib.handler.ATHandler;
+import org.smslib.AbstractATHandler;
 import org.smslib.handler.CATHandler;
-import org.smslib.handler.CATHandlerUtils;
 
 import serial.CommPortIdentifier;
 import serial.NoSuchPortException;
@@ -98,7 +97,7 @@ public class DeviceManualConfigDialogHandler implements ThinletUiEventHandler {
 		Object handlerList = find(COMPONENT_CAT_HANDLER_COMBOBOX);
 		int trimLength = DEFAULT_CAT_HANDLER_CLASS_NAME.length() + 1;
 		
-		for (Class<? extends ATHandler> handler : CATHandlerUtils.getHandlers()) {
+		for (Class<? extends AbstractATHandler> handler : AbstractATHandler.getHandlers()) {
 			String handlerName = handler.getName();
 			if(handlerName.equals(DEFAULT_CAT_HANDLER_CLASS_NAME)) handlerName = "<default>";
 			else handlerName = handlerName.substring(trimLength);
