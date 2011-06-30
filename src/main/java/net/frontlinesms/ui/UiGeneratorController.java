@@ -550,6 +550,11 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		showConfirmationDialog(methodToBeCalled, this);
 	}
 	
+	@Override
+	public void setMethod(Object component, String key, String value, Object root, Object handler) {
+		super.setMethod(component, key, value, root, handler);
+	}
+	
 	/** Shows a general dialog asking the user to confirm his action. 
 	 * @param methodToBeCalled The name of the method to be called
 	 * @param handler The event handler to call the method on

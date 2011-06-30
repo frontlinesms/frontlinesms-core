@@ -38,4 +38,12 @@ public class DuplicateKeyException extends Exception {
 	public DuplicateKeyException(Throwable cause) {
 		super(cause);
 	}
+	
+	/**
+	 * Creates a new duplicate key exception wrapping another exception.
+	 *  @param message the cause of the {@link DuplicateKeyException}
+	 */
+	public DuplicateKeyException(String message) {
+		super(message);
+	}
 }
