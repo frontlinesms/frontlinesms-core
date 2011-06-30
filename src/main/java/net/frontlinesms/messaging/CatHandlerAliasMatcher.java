@@ -97,9 +97,15 @@ public class CatHandlerAliasMatcher {
 		
 		String alias = manufacturerAliases.get(manufacturer);
 		if (alias == null)
-			return manufacturer;
+			return capitalise(manufacturer);
 		else
 			return alias;
+	}
+
+	private String capitalise(String manu) {
+		if(manu.length() <= 0) return "";
+		if(manu.length() == 1) return manu;
+		else return manu.substring(0, 1).toUpperCase() + manu.substring(1);
 	}
 
 	/**

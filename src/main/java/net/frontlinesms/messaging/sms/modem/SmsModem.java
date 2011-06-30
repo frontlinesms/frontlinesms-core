@@ -555,7 +555,7 @@ public class SmsModem extends Thread implements SmsService {
 			//  - waste phone battery
 			//  - be unnecessary as phones are unlikely to be able to receive messages quicker than ~every 3s
 			if(running) {
-				if (noActivity) {
+				if (false && noActivity) { // FIXME roy and alex commented this out to see if it helps with STK stuff
 					try {
 						if(smsLibConnected) cService.keepGsmLinkOpen();
 						FrontlineUtils.sleep_ignoreInterrupts(5000); /* 5 seconds */

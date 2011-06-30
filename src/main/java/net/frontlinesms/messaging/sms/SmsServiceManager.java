@@ -593,6 +593,10 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	public Collection<SmsInternetService> getSmsInternetServices() {
 		return this.smsInternetServices;
 	}
+	
+	public Collection<SmsModem> getSmsModems() {
+		return this.phoneHandlers.values();
+	}
 
 	/**
 	 * Polls all {@link SmsModem}s that are set to receive messages, and processes any

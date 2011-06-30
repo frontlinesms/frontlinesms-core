@@ -14,3 +14,4 @@ Symbian
 Samsung			SamsungElectronics, SamsungElectronicsCorporation
 Siemens
 Huawei
+Wavecom			Wavecomwirelesscpu
