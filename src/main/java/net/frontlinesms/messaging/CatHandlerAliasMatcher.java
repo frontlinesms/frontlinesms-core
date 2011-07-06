@@ -102,12 +102,7 @@ public class CatHandlerAliasMatcher {
 			return alias;
 	}
 
-<<<<<<< HEAD
-	private String capitalise(String manu) {
-		if(manu.length() <= 0) return "";
-		if(manu.length() == 1) return manu;
-		else return manu.substring(0, 1).toUpperCase() + manu.substring(1);
-=======
+
 	/** Capitalise the first character of a string.
 	 * Case of other letters is unchanged. */
 	private String capitalise(String string) {
@@ -117,7 +112,6 @@ public class CatHandlerAliasMatcher {
 		else {
 			return string.substring(0, 1).toUpperCase() + string.substring(1);
 		}
->>>>>>> 920e291601331ef01d3295b0dccb780eb986092c
 	}
 
 	/**
