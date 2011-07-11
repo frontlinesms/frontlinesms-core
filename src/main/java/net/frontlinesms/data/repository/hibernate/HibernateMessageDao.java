@@ -40,6 +40,10 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 	public List<FrontlineMessage> getAllMessages() {
 		return super.getAll();
 	}
+	
+	public FrontlineMessage getMessage(long id) {
+		return super.getUnique(super.getCriterion().add(Restrictions.eq(Field.ID.getFieldName(), id)));
+	}
 
 	/** @see MessageDao#getAllMessages(int, Field, Order, Long, Long, int, int) */
 	public List<FrontlineMessage> getAllMessages(FrontlineMessage.Type messageType, Field sortBy, Order order, Long start, Long end, int startIndex, int limit) {

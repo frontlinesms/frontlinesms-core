@@ -122,6 +122,7 @@ public class FrontlineMessage {
 //> ENTITY FIELDS
 	/** Details of the fields that this class has. */
 	public enum Field implements EntityField<FrontlineMessage> {
+		ID("id"),
 		TYPE("type"),
 		DATE("date"),
 		STATUS("status"),
