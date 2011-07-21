@@ -240,4 +240,6 @@ public interface MessageDao {
 	 * @param message the message to be updated
 	 */
 	public void updateMessage(FrontlineMessage message);
+	
+	public FrontlineMessage getMessage(long id);
 }
