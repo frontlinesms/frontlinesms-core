@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.SimpleExpression;
 
@@ -288,8 +289,8 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 		String keywordString = keyword.getKeyword();
 		// FIXME this should be case-insensitive
 		Criterion matchKeyword = Restrictions.or(
-				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString), // This should match the keyword exactly, case insensitive
-				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString + ' '));
+				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString, MatchMode.ANYWHERE), // This should match the keyword exactly, case insensitive
+				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString + ' ', MatchMode.ANYWHERE));
 		criteria.add(matchKeyword);
 	}
 	
