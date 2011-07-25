@@ -31,7 +31,7 @@ import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.CommProperties;
-import net.frontlinesms.messaging.sms.events.NoSmsServicesConnectedNotification;
+import net.frontlinesms.messaging.sms.events.*;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.messaging.sms.modem.SmsModemStatus;
@@ -314,7 +314,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	 * @param activeDevice
 	 * @param smsDeviceEventCode
 	 */
-	public void smsDeviceEvent(SmsService device, SmsServiceStatus deviceStatus) {
+	public <T extends SmsService> void smsDeviceEvent(T device, SmsServiceStatus<T> deviceStatus) {
 		LOG.trace("ENTER");
 		
 		// Special handling for modems
@@ -349,7 +349,19 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 			}
 		}
 		if (smsListener != null) {
+			// TODO these sms listeners should be replaced by the EventBus below.
 			smsListener.smsDeviceEvent(device, deviceStatus);
+		}
+		if(eventBus != null) {
+			// Fire new events.  TODO This generalised eventBus should replace the smsListener
+			// object referenced above.  FIXME should also fire events for SmsInternetServices.
+			SmsServiceStatusNotification<?, ?> notification = null;
+			if(device instanceof SmsModem) {
+				notification = new SmsModemStatusNotification((SmsModem) device, (SmsModemStatus) deviceStatus);
+			}
+			if(notification != null) {
+				eventBus.notifyObservers(notification);
+			}
 		}
 		LOG.trace("EXIT");
 	}
@@ -432,7 +444,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	 * @param deviceStatus
 	 * @return <code>true</code> if the {@link SmsService} is a failed status, <code>false</code> otherwise
 	 */
-	private static boolean isFailedStatus(SmsServiceStatus deviceStatus) {
+	private static boolean isFailedStatus(SmsServiceStatus<?> deviceStatus) {
 		return deviceStatus.equals(SmsModemStatus.OWNED_BY_SOMEONE_ELSE)
 				|| deviceStatus.equals(SmsModemStatus.NO_PHONE_DETECTED)
 				|| deviceStatus.equals(SmsModemStatus.GSM_REG_FAILED)

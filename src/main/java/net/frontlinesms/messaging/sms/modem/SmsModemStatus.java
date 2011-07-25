@@ -10,7 +10,7 @@ import net.frontlinesms.messaging.sms.SmsServiceStatus;
  * Statuses for {@link SmsModem}
  * @author Alex
  */
-public enum SmsModemStatus implements SmsServiceStatus {
+public enum SmsModemStatus implements SmsServiceStatus<SmsModem> {
 	CONNECTED(FrontlineSMSConstants.SMS_DEVICE_STATUS_CONNECTED),
 	CONNECTING(FrontlineSMSConstants.SMS_DEVICE_STATUS_CONNECTING),
 	/**

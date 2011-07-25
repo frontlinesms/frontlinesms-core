@@ -53,6 +53,6 @@ public interface SmsListener {
 	 * @param activeDevice
 	 * @param smsDeviceStatus the new status of the {@link SmsService}
 	 */
-	public void smsDeviceEvent(SmsService activeDevice, SmsServiceStatus smsDeviceStatus);
+	public <T extends SmsService> void smsDeviceEvent(T activeDevice, SmsServiceStatus<T> smsDeviceStatus);
 		
 }
