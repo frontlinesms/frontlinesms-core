@@ -1755,5 +1755,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		if (this.currentTab.equals(TAB_MESSAGE_HISTORY)) {
 			this.messageTabController.refresh();
 		}
-	}	
+	}
+
+
 }
