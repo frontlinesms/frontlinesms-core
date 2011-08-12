@@ -10,6 +10,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.smslib.CIncomingMessage;
+import org.smslib.CStatusReportMessage;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.domain.Contact;
@@ -39,6 +41,8 @@ public class IncomingMessageProcessorTest extends BaseTestCase {
 	private KeywordDao keywordDao;
 	private KeywordActionDao keywordActionDao;
 	
+	private SmsService receiver;
+	
 	private IncomingMessageProcessor imp;
 	private BlockingIncomingMessageEventListener bimel;
 	
@@ -58,6 +62,8 @@ public class IncomingMessageProcessorTest extends BaseTestCase {
 		when(frontline.getKeywordDao()).thenReturn(keywordDao);
 		keywordActionDao = mock(KeywordActionDao.class);
 		when(frontline.getKeywordActionDao()).thenReturn(keywordActionDao);
+		
+		receiver = mock(SmsService.class);
 		
 		imp = new IncomingMessageProcessor(frontline);
 		bimel = new BlockingIncomingMessageEventListener();
@@ -107,13 +113,6 @@ public class IncomingMessageProcessorTest extends BaseTestCase {
 		verify(uiListener, never()).keywordActionExecuted(badAction);
 	}
 	
-	private KeywordAction mockKeywordAction(boolean isAlive) {
-		KeywordAction action = mock(KeywordAction.class);
-		when(action.isAlive(anyLong())).thenReturn(isAlive);
-		when(action.getType()).thenReturn(KeywordAction.Type.NO_ACTION);
-		return action;
-	}
-	
 	/**
 	 * Verify that new message objects are created and saved for messages which have no
 	 * keywords linked to them.
@@ -122,25 +121,6 @@ public class IncomingMessageProcessorTest extends BaseTestCase {
 		testTextMessage("");
 		testTextMessage("A short message.");
 		testTextMessage("\ni have a newline\nin me and one at the start.");
-	}
-	
-	/**
-	 * Test the basic processing of a text message, including whether it is persisted, that keyword matching is
-	 * attempted, and that the created {@link FrontlineMessage} object contained the expected text.
-	 * @param messageText
-	 * @return
-	 */
-	private FrontlineMessage testTextMessage(String messageText) {
-		// Create and queue the message
-		CIncomingMessage message = new CIncomingMessage(TEST_ORIGINATOR, messageText);
-		
-		FrontlineMessage mess = testMessageReceive(message);
-		verify(keywordDao).getFromMessageText(messageText);
-		
-		assertEquals("Created " + FrontlineMessage.class + " message had unexpected text content.", messageText, mess.getTextContent());
-		assertNull(mess.getBinaryContent());
-		
-		return mess;
 	}
 	
 	public void testSimpleBinaryMessages() {
@@ -156,6 +136,60 @@ public class IncomingMessageProcessorTest extends BaseTestCase {
 		byte[] bytes2 = new byte[512];
 		for(int i=0; i<bytes2.length; ++i) bytes2[i] = (byte) i;
 		testBinaryMessage(bytes2);
+	}
+	
+	public void testStatusReportDoesntMatch() {
+		when(messageDao.getMessageForStatusUpdate(anyString(), anyInt())).thenReturn(null);
+
+		assertTrue(imp.getIncomingMessageQueue().isEmpty());
+		imp.processIncomingMessageDetails(new IncomingMessageDetails(receiver, createStatusReportMessage()));
+		assertTrue("Failed messages should not be re-added to the message processing queue.", imp.getIncomingMessageQueue().isEmpty());
+	}
+	
+	public void testStatusReportMatchesMultipleMessages() {
+		when(messageDao.getMessageForStatusUpdate(anyString(), anyInt())).thenThrow(new IncorrectResultSizeDataAccessException(1, 2));
+
+		assertTrue(imp.getIncomingMessageQueue().isEmpty());
+		imp.processIncomingMessageDetails(new IncomingMessageDetails(receiver, createStatusReportMessage()));
+		assertTrue("Failed messages should not be re-added to the message processing queue.", imp.getIncomingMessageQueue().isEmpty());
+	}
+	
+	public void testKeywordHandlingException() {
+		when(keywordDao.getFromMessageText(anyString())).thenThrow(new RuntimeException());
+
+		assertTrue(imp.getIncomingMessageQueue().isEmpty());
+		imp.processIncomingMessageDetails(new IncomingMessageDetails(receiver, createTextMessage("The content is not important.")));
+		assertTrue("Failed messages should not be re-added to the message processing queue.", imp.getIncomingMessageQueue().isEmpty());
+	}
+	
+//> TEST HELPER METHODS
+	/**
+	 * Test the basic processing of a text message, including whether it is persisted, that keyword matching is
+	 * attempted, and that the created {@link FrontlineMessage} object contained the expected text.
+	 * @param messageText
+	 * @return
+	 */
+	private FrontlineMessage testTextMessage(String messageText) {
+		FrontlineMessage mess = testMessageReceive(createTextMessage(messageText));
+		verify(keywordDao).getFromMessageText(messageText);
+		
+		assertEquals("Created " + FrontlineMessage.class + " message had unexpected text content.", messageText, mess.getTextContent());
+		assertNull(mess.getBinaryContent());
+		
+		return mess;
+	}
+	
+	private CIncomingMessage createTextMessage(String messageText) {
+		return new CIncomingMessage(TEST_ORIGINATOR, messageText);
+	}
+	
+	private CStatusReportMessage createStatusReportMessage() {
+		return new CStatusReportMessage(0, 0, "0", 0, 0) {
+			{
+				this.originator = TEST_ORIGINATOR;
+				this.recipient = TEST_ORIGINATOR;
+			}
+		};
 	}
 	
 	/**
@@ -176,7 +210,6 @@ public class IncomingMessageProcessorTest extends BaseTestCase {
 	 * @return
 	 */
 	private FrontlineMessage testMessageReceive(CIncomingMessage message) {
-		SmsService receiver = mock(SmsService.class);
 		imp.queue(receiver, message);
 		
 		// Wait for the message to be processed, and then check that the expected steps were taken
@@ -184,6 +217,13 @@ public class IncomingMessageProcessorTest extends BaseTestCase {
 		verify(messageDao).saveMessage(mess);
 		
 		return mess;
+	}
+	
+	private KeywordAction mockKeywordAction(boolean isAlive) {
+		KeywordAction action = mock(KeywordAction.class);
+		when(action.isAlive(anyLong())).thenReturn(isAlive);
+		when(action.getType()).thenReturn(KeywordAction.Type.NO_ACTION);
+		return action;
 	}
 }
 

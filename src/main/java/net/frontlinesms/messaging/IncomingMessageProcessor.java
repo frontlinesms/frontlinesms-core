@@ -96,6 +96,11 @@ public class IncomingMessageProcessor extends Thread {
 		this.emailServerHandler = frontline.getEmailServerHandler();
 	}
 	
+	/** Gets the {@link #incomingMessageQueue}.  N.B. This method should only be used in tests. */
+	BlockingQueue<IncomingMessageProcessorQueueItem> getIncomingMessageQueue() {
+		return incomingMessageQueue;
+	}
+	
 	public void setUiListener(UIListener uiListener) {
 		this.uiListener = uiListener;
 	}
@@ -136,14 +141,9 @@ public class IncomingMessageProcessor extends Thread {
 					// We have been given a "poisoned" item so must terminate this thread
 					keepAlive = false;
 				} else {
-					try {
-						// We've got a new message, so process it.
-						processIncomingMessageDetails(queueItem);
-					} catch(Throwable t) {
+					if(!processIncomingMessageDetails(queueItem)) {
 						// There was a problem processing the message.  At this stage, any issue should be a database
 						// connectivity issue.  Stop processing messages for a while, and re-queue this one.
-						LOG.warn("Error processing message.  It will be queued for re-processing.", t);
-						incomingMessageQueue.add(queueItem);
 						FrontlineUtils.sleep_ignoreInterrupts(THREAD_SLEEP_AFTER_PROCESSING_FAILED);
 					}
 				} 
@@ -152,49 +152,63 @@ public class IncomingMessageProcessor extends Thread {
 		LOG.trace("EXIT");
 	}
 	
-	private void processIncomingMessageDetails(IncomingMessageProcessorQueueItem queueItem) {
-		if (queueItem instanceof IncomingMms) {
-			// Creates the FrontlineMultimediaMessage
-			FrontlineMultimediaMessage mms = MmsUtils.create(((IncomingMms) queueItem).getMessage());
-			this.messageDao.saveMessage(mms);
-			handleMessage(mms);
-		} else if (queueItem instanceof IncomingMessageDetails) {
-			IncomingMessageDetails incomingMessageDetails = (IncomingMessageDetails) queueItem;
-			CIncomingMessage incomingMessage = incomingMessageDetails.getMessage();
-			SmsService receiver = incomingMessageDetails.getReceiver();
-			LOG.trace("Got message from queue: " + receiver.hashCode() + ":" + incomingMessage.hashCode());
-			
-			// Check the incoming message details with the KeywordFactory to make sure there are no details
-			// that should be hidden before creating the message object...
-			String incomingSenderMsisdn = incomingMessage.getOriginator();
-			LOG.debug("Sender [" + incomingSenderMsisdn + "]");
-			if (incomingMessage.getType() == CIncomingMessage.MessageType.StatusReport) {
-				handleStatusReport(incomingMessage);
-			} else {
-				// This is an incoming message, so process accordingly
-				FrontlineMessage incoming;
-				if (incomingMessage.getMessageEncoding() == SmsMessageEncoding.GSM_7BIT || incomingMessage.getMessageEncoding() == SmsMessageEncoding.UCS2) {
-					if(LOG.isDebugEnabled()) LOG.debug("Incoming text message [" + incomingMessage.getText() + "]");
-					incoming = FrontlineMessage.createIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), incomingMessage.getText());
-					messageDao.saveMessage(incoming);
-					handleMessage(incoming);
-				} else {
-					if(LOG.isDebugEnabled()) LOG.debug("Incoming binary message: " + incomingMessage.getBinary().length + "b");
-					
-					// Save the binary message
-					incoming = FrontlineMessage.createBinaryIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), -1, incomingMessage.getBinary());
-					messageDao.saveMessage(incoming);
-				}
-	
-				for(IncomingMessageListener listener : this.incomingMessageListeners) {
-					listener.incomingMessageEvent(incoming);
-				}
-				if (uiListener != null) {
-					uiListener.incomingMessageEvent(incoming);
-				}
+	/** This method should only be called by {@link #run()} or in tests. */
+	boolean processIncomingMessageDetails(IncomingMessageProcessorQueueItem queueItem) {
+		try {
+			if (queueItem instanceof IncomingMms) {
+				processIncomingMms((IncomingMms) queueItem);
+			} else if (queueItem instanceof IncomingMessageDetails) {
+				processIncomingMessageDetails((IncomingMessageDetails) queueItem);
+			}  else {
+				throw new RuntimeException("Unknown queue item type: " + queueItem.getClass());
 			}
-		}  else {
-			LOG.error("Unknown queue item type: " + queueItem.getClass());
+			return true;
+		} catch(Throwable t) {
+			LOG.warn("Error processing message.  It will be queued for re-processing.", t);
+			return false;
+		}
+	}
+	
+	private void processIncomingMms(IncomingMms incomingMmsQueueItem) {
+		// Creates the FrontlineMultimediaMessage
+		FrontlineMultimediaMessage mms = MmsUtils.create(incomingMmsQueueItem.getMessage());
+		this.messageDao.saveMessage(mms);
+		handleMessage(mms);
+	}
+	
+	private void processIncomingMessageDetails(IncomingMessageDetails incomingMessageDetails) {
+		CIncomingMessage incomingMessage = incomingMessageDetails.getMessage();
+		SmsService receiver = incomingMessageDetails.getReceiver();
+		LOG.trace("Got message from queue: " + receiver.hashCode() + ":" + incomingMessage.hashCode());
+		
+		// Check the incoming message details with the KeywordFactory to make sure there are no details
+		// that should be hidden before creating the message object...
+		String incomingSenderMsisdn = incomingMessage.getOriginator();
+		LOG.debug("Sender [" + incomingSenderMsisdn + "]");
+		if (incomingMessage.getType() == CIncomingMessage.MessageType.StatusReport) {
+			handleStatusReport(incomingMessage);
+		} else {
+			// This is an incoming message, so process accordingly
+			FrontlineMessage incoming;
+			if (incomingMessage.getMessageEncoding() == SmsMessageEncoding.GSM_7BIT || incomingMessage.getMessageEncoding() == SmsMessageEncoding.UCS2) {
+				if(LOG.isDebugEnabled()) LOG.debug("Incoming text message [" + incomingMessage.getText() + "]");
+				incoming = FrontlineMessage.createIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), incomingMessage.getText());
+				messageDao.saveMessage(incoming);
+				handleMessage(incoming);
+			} else {
+				if(LOG.isDebugEnabled()) LOG.debug("Incoming binary message: " + incomingMessage.getBinary().length + "b");
+				
+				// Save the binary message
+				incoming = FrontlineMessage.createBinaryIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), -1, incomingMessage.getBinary());
+				messageDao.saveMessage(incoming);
+			}
+
+			for(IncomingMessageListener listener : this.incomingMessageListeners) {
+				listener.incomingMessageEvent(incoming);
+			}
+			if (uiListener != null) {
+				uiListener.incomingMessageEvent(incoming);
+			}
 		}
 	}
 
@@ -215,16 +229,19 @@ public class IncomingMessageProcessor extends Thread {
 		if (message != null) {
 			LOG.debug("It's a delivery report for message [" + message + "]");
 			switch(statusReport.getDeliveryStatus()) {
-			case CStatusReportMessage.DeliveryStatus.Delivered:
-				message.setStatus(Status.DELIVERED);
-				break;
-			case CStatusReportMessage.DeliveryStatus.Aborted:
-				message.setStatus(Status.FAILED);
-				break;
+				case CStatusReportMessage.DeliveryStatus.Delivered:
+					message.setStatus(Status.DELIVERED);
+					break;
+				case CStatusReportMessage.DeliveryStatus.Aborted:
+					message.setStatus(Status.FAILED);
+					break;
+				default: LOG.info("No change to FrontlineMessage for Delivery Status: " + statusReport.getDeliveryStatus());
 			}
 			if (uiListener != null) {
 				uiListener.outgoingMessageEvent(message);
 			}
+		} else {
+			LOG.info("Did not find a FrontlineMessage to match delivery report.");
 		}
 	}
 

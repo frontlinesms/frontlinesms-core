@@ -201,11 +201,12 @@ public interface MessageDao {
 	public int getMessageCount(FrontlineMessage.Type messageType, Keyword keyword, Long start, Long end);
 	
 	/**
-	 * Gets the outgoing message with the matching SMSC Reference Number sent to
-	 * a number ending with the supplied msisdn suffix.
+	 * Gets the <em>outgoing</em> message with the matching SMSC Reference Number sent to
+	 * a number ending with the supplied msisdn suffix.  If multiple messages match these criteria, the
+	 * latest will be matched.
 	 * @param targetMsisdnSuffix last N digits of the target's msisdn
 	 * @param smscReference
-	 * @return
+	 * @return the matching message, or <code>null</code> if a match cannot be found
 	 */
 	public FrontlineMessage getMessageForStatusUpdate(String targetMsisdnSuffix, int smscReference);
 	

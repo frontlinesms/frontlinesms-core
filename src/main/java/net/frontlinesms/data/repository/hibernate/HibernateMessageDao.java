@@ -95,10 +95,13 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 
 	/** @see MessageDao#getMessageForStatusUpdate(String, int) */
 	public FrontlineMessage getMessageForStatusUpdate(String targetMsisdnSuffix, int smscReference) {
-		DetachedCriteria criteria = super.getCriterion();
+		DetachedCriteria criteria = super.getSortCriterion(Field.DATE, Order.DESCENDING);
 		criteria.add(Restrictions.eq(Field.RECIPIENT_MSISDN.getFieldName(), targetMsisdnSuffix));
 		criteria.add(Restrictions.eq(Field.SMSC_REFERENCE.getFieldName(), smscReference));
-		return super.getUnique(criteria);
+		criteria.add(Restrictions.eq(Field.TYPE.getFieldName(), Type.OUTBOUND));
+		List<FrontlineMessage> results = super.getList(criteria, 0, 1);
+		if(results.size() >= 1) return results.get(0);
+		else return null;
 	}
 
 	/** @see MessageDao#getMessages(int, Field, Order) */

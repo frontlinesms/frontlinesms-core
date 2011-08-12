@@ -49,6 +49,36 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 	private KeywordDao keywordDao;
 	
 //> TEST METHODS
+	public void testGetMessageForStatusUpdate_noMessage() {
+		checkSanity();
+		assertNull(dao.getMessageForStatusUpdate("3456789654345678987654", 0));
+	}
+	
+	public void testGetMessageForStatusUpdate_multipleMessages() {
+		checkSanity();
+
+		FrontlineMessage oldMessage1 = FrontlineMessage.createOutgoingMessage(4000, ARTHUR, BERNADETTE, "asdf");
+		oldMessage1.setSmscReference(123);
+		dao.saveMessage(oldMessage1);
+		
+		FrontlineMessage recentMessage = FrontlineMessage.createOutgoingMessage(5000, ARTHUR, BERNADETTE, "asdf");
+		recentMessage.setSmscReference(123);
+		dao.saveMessage(recentMessage);
+		
+		FrontlineMessage oldMessage2 = FrontlineMessage.createOutgoingMessage(4000, ARTHUR, BERNADETTE, "asdf");
+		oldMessage2.setSmscReference(123);
+		dao.saveMessage(oldMessage2);
+		
+		assertEquals(recentMessage, dao.getMessageForStatusUpdate(BERNADETTE, 123));
+	}
+	
+	public void testGetMessageForStatusUpdate_onlyReceivedMessages() {
+		FrontlineMessage irrelevantMessage = FrontlineMessage.createIncomingMessage(1000, ARTHUR, BERNADETTE, "hello");
+		irrelevantMessage.setSmscReference(123);
+		dao.saveMessage(irrelevantMessage);
+		
+		assertNull(dao.getMessageForStatusUpdate(BERNADETTE, 123));
+	}
 
 	/**
 	 * Test everything all at once!
