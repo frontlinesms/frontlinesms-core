@@ -104,8 +104,8 @@ public class InternationalisationUtilsTest extends BaseTestCase {
 	
 	/** @return {@link LanguageBundle}s loaded from resources dir 
 	 * @throws IOException */
-	private Collection<LanguageBundle> getLanguageBundles() throws IOException {
-		Set<LanguageBundle> bundles = new HashSet<LanguageBundle>();
+	private Collection<FileLanguageBundle> getLanguageBundles() throws IOException {
+		Set<FileLanguageBundle> bundles = new HashSet<FileLanguageBundle>();
 		for(File bundleFile : new File("src/main/resources/resources/languages").listFiles(new FileFilter() {
 			public boolean accept(File pathname) {
 				return pathname.getName().endsWith(".properties") ;
@@ -138,10 +138,10 @@ public class InternationalisationUtilsTest extends BaseTestCase {
 		assertEquals(destination.get("do not replace me"), "original");
 	}
 	
-	public void testCurrencyParsing() {
+	public void testCurrencyParsing() throws IOException {
 		List<Locale> unparsableCurrencies = Arrays.asList(new Locale[] { new Locale("hi", "in") });
 
-		for (FileLanguageBundle languageBundle : InternationalisationUtils.getLanguageBundles()) {
+		for (FileLanguageBundle languageBundle : getLanguageBundles()) {
 			Locale locale = languageBundle.getLocale();
 			NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(locale);
 			String currencySymbol = ((DecimalFormat) currencyFormat).getDecimalFormatSymbols().getCurrencySymbol();
