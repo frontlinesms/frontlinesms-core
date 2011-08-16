@@ -138,6 +138,13 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 		return super.getList(getCriteria(messageType, phoneNumbers,
 				messageHistoryStart, messageHistoryEnd));
 	}
+	
+	public List<FrontlineMessage> getMessages(FrontlineMessage.Type messageType,
+			List<String> phoneNumbers, Long messageHistoryStart,
+			Long messageHistoryEnd, int startIndex, int limit) {
+		return super.getList(getCriteria(messageType, phoneNumbers,
+				messageHistoryStart, messageHistoryEnd), startIndex, limit);
+	}
 
 	private DetachedCriteria getCriteria(FrontlineMessage.Type messageType,
 			List<String> phoneNumbers, Long messageHistoryStart,
@@ -171,9 +178,8 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 	}
 
 	/** @see MessageDao#getMessagesForKeyword(int, Keyword) */
-	@SuppressWarnings("unchecked")
 	public List<FrontlineMessage> getMessagesForKeyword(FrontlineMessage.Type messageType, Keyword keyword) {
-		PartialQuery q = createQueryStringForKeyword(false, messageType, keyword);
+		PartialQuery<FrontlineMessage> q = createQueryStringForKeyword(false, messageType, keyword);
 		return super.getList(q.getQueryString(), q.getInsertValues());
 	}
 	

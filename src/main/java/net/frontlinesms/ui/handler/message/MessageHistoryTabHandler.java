@@ -326,7 +326,6 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 	
 	/** @return total number of messages to be displayed in the message list. */
 	private int getMessageCount() {
-		Class<?> filterClass = getMessageHistoryFilterType();
 		Object filterList = getMessageHistoryFilterList();
 		Object selectedItem = ui.getSelectedItem(filterList);
 
@@ -338,6 +337,7 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 			if (selectedIndex == 0) {
 				return messageDao.getMessageCount(messageType, messageHistoryStart, messageHistoryEnd);
 			} else {
+				Class<?> filterClass = getMessageHistoryFilterType();
 				if(filterClass == Contact.class) {
 					Contact c = ui.getContact(selectedItem);
 					return messageDao.getMessageCountForMsisdn(messageType, c.getPhoneNumber(), messageHistoryStart, messageHistoryEnd);
@@ -361,7 +361,6 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 	 * @return a page of messages, sorted and filtered
 	 */
 	private List<FrontlineMessage> getListMessages(int startIndex, int limit) {
-		Class<?> filterClass = getMessageHistoryFilterType();
 		Object filterList = getMessageHistoryFilterList();
 		Object selectedItem = ui.getSelectedItem(filterList);
 		
@@ -377,6 +376,7 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 				List<FrontlineMessage> allMessages = messageDao.getAllMessages(messageType, field, order, messageHistoryStart, messageHistoryEnd, startIndex, limit);
 				return allMessages;
 			} else {
+				Class<?> filterClass = getMessageHistoryFilterType();
 				if(filterClass == Contact.class) {
 					// Contact selected
 					Contact c = ui.getContact(selectedItem);
@@ -384,7 +384,7 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 				} else if(filterClass == Group.class) {
 					// A Group was selected
 					Group selectedGroup = ui.getGroup(selectedItem);
-					return messageDao.getMessages(messageType, getPhoneNumbers(selectedGroup), messageHistoryStart, messageHistoryEnd);
+					return messageDao.getMessages(messageType, getPhoneNumbers(selectedGroup), messageHistoryStart, messageHistoryEnd, startIndex, limit);
 				} else if (filterClass == Keyword.class) {
 					// Keyword Selected
 					Keyword k = ui.getKeyword(selectedItem);
@@ -503,11 +503,11 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 	
 	/** Update the list of messages. */
 	public void updateMessageList() {
-		Class<?> filterClass = getMessageHistoryFilterType();
 		Object filterList = getMessageHistoryFilterList();
 		
 		if (filterList != null) {
 			// We save the selected item in the contacts/keywords list
+			Class<?> filterClass = getMessageHistoryFilterType();
 			boolean showContacts = filterClass == Contact.class;
 			boolean showKeywords = filterClass == Keyword.class;
 			if (showContacts)
