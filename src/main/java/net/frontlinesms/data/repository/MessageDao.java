@@ -19,7 +19,6 @@
  */
 package net.frontlinesms.data.repository;
 
-import java.util.Collection;
 import java.util.List;
 
 import net.frontlinesms.data.Order;
@@ -188,7 +187,7 @@ public interface MessageDao {
 	 * @param status
 	 * @return 
 	 */
-	public Collection<FrontlineMessage> getMessages(FrontlineMessage.Type type, FrontlineMessage.Status... status);
+	public List<FrontlineMessage> getMessages(FrontlineMessage.Type type, FrontlineMessage.Status... status);
 	
 	/**
 	 * Gets the number of messagesthere are of the given type for the given keyword.

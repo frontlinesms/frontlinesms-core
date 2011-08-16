@@ -3,7 +3,6 @@
  */
 package net.frontlinesms.data.repository.hibernate;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -120,7 +119,7 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 	}
 
 	/** @see MessageDao#getMessages(int, FrontlineMessage.Status[]) */
-	public Collection<FrontlineMessage> getMessages(FrontlineMessage.Type messageType, FrontlineMessage.Status... statuses) {
+	public List<FrontlineMessage> getMessages(FrontlineMessage.Type messageType, FrontlineMessage.Status... statuses) {
 		DetachedCriteria criteria = super.getCriterion();
 		addTypeCriteria(criteria, messageType);
 		addStatusCriteria(criteria, statuses);
