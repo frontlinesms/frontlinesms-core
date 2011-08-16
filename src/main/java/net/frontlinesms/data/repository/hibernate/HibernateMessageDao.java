@@ -3,6 +3,7 @@
  */
 package net.frontlinesms.data.repository.hibernate;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -137,9 +138,13 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 			List<String> phoneNumbers, Field sortBy,
 			Order order, Long messageHistoryStart,
 			Long messageHistoryEnd, int startIndex, int limit) {
-		return super.getList(getCriteria(getSortCriterion(sortBy, order),
-				messageType, phoneNumbers,
-				messageHistoryStart, messageHistoryEnd), startIndex, limit);
+		if(phoneNumbers.size() == 0) {
+			return Collections.emptyList();
+		} else {
+			return super.getList(getCriteria(getSortCriterion(sortBy, order),
+					messageType, phoneNumbers,
+					messageHistoryStart, messageHistoryEnd), startIndex, limit);
+		}
 	}
 
 	private DetachedCriteria getCriteria(DetachedCriteria criteria,

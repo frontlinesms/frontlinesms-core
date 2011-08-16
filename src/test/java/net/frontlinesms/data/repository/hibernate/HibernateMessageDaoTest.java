@@ -49,6 +49,66 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 	private KeywordDao keywordDao;
 	
 //> TEST METHODS
+	public void testGetMessagesForPhoneNumberList_empty() {
+		checkSanity();
+		createOutgoingMessages(ARTHUR,
+				"hey buddy, you watching the game tonite?",
+				"fabulous, u bet i will");
+		createIncomingMessages(ARTHUR,
+				"u mean the breakerz? meet me down caesars");
+		
+		createOutgoingMessages(BERNADETTE,
+				"hello",
+				"nice to see you on tuesday",
+				"wanna go see iron man 2 tomorrow?",
+				"please???");
+		createIncomingMessages(BERNADETTE,
+				"heya",
+				"yeah you too, what a night ;)",
+				"Loser.");
+
+		testGetMessagesForPhoneNumberList_populated(0, Type.ALL);
+		testGetMessagesForPhoneNumberList_populated(0, Type.RECEIVED);
+		testGetMessagesForPhoneNumberList_populated(0, Type.OUTBOUND);
+		
+	}
+	
+	public void testGetMessagesForPhoneNumberList_populated() {
+		checkSanity();
+		createOutgoingMessages(ARTHUR,
+				"hey buddy, you watching the game tonite?",
+				"fabulous, u bet i will");
+		createIncomingMessages(ARTHUR,
+				"u mean the breakerz? meet me down caesars");
+		
+		createOutgoingMessages(BERNADETTE,
+				"hello",
+				"nice to see you on tuesday",
+				"wanna go see iron man 2 tomorrow?",
+				"please???");
+		createIncomingMessages(BERNADETTE,
+				"heya",
+				"yeah you too, what a night ;)",
+				"Loser.");
+
+		testGetMessagesForPhoneNumberList_populated(3, Type.ALL, ARTHUR);
+		testGetMessagesForPhoneNumberList_populated(7, Type.ALL, BERNADETTE);
+		testGetMessagesForPhoneNumberList_populated(10, Type.ALL, ARTHUR, BERNADETTE);
+
+		testGetMessagesForPhoneNumberList_populated(2, Type.OUTBOUND, ARTHUR);
+		testGetMessagesForPhoneNumberList_populated(4, Type.OUTBOUND, BERNADETTE);
+		testGetMessagesForPhoneNumberList_populated(6, Type.OUTBOUND, ARTHUR, BERNADETTE);
+
+		testGetMessagesForPhoneNumberList_populated(1, Type.RECEIVED, ARTHUR);
+		testGetMessagesForPhoneNumberList_populated(3, Type.RECEIVED, BERNADETTE);
+		testGetMessagesForPhoneNumberList_populated(4, Type.RECEIVED, ARTHUR, BERNADETTE);
+	}
+	
+	private void testGetMessagesForPhoneNumberList_populated(int expectedCount, Type messageType, String... phoneNumbers) {
+		assertEquals(expectedCount, 
+					dao.getMessages(messageType, Arrays.asList(phoneNumbers), FrontlineMessage.Field.DATE, Order.ASCENDING, null, null, 0, 100).size());
+	}
+	
 	public void testGetMessageForStatusUpdate_noMessage() {
 		checkSanity();
 		assertNull(dao.getMessageForStatusUpdate("3456789654345678987654", 0));
@@ -310,6 +370,18 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 	private void createKeyword(String keywordString) throws DuplicateKeyException {
 		Keyword k = new Keyword(keywordString, "generated for test in " + this.getClass().getName());
 		this.keywordDao.saveKeyword(k);
+	}
+	
+	private void createIncomingMessages(String from, String... messageContents) {
+		for(String c : messageContents) {
+			dao.saveMessage(FrontlineMessage.createIncomingMessage(0, from, "000", c));
+		}
+	}
+	
+	private void createOutgoingMessages(String to, String... messageContents) {
+		for(String c : messageContents) {
+			dao.saveMessage(FrontlineMessage.createOutgoingMessage(0, "000", to, c));
+		}
 	}
 	
 	private void createMessages(String... messageContents) {
