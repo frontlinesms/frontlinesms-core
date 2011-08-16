@@ -213,10 +213,7 @@ public interface MessageDao {
 	public int getMessageCount(FrontlineMessage.Type messageType, List<String> phoneNumbers, Long messageHistoryStart, Long messageHistoryEnd);
 
 	/** @return the messages sent to the specified phone numbers within the specified dates */
-	public List<FrontlineMessage> getMessages(FrontlineMessage.Type messageType, List<String> phoneNumbers, Long messageHistoryStart, Long messageHistoryEnd);
-
-	/** @return the messages sent to the specified phone numbers within the specified dates */
-	public List<FrontlineMessage> getMessages(FrontlineMessage.Type messageType, List<String> phoneNumbers, Long messageHistoryStart, Long messageHistoryEnd, int startIndex, int limit);
+	public List<FrontlineMessage> getMessages(FrontlineMessage.Type messageType, List<String> phoneNumbers, Field sortBy, Order order, Long messageHistoryStart, Long messageHistoryEnd, int startIndex, int limit);
 
 	/**
 	 * Delete the supplied message to the data source.

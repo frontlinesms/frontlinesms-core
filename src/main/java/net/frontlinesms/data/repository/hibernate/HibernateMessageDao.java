@@ -128,28 +128,23 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 	
 	public int getMessageCount(FrontlineMessage.Type messageType, List<String> phoneNumbers,
 			Long messageHistoryStart, Long messageHistoryEnd) {
-		return super.getCount(getCriteria(messageType, phoneNumbers,
+		return super.getCount(getCriteria(super.getCriterion(),
+				messageType, phoneNumbers,
 				messageHistoryStart, messageHistoryEnd));
 	}
 	
 	public List<FrontlineMessage> getMessages(FrontlineMessage.Type messageType,
-			List<String> phoneNumbers, Long messageHistoryStart,
-			Long messageHistoryEnd) {
-		return super.getList(getCriteria(messageType, phoneNumbers,
-				messageHistoryStart, messageHistoryEnd));
-	}
-	
-	public List<FrontlineMessage> getMessages(FrontlineMessage.Type messageType,
-			List<String> phoneNumbers, Long messageHistoryStart,
+			List<String> phoneNumbers, Field sortBy,
+			Order order, Long messageHistoryStart,
 			Long messageHistoryEnd, int startIndex, int limit) {
-		return super.getList(getCriteria(messageType, phoneNumbers,
+		return super.getList(getCriteria(getSortCriterion(sortBy, order),
+				messageType, phoneNumbers,
 				messageHistoryStart, messageHistoryEnd), startIndex, limit);
 	}
 
-	private DetachedCriteria getCriteria(FrontlineMessage.Type messageType,
-			List<String> phoneNumbers, Long messageHistoryStart,
-			Long messageHistoryEnd) {
-		DetachedCriteria criteria = super.getCriterion();
+	private DetachedCriteria getCriteria(DetachedCriteria criteria,
+			FrontlineMessage.Type messageType, List<String> phoneNumbers,
+			Long messageHistoryStart, Long messageHistoryEnd) {
 		addTypeCriteria(criteria, messageType);
 		addDateCriteria(criteria, messageHistoryStart, messageHistoryEnd);
 		addPhoneNumberMatchCriteria(criteria, phoneNumbers, true, true);

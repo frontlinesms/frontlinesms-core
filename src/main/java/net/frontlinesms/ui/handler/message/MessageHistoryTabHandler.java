@@ -369,26 +369,26 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 		} else {
 			FrontlineMessage.Type messageType = getSelectedMessageType();
 			Order order = getMessageSortOrder();
-			Field field = getMessageSortField();
+			Field sortField = getMessageSortField();
 			
 			int selectedIndex = ui.getSelectedIndex(filterList);
 			if (selectedIndex == 0) {
-				List<FrontlineMessage> allMessages = messageDao.getAllMessages(messageType, field, order, messageHistoryStart, messageHistoryEnd, startIndex, limit);
+				List<FrontlineMessage> allMessages = messageDao.getAllMessages(messageType, sortField, order, messageHistoryStart, messageHistoryEnd, startIndex, limit);
 				return allMessages;
 			} else {
 				Class<?> filterClass = getMessageHistoryFilterType();
 				if(filterClass == Contact.class) {
 					// Contact selected
 					Contact c = ui.getContact(selectedItem);
-					return messageDao.getMessagesForMsisdn(messageType, c.getPhoneNumber(), field, order, messageHistoryStart, messageHistoryEnd, startIndex, limit);
+					return messageDao.getMessagesForMsisdn(messageType, c.getPhoneNumber(), sortField, order, messageHistoryStart, messageHistoryEnd, startIndex, limit);
 				} else if(filterClass == Group.class) {
 					// A Group was selected
 					Group selectedGroup = ui.getGroup(selectedItem);
-					return messageDao.getMessages(messageType, getPhoneNumbers(selectedGroup), messageHistoryStart, messageHistoryEnd, startIndex, limit);
+					return messageDao.getMessages(messageType, getPhoneNumbers(selectedGroup), sortField, order, messageHistoryStart, messageHistoryEnd, startIndex, limit);
 				} else if (filterClass == Keyword.class) {
 					// Keyword Selected
 					Keyword k = ui.getKeyword(selectedItem);
-					return messageDao.getMessagesForKeyword(messageType, k, field, order, messageHistoryStart, messageHistoryEnd, startIndex, limit);
+					return messageDao.getMessagesForKeyword(messageType, k, sortField, order, messageHistoryStart, messageHistoryEnd, startIndex, limit);
 				} else throw new IllegalStateException("Unknown filter class: " + filterClass.getName());
 			}
 		}
