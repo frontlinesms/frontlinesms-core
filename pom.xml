@@ -39,21 +39,17 @@
 	
 	<repositories>
 		<repository>
-			<id>cleone.net.repo</id>
-			<name>Temporary FrontlineSMS repository on cleone.net</name>
-			<url>http://m2repo.cleone.net</url>
-		</repository>
-		<repository>
-			<id>maven-repository.dev.java.net</id>
-			<url>http://download.java.net/maven/2/</url>
+			<id>frontlinesms.repo</id>
+			<name>FrontlineSMS Maven repository</name>
+			<url>http://dev.frontlinesms.com/m2repo</url>
 		</repository>
 	</repositories>
 	
 	<distributionManagement>
 		<repository>
-			<id>cleone.net.repo</id>
-			<name>Temporary FrontlineSMS repository on cleone.net</name>
-			<url>ftp://m2repo.cleone.net</url>
+			<id>frontlinesms.repo</id>
+			<name>FrontlineSMS Maven repository</name>
+			<url>ftp://dev.frontlinesms.com</url>
 		</repository>
 	</distributionManagement>
   
