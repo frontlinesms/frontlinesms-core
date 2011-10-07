@@ -128,6 +128,7 @@ public class FrontlineMessage {
 		STATUS("status"),
 		SENDER_MSISDN("senderMsisdn"),
 		RECIPIENT_MSISDN("recipientMsisdn"),
+		ENDPOINT_ID("endpointId"),
 		MESSAGE_CONTENT("textMessageContent"),
 		SMSC_REFERENCE("smscReference");
 		/** name of a field */
@@ -154,6 +155,12 @@ public class FrontlineMessage {
 	private long date;
 	private Integer smscReference;
 	private String senderMsisdn;
+	/** Optional variable for recording the ID of the local endpoint which sent or received this message.  For 
+	 * failed outgoing messages, this should be the last device sending was attempted with.
+	 * 
+	 * For GSMmodems, this should be a combination of IMSI and device serial number, preceded by an identifier
+	 * e.g. smslib:<IMSI>@<device-serial> */
+	private String endpointId;
 	/** Text content of this message. */
 	@Column(name=COLUMN_TEXT_CONTENT, length=SMS_MAX_CHARACTERS)
 	private String textMessageContent;
@@ -305,6 +312,13 @@ public class FrontlineMessage {
 	public void setRetriesRemaining(int retries) {
 		this.retriesRemaining = retries;
 	}
+	
+	public String getEndpointId() {
+		return endpointId;
+	}
+	public void setEndpointId(String endpointId) {
+		this.endpointId = endpointId;
+	}
 
 	/**
 	 * Check whether the content of this message is binary or text
@@ -355,6 +369,31 @@ public class FrontlineMessage {
 		m.setTextMessageContent(HexUtils.encode(content));
 		return m;
 	}
+	
+	/**
+	 * Creates an binary incoming message in the internal data structure.
+	 * @param dateReceived The date this message was received.
+	 * @param senderMsisdn The MSISDN (phone number) of the sender of this message.
+	 * @param recipientMsisdn The MSISDN (phone number) of the recipient of this message.
+	 * @param recipientPort 
+	 * @param content 
+	 * @return Message object representing the sent message.
+	 */
+	public static FrontlineMessage createBinaryIncomingMessage(long dateReceived, String senderMsisdn, String recipientMsisdn, 
+			int recipientPort, byte[] content, String imsiNumber, String serialNumber) {
+		FrontlineMessage m = new FrontlineMessage();
+		m.type = Type.RECEIVED;
+		m.status = Status.RECEIVED;
+		m.setDate(dateReceived);
+		m.senderMsisdn = senderMsisdn;
+		m.recipientMsisdn = recipientMsisdn;
+		m.recipientSmsPort = recipientPort;
+		m.binaryMessageContent = content;
+		m.endpointId = imsiNumber + "@" + serialNumber;
+		m.setTextMessageContent(HexUtils.encode(content));
+		return m;
+	}
+
 
 	/**
 	 * Creates an binary outgoing message in the internal data structure.
@@ -414,6 +453,28 @@ public class FrontlineMessage {
 		m.setDate(dateReceived);
 		m.senderMsisdn = senderMsisdn;
 		m.recipientMsisdn = recipientMsisdn;
+		m.setTextMessageContent(messageContent);
+		return m;
+	}
+	
+	/**
+	 * Creates an incoming message in the internal data structure.
+	 * @param dateReceived The date this message was received.
+	 * @param senderMsisdn The MSISDN (phone number) of the sender of this message.
+	 * @param recipientMsisdn The MSISDN (phone number) of the recipient of this message.
+	 * @param messageContent The text content of this message.
+	 * @param imsiNumber The imsi number of the linked modem.
+	 * @param serialNumber The serial number of the linked modem.
+	 * @returna Message object representing the sent message.
+	 */
+	public static FrontlineMessage createIncomingMessage(long dateReceived, String senderMsisdn, String recipientMsisdn, String messageContent, String imsiNumber, String serialNumber) {
+		FrontlineMessage m = new FrontlineMessage();
+		m.type = Type.RECEIVED;
+		m.status = Status.RECEIVED;
+		m.setDate(dateReceived);
+		m.senderMsisdn = senderMsisdn;
+		m.recipientMsisdn = recipientMsisdn;
+		m.endpointId = imsiNumber + "@" + serialNumber;
 		m.setTextMessageContent(messageContent);
 		return m;
 	}
