@@ -5,7 +5,6 @@ package net.frontlinesms.ui;
 
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.Rectangle;
 
 import thinlet.Thinlet;
 import thinlet.ThinletText;
@@ -502,20 +501,6 @@ private static final String START = "start";
 			setFont(item, boldFont);
 		}
 		
-		return item;
-	}
-	
-	/**
-	 * Creates a Thinlet UI Component of type COMBOBOX CHOICE, set's the component's
-	 * TEXT attribute to the supplied text and attaches the supplied OBJECT.
-	 * @param text
-	 * @param attachedObject
-	 * @return
-	 */
-	public final Object createCombobox(String name, String text) {
-		Object item = Thinlet.create(COMBOBOX);
-		setString(item, TEXT, text);
-		setName(item, name);
 		return item;
 	}
 	

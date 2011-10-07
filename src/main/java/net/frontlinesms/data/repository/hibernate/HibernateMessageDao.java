@@ -291,10 +291,10 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 	 */
 	private void addKeywordMatchCriteria(DetachedCriteria criteria, Keyword keyword) {
 		String keywordString = keyword.getKeyword();
-		// FIXME this should be case-insensitive
+		// FIXME these criteria need integration testing to make sure that they correctly match single-word messages and messages starting with a particular word *ignoring leading and trailing whitespace*
 		Criterion matchKeyword = Restrictions.or(
-				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString, MatchMode.ANYWHERE), // This should match the keyword exactly, case insensitive
-				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString + ' ', MatchMode.ANYWHERE));
+				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString), // This should match the keyword exactly, case insensitive
+				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString + ' ', MatchMode.BEGINNING)); // this should check the message starts with the keyword
 		criteria.add(matchKeyword);
 	}
 	
