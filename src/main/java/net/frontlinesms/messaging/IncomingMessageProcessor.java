@@ -42,6 +42,7 @@ import net.frontlinesms.listener.IncomingMessageListener;
 import net.frontlinesms.listener.UIListener;
 import net.frontlinesms.messaging.mms.MmsUtils;
 import net.frontlinesms.messaging.sms.SmsService;
+import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.mms.MmsMessage;
 
 import org.apache.log4j.Logger;
@@ -175,14 +176,28 @@ public class IncomingMessageProcessor extends Thread {
 				FrontlineMessage incoming;
 				if (incomingMessage.getMessageEncoding() == SmsMessageEncoding.GSM_7BIT || incomingMessage.getMessageEncoding() == SmsMessageEncoding.UCS2) {
 					if(LOG.isDebugEnabled()) LOG.debug("Incoming text message [" + incomingMessage.getText() + "]");
-					incoming = FrontlineMessage.createIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), incomingMessage.getText());
+					if (receiver instanceof SmsModem){
+						SmsModem smsModem = (SmsModem) receiver;
+						incoming = FrontlineMessage.createIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, 
+								receiver.getMsisdn(), incomingMessage.getText(), smsModem.getImsiNumber(), smsModem.getSerial());
+					} else {
+						incoming = FrontlineMessage.createIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), incomingMessage.getText());
+					}
+
 					messageDao.saveMessage(incoming);
 					handleMessage(incoming);
 				} else {
 					if(LOG.isDebugEnabled()) LOG.debug("Incoming binary message: " + incomingMessage.getBinary().length + "b");
 					
 					// Save the binary message
-					incoming = FrontlineMessage.createBinaryIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), -1, incomingMessage.getBinary());
+					if (receiver instanceof SmsModem){
+						SmsModem smsModem = (SmsModem) receiver;
+						incoming = FrontlineMessage.createBinaryIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, 
+								receiver.getMsisdn(), -1, incomingMessage.getBinary(), smsModem.getImsiNumber(), smsModem.getSerial());}
+					else {
+						incoming = FrontlineMessage.createBinaryIncomingMessage(incomingMessage.getDate(), incomingSenderMsisdn, receiver.getMsisdn(), -1, incomingMessage.getBinary());	
+					}
+					
 					messageDao.saveMessage(incoming);
 				}
 	

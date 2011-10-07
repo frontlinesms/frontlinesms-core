@@ -343,6 +343,11 @@ public class SmsModem extends Thread implements SmsService {
 		return serialNumber;
 	}
 	
+	/** @return {@link #imsi} */
+	public String getImsiNumber() {
+		return imsiNumber;
+	}
+	
 	public String getServiceName() {
 		return FrontlineUtils.getManufacturerAndModel(getManufacturer(), getModel());
 	}
