@@ -34,7 +34,7 @@ import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.internet.SmsInternetServiceStatus;
 import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.messaging.sms.modem.SmsModemStatus;
-import net.frontlinesms.ui.Event;
+import net.frontlinesms.ui.HomeTabEvent;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -343,19 +343,19 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 					}
 				}
 
-				ui.newEvent(new Event(Event.TYPE_PHONE_CONNECTED, InternationalisationUtils.getI18nString(COMMON_PHONE_CONNECTED) + ": " + activeService.getModel()));
+				ui.newEvent(new HomeTabEvent(HomeTabEvent.Type.PHONE_CONNECTED, InternationalisationUtils.getI18nString(COMMON_PHONE_CONNECTED) + ": " + activeService.getModel()));
 			}
 		} else {
 			SmsInternetService service = (SmsInternetService) messagingService;
 			// TODO document why newEvent is called here, and why it is only called for certain statuses.
 			if (serviceStatus.equals(SmsInternetServiceStatus.CONNECTED)) {
-				ui.newEvent(new Event(
-						Event.TYPE_SMS_INTERNET_SERVICE_CONNECTED,
+				ui.newEvent(new HomeTabEvent(
+						HomeTabEvent.Type.SMS_INTERNET_SERVICE_CONNECTED,
 						InternationalisationUtils.getI18nString(COMMON_SMS_INTERNET_SERVICE_CONNECTED) 
 						+ ": " + SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()));
 			} else if (serviceStatus.equals(SmsInternetServiceStatus.RECEIVING_FAILED)) {
-				ui.newEvent(new Event(
-						Event.TYPE_SMS_INTERNET_SERVICE_RECEIVING_FAILED,
+				ui.newEvent(new HomeTabEvent(
+						HomeTabEvent.Type.SMS_INTERNET_SERVICE_RECEIVING_FAILED,
 						SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()
 						+ ": " + InternationalisationUtils.getI18nString(FrontlineSMSConstants.COMMON_SMS_INTERNET_SERVICE_RECEIVING_FAILED)));
 			}

@@ -874,9 +874,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 
 	/**
 	 * Method called when an event is fired and should be added to the event list on the home tab.
-	 * @param newEvent New instance of {@link Event} to be added to the list.
+	 * @param newEvent New instance of {@link HomeTabEvent} to be added to the list.
 	 */
-	public void newEvent(Event newEvent) {
+	public void newEvent(HomeTabEvent newEvent) {
 		this.homeTabController.newEvent(newEvent);
 	}
 	
@@ -1272,7 +1272,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			String[] recipients = email.getEmailRecipients().split(";");
 			String strRecipients = recipients[0] + (recipients.length > 1 ? InternationalisationUtils.getI18nString(EVENT_DESCRIPTION_MULTI_RECIPIENTS, recipients.length) : ""); 
 			
-			newEvent(new Event(Event.TYPE_OUTGOING_EMAIL, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipients, email.getEmailContent())));
+			newEvent(new HomeTabEvent(HomeTabEvent.Type.OUTGOING_EMAIL, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipients, email.getEmailContent())));
 		}
 		LOG.trace("EXIT");
 	}
@@ -1347,8 +1347,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		Contact sender = contactDao.getFromMsisdn(message.getSenderMsisdn());
 		String strSender = (sender == null ? message.getSenderMsisdn() : sender.getName());
 		
-		int eventType = (message instanceof FrontlineMultimediaMessage ? Event.TYPE_INCOMING_MMS : Event.TYPE_INCOMING_MESSAGE);
-		newEvent(new Event(eventType, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strSender, message.getTextContent())));
+		HomeTabEvent.Type eventType = (message instanceof FrontlineMultimediaMessage ? HomeTabEvent.Type.INCOMING_MMS : HomeTabEvent.Type.INCOMING_MESSAGE);
+		newEvent(new HomeTabEvent(eventType, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strSender, message.getTextContent())));
 		setStatus(InternationalisationUtils.getI18nString(MESSAGE_MESSAGE_RECEIVED));
 		LOG.trace("EXIT");
 	}
@@ -1364,9 +1364,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		String strRecipient = (recipient == null ? message.getRecipientMsisdn() : recipient.getName());
 		
 		if (message.getStatus() == Status.SENT) {
-			newEvent(new Event(Event.TYPE_OUTGOING_MESSAGE, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
+			newEvent(new HomeTabEvent(HomeTabEvent.Type.OUTGOING_MESSAGE, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
 		} else if (message.getStatus() == Status.FAILED) {
-			newEvent(new Event(Event.TYPE_OUTGOING_MESSAGE_FAILED, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
+			newEvent(new HomeTabEvent(HomeTabEvent.Type.OUTGOING_MESSAGE_FAILED, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
 		}
 		LOG.trace("ENTER");
 	}
@@ -1705,7 +1705,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			// An MMS Service has changed status
 			MmsServiceStatusNotification mmsServiceStatusNotification = ((MmsServiceStatusNotification) notification);
 			if (mmsServiceStatusNotification.getStatus().equals(MmsEmailServiceStatus.FAILED_TO_CONNECT)) {
-				this.newEvent(new Event(Event.TYPE_SMS_INTERNET_SERVICE_RECEIVING_FAILED, 
+				this.newEvent(new HomeTabEvent(HomeTabEvent.Type.SMS_INTERNET_SERVICE_RECEIVING_FAILED, 
 											mmsServiceStatusNotification.getMmsService().getServiceName() + " - " + InternationalisationUtils.getI18nString(FrontlineSMSConstants.COMMON_SMS_INTERNET_SERVICE_RECEIVING_FAILED)));
 			}
 		} else if (notification instanceof EntitySavedNotification<?>) {

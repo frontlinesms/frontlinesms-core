@@ -17,10 +17,9 @@ import net.frontlinesms.events.AppPropertiesEventNotification;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
-import net.frontlinesms.ui.Event;
+import net.frontlinesms.ui.HomeTabEvent;
 import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.FrontlineUiUtils;
-import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.UiGeneratorControllerConstants;
@@ -39,7 +38,7 @@ import net.frontlinesms.ui.settings.HomeTabLogoChangedEventNotification;
 public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 //> STATIC CONSTANTS
 	/** Limit of the number of events to be displayed on the home screen */
-	static final int EVENTS_LIMIT = 30;
+	final int EVENTS_LIMIT = UiProperties.getInstance().getHomeTabEventLimit();
 	
 	/** UI XML File Path: the Home Tab itself */
 	protected static final String UI_FILE_HOME_TAB = "/ui/core/home/homeTab.xml";
@@ -271,38 +270,10 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	}
 
 //> UI HELPER METHODS
-	private Object getRow(Event newEvent) {
+	private Object getRow(HomeTabEvent newEvent) {
 		Object row = ui.createTableRow(newEvent);
-		String icon = null;
-		switch(newEvent.getType()) {
-		case Event.TYPE_INCOMING_MESSAGE:
-			icon = Icon.SMS_RECEIVE;
-			break;
-		case Event.TYPE_OUTGOING_MESSAGE:
-			icon = Icon.SMS_SEND;
-			break;
-		case Event.TYPE_INCOMING_MMS:
-			icon = Icon.MMS_RECEIVE;
-			break;
-		case Event.TYPE_OUTGOING_MESSAGE_FAILED:
-			icon = Icon.SMS_SEND_FAILURE;
-			break;
-		case Event.TYPE_OUTGOING_EMAIL:
-			icon = Icon.EMAIL_SEND;
-			break;
-		case Event.TYPE_PHONE_CONNECTED:
-			icon = Icon.PHONE_CONNECTED;
-			break;
-		case Event.TYPE_SMS_INTERNET_SERVICE_CONNECTED:
-			icon = Icon.SMS_INTERNET_SERVICE_CONNECTED;
-			break;
-		case Event.TYPE_SMS_INTERNET_SERVICE_RECEIVING_FAILED:
-			icon = Icon.SMS_INTERNET_SERVICE_RECEIVING_FAILED;
-			break;
-		}
-		
 		Object cell = ui.createTableCell("");
-		ui.setIcon(cell, icon);
+		ui.setIcon(cell, newEvent.getIcon());
 		ui.add(row, cell);
 		ui.add(row, ui.createTableCell(newEvent.getDescription()));
 		ui.add(row, ui.createTableCell(InternationalisationUtils.getDatetimeFormat().format(newEvent.getTime())));
@@ -310,15 +281,15 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	}
 
 //> LISTENER EVENT METHODS
-	public void newEvent(final Event newEvent) {
+	public void newEvent(final HomeTabEvent newEvent) {
 		new FrontlineUiUpateJob() {
 			public void run() {
 				Object eventListComponent = find(COMPONENT_EVENTS_LIST);
 				if(eventListComponent != null) {
-					if (ui.getItems(eventListComponent).length >= HomeTabHandler.EVENTS_LIMIT) {
-						ui.remove(ui.getItem(eventListComponent, 0));
+					while(ui.getItems(eventListComponent).length >= EVENTS_LIMIT) {
+						ui.remove(ui.getItem(eventListComponent, EVENTS_LIMIT-1));
 					}
-					ui.add(eventListComponent, getRow(newEvent));
+					ui.add(eventListComponent, getRow(newEvent), 0);
 				}		
 			}
 		}.execute();

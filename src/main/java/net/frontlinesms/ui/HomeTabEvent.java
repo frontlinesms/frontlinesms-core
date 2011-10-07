@@ -26,28 +26,44 @@ package net.frontlinesms.ui;
  * @author Carlos Eduardo Endler Genz
  * @date 19/02/2009
  */
-public class Event {
-	public static final int TYPE_INCOMING_MESSAGE = 0;
-	public static final int TYPE_OUTGOING_MESSAGE = 1;
-	public static final int TYPE_OUTGOING_MESSAGE_FAILED = 2;
-	public static final int TYPE_OUTGOING_EMAIL = 3;
-	public static final int TYPE_PHONE_CONNECTED = 4; 
-	public static final int TYPE_SMS_INTERNET_SERVICE_CONNECTED = 8;
-	public static final int TYPE_SMS_INTERNET_SERVICE_RECEIVING_FAILED = 9;
-	public static final int TYPE_INCOMING_MMS = 10;
+public class HomeTabEvent {
+	public enum Type {
+		INCOMING_MESSAGE(Icon.SMS_RECEIVE),
+		OUTGOING_MESSAGE(Icon.SMS_SEND),
+		OUTGOING_MESSAGE_FAILED(Icon.SMS_SEND_FAILURE),
+		OUTGOING_EMAIL(Icon.EMAIL_SEND),
+		PHONE_CONNECTED(Icon.PHONE_CONNECTED), 
+		SMS_INTERNET_SERVICE_CONNECTED(Icon.SMS_INTERNET_SERVICE_CONNECTED),
+		SMS_INTERNET_SERVICE_RECEIVING_FAILED(Icon.SMS_INTERNET_SERVICE_RECEIVING_FAILED),
+		INCOMING_MMS(Icon.MMS_RECEIVE),
+		/** Some generic events for plugins to use. */
+		GREEN(Icon.LED_GREEN),
+		AMBER(Icon.LED_AMBER),
+		RED(Icon.LED_RED);
+		
+		private final String icon;
+		
+		Type(String icon) {
+			this.icon = icon;
+		}
+		
+		String getIcon() {
+			return icon;
+		}
+	}
 	
-	private int type;
+	private Type type;
 	private String description;
 	private long time;
 	
 	
-	public Event(int type, String description) {
+	public HomeTabEvent(Type type, String description) {
 		this.type = type;
 		this.description = description;
 		this.time = System.currentTimeMillis();
 	}
 
-	public int getType() {
+	public Type getType() {
 		return type;
 	}
 
@@ -57,5 +73,9 @@ public class Event {
 
 	public long getTime() {
 		return time;
+	}
+	
+	public String getIcon() {
+		return type.getIcon();
 	}
 }
