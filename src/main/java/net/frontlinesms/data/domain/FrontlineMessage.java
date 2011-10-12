@@ -389,7 +389,7 @@ public class FrontlineMessage {
 		m.recipientMsisdn = recipientMsisdn;
 		m.recipientSmsPort = recipientPort;
 		m.binaryMessageContent = content;
-		m.endpointId = imsiNumber + "@" + serialNumber;
+		m.endpointId = serialNumber + "@" + imsiNumber ;
 		m.setTextMessageContent(HexUtils.encode(content));
 		return m;
 	}
@@ -474,7 +474,7 @@ public class FrontlineMessage {
 		m.setDate(dateReceived);
 		m.senderMsisdn = senderMsisdn;
 		m.recipientMsisdn = recipientMsisdn;
-		m.endpointId = imsiNumber + "@" + serialNumber;
+		m.endpointId = serialNumber + "@" + imsiNumber;
 		m.setTextMessageContent(messageContent);
 		return m;
 	}
