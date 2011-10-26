@@ -350,6 +350,10 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			throw t;
 		}
 	}
+	
+	public HomeTabHandler getHomeTabController() {
+		return homeTabController;
+	}
 
 	public void autodetectModems() {
 		this.phoneTabController.phoneManager_detectModems();
