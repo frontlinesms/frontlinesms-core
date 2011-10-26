@@ -590,19 +590,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	}
 	
 	/**
-	 * 
-    * Shows a general dialog asking the user to confirm his action.
-    * @return the confirmation dialog
-   */
-   public Object showConfirmationDialogPlainText(String methodToBeCalled, ThinletUiEventHandler handler, String confirmationMessageKey) {
-     Object conf = loadComponentFromFile(UI_FILE_CONFIRMATION_DIALOG_FORM);
-     setMethod(find(conf, COMPONENT_BT_CONTINUE), ATTRIBUTE_ACTION, methodToBeCalled, conf, handler);
-     setText(find(conf, "lbText"), confirmationMessageKey);
-     add(conf);
-     return conf;
-   }
-
-/**
 	 * Shows the export wizard dialog, according to the supplied type.
 	 * @param list The list to get selected items from.
 	 * @param typeName The desired type
