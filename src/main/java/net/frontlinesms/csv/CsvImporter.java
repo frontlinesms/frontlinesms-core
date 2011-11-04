@@ -86,4 +86,8 @@ public abstract class CsvImporter {
 	public List<String[]> getRawValues() {
 		return this.rawValues;
 	}
+	
+	public String[] getRawFirstLine() {
+		return this.rawFirstLine;
+	}
 }
