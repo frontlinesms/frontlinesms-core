@@ -584,7 +584,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	public Object showConfirmationDialog(String methodToBeCalled, ThinletUiEventHandler handler, String confirmationMessageKey) {
 		Object conf = loadComponentFromFile(UI_FILE_CONFIRMATION_DIALOG_FORM);
 		setMethod(find(conf, COMPONENT_BT_CONTINUE), ATTRIBUTE_ACTION, methodToBeCalled, conf, handler);
-		setText(find(conf, "lbText"), InternationalisationUtils.getI18nString(confirmationMessageKey));
+		setText(find(conf, "lbText"), confirmationMessageKey);
 		add(conf);
 		return conf;
 	}
@@ -1760,6 +1760,4 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			this.messageTabController.refresh();
 		}
 	}
-
-
 }
