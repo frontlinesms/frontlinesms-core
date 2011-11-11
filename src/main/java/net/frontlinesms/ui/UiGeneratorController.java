@@ -350,10 +350,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			throw t;
 		}
 	}
-	
-	public HomeTabHandler getHomeTabController() {
-		return homeTabController;
-	}
 
 	public void autodetectModems() {
 		this.phoneTabController.phoneManager_detectModems();
@@ -563,7 +559,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * @param methodToBeCalled The name of the method to be called
 	 * @param handler The event handler to call the method on
 	 */
-	public void showConfirmationDialog(String methodToBeCalled, ThinletUiEventHandler handler){
+	public void showConfirmationDialog(String methodToBeCalled, ThinletUiEventHandler handler) {
 		Object conf = loadComponentFromFile(UI_FILE_CONFIRMATION_DIALOG_FORM);
 		setMethod(find(conf, COMPONENT_BT_CONTINUE), ATTRIBUTE_ACTION, methodToBeCalled, conf, handler);
 		add(conf);
@@ -584,7 +580,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	public Object showConfirmationDialog(String methodToBeCalled, ThinletUiEventHandler handler, String confirmationMessageKey) {
 		Object conf = loadComponentFromFile(UI_FILE_CONFIRMATION_DIALOG_FORM);
 		setMethod(find(conf, COMPONENT_BT_CONTINUE), ATTRIBUTE_ACTION, methodToBeCalled, conf, handler);
-		setText(find(conf, "lbText"), confirmationMessageKey);
+		setText(find(conf, "lbText"), InternationalisationUtils.getI18nString(confirmationMessageKey));
 		add(conf);
 		return conf;
 	}

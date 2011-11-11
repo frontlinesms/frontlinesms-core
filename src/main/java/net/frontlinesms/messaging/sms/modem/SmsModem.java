@@ -973,7 +973,6 @@ public class SmsModem extends Thread implements SmsService {
 					}
 				} catch(Exception ex) {
 					message.setStatus(Status.FAILED);
-					ex.printStackTrace();
 					if(LOG.isInfoEnabled()) LOG.info("Message [" + message + "] failed to send to [" + message.getRecipientMsisdn() + "]", ex);
 				} finally {
 					smsListener.outgoingMessageEvent(this, message);
