@@ -5,7 +5,7 @@ package net.frontlinesms.messaging.sms.internet;
 
 import net.frontlinesms.data.ConfigurableService;
 import net.frontlinesms.data.StructuredProperties;
-import net.frontlinesms.data.domain.PersistedSettings;
+import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.sms.SmsService;
 
@@ -23,13 +23,13 @@ public interface SmsInternetService extends SmsService, ConfigurableService {
 	public String getIdentifier();
 
 	/** @return the settings attached to this {@link SmsInternetService} instance. */
-	public PersistedSettings getSettings();
+	public PersistableSettings getSettings();
 
 	/**
 	 * Initialise the service using the supplied properties.
 	 * @param settings
 	 */
-	public void setSettings(PersistedSettings settings);
+	public void setSettings(PersistableSettings settings);
 	
 	/** Sets the {@link SmsListener} attached to this {@link SmsInternetService}. */
 	public void setSmsListener(SmsListener smsListener);

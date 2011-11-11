@@ -9,8 +9,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.data.domain.PersistedSettingValue;
-import net.frontlinesms.data.domain.PersistedSettings;
+import net.frontlinesms.data.domain.PersistableSettingValue;
+import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
 import net.frontlinesms.messaging.sms.properties.OptionalSection;
 
@@ -19,7 +19,7 @@ public class StructuredProperties {
 	
 	private Map<String, Object> properties = new LinkedHashMap<String, Object>();
 	
-	public void loadPropertiesFromDbIntoStructure(Map<String, PersistedSettingValue> dbProperties) {
+	public void loadPropertiesFromDbIntoStructure(Map<String, PersistableSettingValue> dbProperties) {
 		loadPropertiesFromDbIntoStructure(this, dbProperties);
 	}
 	
@@ -49,7 +49,7 @@ public class StructuredProperties {
 	 * @param properties
 	 * @param dbProperties
 	 */
-	private static void loadPropertiesFromDbIntoStructure(StructuredProperties properties, Map<String, PersistedSettingValue> dbProperties) {
+	private static void loadPropertiesFromDbIntoStructure(StructuredProperties properties, Map<String, PersistableSettingValue> dbProperties) {
 		Map<String, Object> toUpdate = new LinkedHashMap<String, Object>();
 		for (String key : properties.keySet()) {
 			Object value = properties.get(key);
@@ -57,7 +57,7 @@ public class StructuredProperties {
 				OptionalSection section = (OptionalSection) value;
 				value = section.getValue();
 				if (dbProperties.containsKey(key)) {
-					value = PersistedSettings.fromValue(section, dbProperties.get(key));
+					value = PersistableSettings.fromValue(section, dbProperties.get(key));
 				}
 				section.setValue((Boolean) value);
 				loadPropertiesFromDbIntoStructure(section.getDependencies(), dbProperties);
@@ -66,7 +66,7 @@ public class StructuredProperties {
 				OptionalRadioSection section = (OptionalRadioSection) value;
 				value = section.getValue();
 				if (dbProperties.containsKey(key)) {
-					OptionalRadioSection tmp = (OptionalRadioSection) PersistedSettings.fromValue(section, dbProperties.get(key));
+					OptionalRadioSection tmp = (OptionalRadioSection) PersistableSettings.fromValue(section, dbProperties.get(key));
 					section.setValue(tmp.getValue());
 					value = section.getValue();
 				}
@@ -84,7 +84,7 @@ public class StructuredProperties {
 				toUpdate.put(key, section);
 			} else {
 				if (dbProperties.containsKey(key)) {
-					value = PersistedSettings.fromValue(value, dbProperties.get(key));
+					value = PersistableSettings.fromValue(value, dbProperties.get(key));
 					toUpdate.put(key, value);
 				}
 			}

@@ -118,7 +118,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 	private KeywordActionDao keywordActionDao;
 	/** Data Access Object for {@link SmsModemSettings} */
 	private SmsModemSettingsDao smsModemSettingsDao;
-	/** Data Access Object for {@link PersistedSettings} */
+	/** Data Access Object for {@link PersistableSettings} */
 	private SmsInternetServiceSettingsDao smsInternetServiceSettingsDao;
 	/** Data Access Object for {@link EmailAccount}s */
 	private EmailAccountDao emailAccountDao;
@@ -310,7 +310,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 	
 	/** Initialise {@link SmsInternetService}s. */
 	private void initSmsInternetServices() {
-		for (PersistedSettings settings : this.smsInternetServiceSettingsDao.getServiceAccounts()) {
+		for (PersistableSettings settings : this.smsInternetServiceSettingsDao.getServiceAccounts()) {
 			String className = settings.getServiceClassName();
 			LOG.info("Initializing SmsInternetService of class: " + className);
 			try {
@@ -512,6 +512,12 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 	}
 	
 //> ACCESSOR METHODS
+	/** @return a named bean from the application context */
+	@SuppressWarnings("unchecked")
+	public <T> T getBean(String name, Class<T> clazz) {
+		return (T) this.applicationContext.getBean(name);
+	}
+	
 	/** @return {@link #contactDao} */
 	public ContactDao getContactDao() {
 		return this.contactDao;

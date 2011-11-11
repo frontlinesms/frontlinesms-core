@@ -60,7 +60,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	/** The SmsListener to which this phone handler should report SMS Message events. */
 	protected SmsListener smsListener;
 	/** Settings for this service */
-	private PersistedSettings settings;
+	private PersistableSettings settings;
 	/** The status of this device */
 	private SmsInternetServiceStatus status = SmsInternetServiceStatus.DORMANT;
 	/** Extra info relating to the current status. */
@@ -74,7 +74,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	}
 	
 	/** @return the settings attached to this {@link SmsInternetService} instance. */
-	public PersistedSettings getSettings() {
+	public PersistableSettings getSettings() {
 		return settings;
 	}
 	
@@ -154,12 +154,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends Object> T getPropertyValue(String key, Class<T> clazz) {
-		T defaultValue = (T) getValue(key, getPropertiesStructure());
-		if (defaultValue == null) throw new IllegalArgumentException("No default value could be found for key: " + key);
-		
-		PersistedSettingValue setValue = this.settings.get(key);
-		if(setValue == null) return defaultValue;
-		else return (T) PersistedSettings.fromValue(defaultValue, setValue);
+		return PersistableSettings.getPropertyValue(getPropertiesStructure(), settings, key, clazz);
 	}
 	
 	/** Stop this service from running */
@@ -172,9 +167,9 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	
 	/**
 	 * Initialise the service using the supplied properties.
-	 * @see SmsInternetService#setSettings(PersistedSettings)
+	 * @see SmsInternetService#setSettings(PersistableSettings)
 	 */
-	public void setSettings(PersistedSettings settings) {
+	public void setSettings(PersistableSettings settings) {
 		this.settings = settings;
 	}
 
@@ -280,37 +275,4 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	 * @throws SmsInternetServiceReceiveException If there was a problem receiving SMS
 	 */
 	protected abstract void receiveSms() throws SmsInternetServiceReceiveException;
-	
-//> STATIC HELPER METHODS
-	/**
-	 * Deep-searches nested maps for a propertt's value.  Maps may be nested as values
-	 * inside other maps by wrapping them in either an {@link OptionalSection} or an
-	 * {@link OptionalRadioSection}.
-	 * @param key
-	 * @param map
-	 * @return
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static Object getValue(String key, StructuredProperties map) {
-		if (map == null) {
-			// TODO when would map be null?  perhaps we should just be clear that the result is undefined when this is the case?
-			return null;
-		} else if (map.containsKey(key)) {
-			return map.get(key);
-		} else {
-			for(Object mapValue : map.values()) {
-				if(mapValue instanceof OptionalSection) {
-					Object value = getValue(key, ((OptionalSection)mapValue).getDependencies());
-					if(value != null) return value;
-				} else if(mapValue instanceof OptionalRadioSection) {
-					Collection<StructuredProperties> dependencies = ((OptionalRadioSection) mapValue).getAllDependencies();
-					for(StructuredProperties dependencyMap : dependencies) {
-						Object value = getValue(key, dependencyMap);
-						if(value != null) return value;
-					}
-				}
-			}
-		}
-		return null;
-	}
 }

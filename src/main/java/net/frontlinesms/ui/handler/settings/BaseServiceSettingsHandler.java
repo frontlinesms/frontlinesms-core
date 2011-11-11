@@ -1,6 +1,7 @@
 package net.frontlinesms.ui.handler.settings;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,7 +17,7 @@ import net.frontlinesms.data.ConfigurableService;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.Contact;
-import net.frontlinesms.data.domain.PersistedSettings;
+import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.events.FrontlineEventNotification;
@@ -54,7 +55,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 //> INSTANCE PROPERTIES
 	/** Thinlet instance that owns this handler */
 	protected final UiGeneratorController controller;
-	/** dialog for editing {@link SmsInternetService} settings, {@link PersistedSettings} instances */
+	/** dialog for editing {@link SmsInternetService} settings, {@link PersistableSettings} instances */
 	private Object settingsDialog;
 	/** dialog for choosing the class of a new {@link SmsInternetService} */
 	private Object newServiceWizard;
@@ -66,19 +67,23 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	/** All possible {@link SmsInternetService} classes available. */
 	private final Collection<Class<? extends T>> serviceProviders;
 	private EventBus eventBus;
+	
+	private final ConfigurableServiceSettingsDao<T> serviceDao;
 
 //> CONSTRUCTORS
 	/**
 	 * Creates a new instance of this UI.
 	 * @param controller thinlet controller that owns this {@link SmsInternetServiceSettingsHandler}.
 	 */
-	public BaseServiceSettingsHandler(UiGeneratorController controller, Collection<Class<? extends T>> serviceProviders) {
+	public BaseServiceSettingsHandler(UiGeneratorController controller, Collection<Class<? extends T>> serviceProviders,
+			ConfigurableServiceSettingsDao<T> serviceDao) {
 		this.controller = controller;
 		this.eventBus = controller.getFrontlineController().getEventBus();
 		
 		iconProperties = new IconMap(FrontlineSMSConstants.PROPERTIES_SMS_INTERNET_ICONS);
 
 		this.serviceProviders = serviceProviders;
+		this.serviceDao = serviceDao;
 	}
 
 	/** Clears the desktop of all dialogs that this controls. */
@@ -86,8 +91,6 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		if(newServiceWizard != null) removeDialog(newServiceWizard);
 	}
 	
-	abstract ConfigurableServiceSettingsDao getServiceDao();
-
 	/**
 	 * Shows the general confirmation dialog (for removal). 
 	 * @param methodToBeCalled the method to be called if the confirmation is affirmative
@@ -110,7 +113,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		controller.add(settingsDialog);
 	}
 
-	abstract void refreshAccounts(Object accountList);
+	public abstract void refreshAccounts(Object accountList);
 
 	/** Show the wizard for creating a new service. */
 	public void showNewServiceWizard() {
@@ -244,7 +247,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		Object[] obj = controller.getSelectedItems(lsProviders);
 		for (Object object : obj) {
 			T service = (T) controller.getAttachedObject(object);
-			getServiceDao().deleteServiceSettings(service.getSettings());
+			serviceDao.deleteServiceSettings(service.getSettings());
 			controller.remove(object);
 			
 			this.eventBus.notifyObservers(createDeletedNotification(service));
@@ -252,7 +255,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		selectionChanged(lsProviders, controller.find(settingsDialog, "pnButtons"));
 	}
 	
-	abstract FrontlineEventNotification createDeletedNotification(T service);
+	public abstract FrontlineEventNotification createDeletedNotification(T service);
 
 	/**
 	 * Gets a Thinlet UI component for configuring this property.  The current value of the property will
@@ -270,9 +273,9 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		} catch(MissingResourceException ex) {
 			label = key;
 		}
-		String valueString = PersistedSettings.toValue(valueObj).getValue();
+		String valueString = PersistableSettings.toValue(valueObj).getValue();
 
-		if(valueObj instanceof String || valueObj instanceof Integer || valueObj instanceof PasswordString) {
+		if(valueObj instanceof String || valueObj instanceof Integer || valueObj instanceof PasswordString || valueObj instanceof Long || valueObj instanceof BigDecimal) {
 			// FIXME can we clean up this use of valueString here?  Surely password string should have
 			// only one extra thing: thinlet.setBoolean(tf, "hidden", true) ?
 			// If we have a db value, use that cos it's the right one
@@ -470,6 +473,10 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 			return controller.getText(comp);
 		if(clazz.equals(Integer.class))
 			return Integer.parseInt(controller.getText(comp));
+		if(clazz.equals(Long.class))
+			return Long.parseLong(controller.getText(comp));
+		if(clazz.equals(BigDecimal.class))
+			return new BigDecimal(controller.getText(comp));
 		if(clazz.equals(Boolean.class))
 			return new Boolean(controller.isSelected(comp));
 		if(clazz.equals(PasswordString.class))
@@ -502,25 +509,25 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 */
 	public void saveSettings(Object pnSmsInternetServiceConfigure, Object btSave) throws DuplicateKeyException {
 		T service = (T) controller.getAttachedObject(pnSmsInternetServiceConfigure);
-		PersistedSettings serviceSettings = service.getSettings(); 
+		PersistableSettings serviceSettings = service.getSettings(); 
 		if (serviceSettings == null) {
-			serviceSettings = new PersistedSettings(service);
-			getServiceDao().saveServiceSettings(serviceSettings);
+			serviceSettings = new PersistableSettings(service);
+			serviceDao.saveServiceSettings(serviceSettings);
 		}
 		StructuredProperties properties = service.getPropertiesStructure();
 		saveSettings(pnSmsInternetServiceConfigure, serviceSettings, properties);
 		service.setSettings(serviceSettings);
-		getServiceDao().updateServiceSettings(service.getSettings());
+		serviceDao.updateServiceSettings(service.getSettings());
 		// Add this service to the frontline controller.  TODO surely there is a nicer way of doing this?
 		removeDialog(pnSmsInternetServiceConfigure);
 		
 		this.eventBus.notifyObservers(createSavedNotification(service));
 	}
 
-	abstract FrontlineEventNotification createSavedNotification(T service);
+	public abstract FrontlineEventNotification createSavedNotification(T service);
 
 	@SuppressWarnings("unchecked")
-	private void saveSettings(Object pnSmsInternetServiceConfigure, PersistedSettings serviceSettings, StructuredProperties properties) {
+	private void saveSettings(Object pnSmsInternetServiceConfigure, PersistableSettings serviceSettings, StructuredProperties properties) {
 		for(String key : properties.keySet()) {
 			Object propertyUiComponent = controller.find(pnSmsInternetServiceConfigure, key);
 			Object newValue = getPropertyValue(propertyUiComponent, properties.get(key).getClass());

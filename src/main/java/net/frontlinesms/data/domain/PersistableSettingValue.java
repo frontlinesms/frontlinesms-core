@@ -14,7 +14,7 @@ import javax.persistence.Id;
  * @author Alex
  */
 @Entity(name="SmsInternetServiceSettingValue")
-public class PersistedSettingValue {
+public class PersistableSettingValue {
 //> STATIC CONSTANTS
 
 //> INSTANCE PROPERTIES
@@ -29,13 +29,13 @@ public class PersistedSettingValue {
 //> CONSTRUCTORS
 	/** Empty default constructor for Hibernate. */
 	@SuppressWarnings("unused")
-	private PersistedSettingValue() {}
+	private PersistableSettingValue() {}
 	
 	/**
-	 * Creates a new {@link PersistedSettingValue}.
+	 * Creates a new {@link PersistableSettingValue}.
 	 * @param value The value for {@link #value}.
 	 */
-	public PersistedSettingValue(String value) {
+	public PersistableSettingValue(String value) {
 		this.value = value;
 	}
 

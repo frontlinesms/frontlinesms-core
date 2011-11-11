@@ -8,27 +8,28 @@ import java.util.Collection;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 
+import net.frontlinesms.data.ConfigurableService;
 import net.frontlinesms.data.DuplicateKeyException;
-import net.frontlinesms.data.domain.PersistedSettings;
+import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 
 /**
  * @author Alex Anderson <alex@frontlinesms.com>
  */
-public abstract class HibernateBaseConfigurableServiceSettingsDao<T> extends BaseHibernateDao<PersistedSettings> implements ConfigurableServiceSettingsDao {
+public abstract class BaseHibernateConfigurableServiceSettingsDao extends BaseHibernateDao<PersistableSettings> {
 	/** Create instance of this class */
-	public HibernateBaseConfigurableServiceSettingsDao() {
-		super(PersistedSettings.class);
+	public BaseHibernateConfigurableServiceSettingsDao() {
+		super(PersistableSettings.class);
 	}
 
-	/** @see SmsInternetServiceSettingsDao#deleteSmsInternetServiceSettings(PersistedSettings) */
-	public void deleteServiceSettings(PersistedSettings settings) {
+	/** @see SmsInternetServiceSettingsDao#deleteSmsInternetServiceSettings(PersistableSettings) */
+	public void deleteServiceSettings(PersistableSettings settings) {
 		super.delete(settings);
 	}
 
 	/** @see ServiceSettingsDao#getServiceAccounts() */
-	public Collection<PersistedSettings> getServiceAccounts() {
+	public Collection<PersistableSettings> getServiceAccounts() {
 		DetachedCriteria c = super.getCriterion();
 		if(getServiceClass().equals(SmsInternetService.class)) {
 			c.add(Restrictions.or(
@@ -40,15 +41,15 @@ public abstract class HibernateBaseConfigurableServiceSettingsDao<T> extends Bas
 		return super.getList(c);
 	}
 	
-	abstract Class<T> getServiceClass();
+	public abstract Class<? extends ConfigurableService> getServiceClass();
 
-	/** @see ServiceSettingsDao#saveServiceSettings(PersistedSettings) */
-	public void saveServiceSettings(PersistedSettings settings) throws DuplicateKeyException {
+	/** @see ServiceSettingsDao#saveServiceSettings(PersistableSettings) */
+	public void saveServiceSettings(PersistableSettings settings) throws DuplicateKeyException {
 		super.save(settings);
 	}
 
-	/** @see ServiceSettingsDao#updateServiceSettings(PersistedSettings) */
-	public void updateServiceSettings(PersistedSettings settings) {
+	/** @see ServiceSettingsDao#updateServiceSettings(PersistableSettings) */
+	public void updateServiceSettings(PersistableSettings settings) {
 		super.updateWithoutDuplicateHandling(settings);
 	}
 }

@@ -21,6 +21,7 @@ package net.frontlinesms.messaging.sms.properties;
 
 import java.util.*;
 
+import net.frontlinesms.data.StructuredPropertiesContent;
 import net.frontlinesms.data.StructuredProperties;
 
 /**
@@ -30,7 +31,7 @@ import net.frontlinesms.data.StructuredProperties;
  * @author Carlos Eduardo Endler Genz
  * @date 05/02/2009
  */
-public class OptionalSection {
+public class OptionalSection implements StructuredPropertiesContent {
 	private boolean value;
 	private StructuredProperties dependencies;
 	

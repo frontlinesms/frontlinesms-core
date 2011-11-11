@@ -16,7 +16,7 @@ import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.domain.KeywordAction;
 import net.frontlinesms.data.domain.FrontlineMessage;
-import net.frontlinesms.data.domain.PersistedSettings;
+import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.domain.SmsModemSettings;
 import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.data.repository.KeywordActionDao;
@@ -278,10 +278,10 @@ public class StatisticsManager {
 	/** Collects the number of {@link SmsInternetService} accounts. */
 	@SuppressWarnings("unchecked")
 	private void collectSmsInternetServices() {
-		Collection<PersistedSettings> smsInternetServicesSettings = this.smsInternetServiceSettingsDao.getServiceAccounts();
+		Collection<PersistableSettings> smsInternetServicesSettings = this.smsInternetServiceSettingsDao.getServiceAccounts();
 		
 		Map<String, Integer> counts = new HashMap<String, Integer>();
-		for(PersistedSettings settings : smsInternetServicesSettings) {
+		for(PersistableSettings settings : smsInternetServicesSettings) {
 			String className = settings.getServiceClassName();
 			if(!counts.containsKey(className)) {
 				counts.put(className, 1);

@@ -15,12 +15,13 @@ import net.frontlinesms.ui.UiGeneratorController;
  */
 public class SmsInternetServiceSettingsHandler extends BaseServiceSettingsHandler<SmsInternetService> {
 	public SmsInternetServiceSettingsHandler(UiGeneratorController controller) {
-		super(controller, new SmsInternetServiceLoader().getAll());
+		super(controller, new SmsInternetServiceLoader().getAll(),
+				controller.getFrontlineController().getSmsInternetServiceSettingsDao());
 	}
 	
 	// TODO this should only need to provide the up-to-date list rather than actually
 	// generate descriptions as well.
-	void refreshAccounts(Object accountList) {
+	public void refreshAccounts(Object accountList) {
 		if (accountList != null) {
 			controller.removeAll(accountList);
 			Collection<SmsInternetService> smsInternetServices = controller.getSmsInternetServices();
@@ -35,12 +36,12 @@ public class SmsInternetServiceSettingsHandler extends BaseServiceSettingsHandle
 	}
 
 	@Override
-	FrontlineEventNotification createDeletedNotification(SmsInternetService service) {
+	public FrontlineEventNotification createDeletedNotification(SmsInternetService service) {
 		return new InternetServiceEventNotification(InternetServiceEventNotification.EventType.DELETE, service);
 	}
 
 	@Override
-	FrontlineEventNotification createSavedNotification(SmsInternetService service) {
+	public FrontlineEventNotification createSavedNotification(SmsInternetService service) {
 		return new InternetServiceEventNotification(InternetServiceEventNotification.EventType.ADD, service);
 	}
 }

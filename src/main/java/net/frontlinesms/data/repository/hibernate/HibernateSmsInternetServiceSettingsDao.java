@@ -10,10 +10,10 @@ import net.frontlinesms.messaging.sms.internet.SmsInternetService;
  * @author Alex Anderson <alex@frontlinesms.com>
  */
 public class HibernateSmsInternetServiceSettingsDao
-		extends HibernateBaseConfigurableServiceSettingsDao<SmsInternetService>
+		extends BaseHibernateConfigurableServiceSettingsDao
 		implements SmsInternetServiceSettingsDao {
 	@Override
-	Class<SmsInternetService> getServiceClass() {
+	public Class<SmsInternetService> getServiceClass() {
 		return SmsInternetService.class;
 	}
 }

@@ -22,6 +22,7 @@ package net.frontlinesms.messaging.sms.properties;
 import java.util.*;
 
 import net.frontlinesms.data.StructuredProperties;
+import net.frontlinesms.data.StructuredPropertiesContent;
 
 
 /**
@@ -31,7 +32,7 @@ import net.frontlinesms.data.StructuredProperties;
  * @author Carlos Eduardo Endler Genz
  * @date 09/02/2009
  */
-public final class OptionalRadioSection <T extends Enum<?>> {
+public final class OptionalRadioSection<T extends Enum<?>> implements StructuredPropertiesContent {
 	private T value;
 	private Map<T, StructuredProperties> dependencies;
 
@@ -50,7 +51,7 @@ public final class OptionalRadioSection <T extends Enum<?>> {
 		return this.dependencies.values();
 	}
 
-	public void addDependency(T value, String property, Object propValue) {
+	public void addDependency(T value, String property, StructuredPropertiesContent propValue) {
 		if (!dependencies.containsKey(value)) {
 			dependencies.put(value, new StructuredProperties());
 		}

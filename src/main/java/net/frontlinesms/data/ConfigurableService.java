@@ -1,10 +1,10 @@
 package net.frontlinesms.data;
 
-import net.frontlinesms.data.domain.PersistedSettings;
+import net.frontlinesms.data.domain.PersistableSettings;
 
 public interface ConfigurableService {
 	StructuredProperties getPropertiesStructure();
-	PersistedSettings getSettings();
-	void setSettings(PersistedSettings settings);
+	PersistableSettings getSettings();
+	void setSettings(PersistableSettings settings);
 	Class<? extends ConfigurableService> getSuperType();
 }
