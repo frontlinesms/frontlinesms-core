@@ -316,8 +316,8 @@ public class FrontlineMessage {
 	public String getEndpointId() {
 		return endpointId;
 	}
-	public void setEndpointId(String endpointId) {
-		this.endpointId = endpointId;
+	public void setEndpointId(String imsi, String serial) {
+		this.endpointId = imsi + "@" + serial;
 	}
 
 	/**
@@ -381,16 +381,8 @@ public class FrontlineMessage {
 	 */
 	public static FrontlineMessage createBinaryIncomingMessage(long dateReceived, String senderMsisdn, String recipientMsisdn, 
 			int recipientPort, byte[] content, String imsiNumber, String serialNumber) {
-		FrontlineMessage m = new FrontlineMessage();
-		m.type = Type.RECEIVED;
-		m.status = Status.RECEIVED;
-		m.setDate(dateReceived);
-		m.senderMsisdn = senderMsisdn;
-		m.recipientMsisdn = recipientMsisdn;
-		m.recipientSmsPort = recipientPort;
-		m.binaryMessageContent = content;
-		m.endpointId = imsiNumber + "@" + serialNumber;
-		m.setTextMessageContent(HexUtils.encode(content));
+		FrontlineMessage m = createBinaryIncomingMessage(dateReceived, senderMsisdn, recipientMsisdn, recipientPort, content);
+		m.setEndpointId(imsiNumber, serialNumber);
 		return m;
 	}
 
@@ -468,14 +460,8 @@ public class FrontlineMessage {
 	 * @returna Message object representing the sent message.
 	 */
 	public static FrontlineMessage createIncomingMessage(long dateReceived, String senderMsisdn, String recipientMsisdn, String messageContent, String imsiNumber, String serialNumber) {
-		FrontlineMessage m = new FrontlineMessage();
-		m.type = Type.RECEIVED;
-		m.status = Status.RECEIVED;
-		m.setDate(dateReceived);
-		m.senderMsisdn = senderMsisdn;
-		m.recipientMsisdn = recipientMsisdn;
-		m.endpointId = imsiNumber + "@" + serialNumber;
-		m.setTextMessageContent(messageContent);
+		FrontlineMessage m = createIncomingMessage(dateReceived, senderMsisdn, recipientMsisdn, messageContent);
+		m.setEndpointId(imsiNumber, serialNumber);
 		return m;
 	}
 	
