@@ -14,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.data.domain.EmailAccount;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistedSettings;
 import net.frontlinesms.data.domain.SmsModemSettings;
 import net.frontlinesms.data.events.DatabaseEntityNotification;
 import net.frontlinesms.data.repository.SmsModemSettingsDao;
@@ -513,7 +513,7 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 			Object entity = ((DatabaseEntityNotification<?>) notification).getDatabaseEntity();
 			if (entity instanceof EmailAccount
 					|| entity instanceof SmsModemSettings
-					|| entity instanceof SmsInternetServiceSettings) {
+					|| entity instanceof PersistedSettings) {
 				// If there is any change in the E-Mail accounts, we refresh the list of Messaging Services
 				refresh();
 			}

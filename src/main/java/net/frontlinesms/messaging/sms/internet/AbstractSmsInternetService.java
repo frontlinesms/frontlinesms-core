@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.frontlinesms.FrontlineUtils;
+import net.frontlinesms.data.ConfigurableService;
 import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
@@ -59,7 +60,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	/** The SmsListener to which this phone handler should report SMS Message events. */
 	protected SmsListener smsListener;
 	/** Settings for this service */
-	private SmsInternetServiceSettings settings;
+	private PersistedSettings settings;
 	/** The status of this device */
 	private SmsInternetServiceStatus status = SmsInternetServiceStatus.DORMANT;
 	/** Extra info relating to the current status. */
@@ -73,7 +74,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	}
 	
 	/** @return the settings attached to this {@link SmsInternetService} instance. */
-	public SmsInternetServiceSettings getSettings() {
+	public PersistedSettings getSettings() {
 		return settings;
 	}
 	
@@ -115,6 +116,10 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 		}
 	}
 	
+	public Class<? extends ConfigurableService> getSuperType() {
+		return SmsInternetService.class;
+	}
+	
 //> OTHER METHODS
 	/** 
 	 * Adds the supplied message to the outbox. 
@@ -154,7 +159,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 		
 		PersistedSettingValue setValue = this.settings.get(key);
 		if(setValue == null) return defaultValue;
-		else return (T) SmsInternetServiceSettings.fromValue(defaultValue, setValue);
+		else return (T) PersistedSettings.fromValue(defaultValue, setValue);
 	}
 	
 	/** Stop this service from running */
@@ -167,9 +172,9 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	
 	/**
 	 * Initialise the service using the supplied properties.
-	 * @see SmsInternetService#setSettings(SmsInternetServiceSettings)
+	 * @see SmsInternetService#setSettings(PersistedSettings)
 	 */
-	public void setSettings(SmsInternetServiceSettings settings) {
+	public void setSettings(PersistedSettings settings) {
 		this.settings = settings;
 	}
 

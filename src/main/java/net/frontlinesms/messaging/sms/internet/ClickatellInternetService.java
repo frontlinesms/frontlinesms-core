@@ -19,8 +19,6 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
-import java.util.LinkedHashMap;
-
 import net.frontlinesms.*;
 import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.FrontlineMessage;

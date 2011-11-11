@@ -118,7 +118,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 	private KeywordActionDao keywordActionDao;
 	/** Data Access Object for {@link SmsModemSettings} */
 	private SmsModemSettingsDao smsModemSettingsDao;
-	/** Data Access Object for {@link SmsInternetServiceSettings} */
+	/** Data Access Object for {@link PersistedSettings} */
 	private SmsInternetServiceSettingsDao smsInternetServiceSettingsDao;
 	/** Data Access Object for {@link EmailAccount}s */
 	private EmailAccountDao emailAccountDao;
@@ -310,7 +310,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 	
 	/** Initialise {@link SmsInternetService}s. */
 	private void initSmsInternetServices() {
-		for (SmsInternetServiceSettings settings : this.smsInternetServiceSettingsDao.getSmsInternetServiceAccounts()) {
+		for (PersistedSettings settings : this.smsInternetServiceSettingsDao.getServiceAccounts()) {
 			String className = settings.getServiceClassName();
 			LOG.info("Initializing SmsInternetService of class: " + className);
 			try {

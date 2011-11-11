@@ -7,7 +7,7 @@ import net.frontlinesms.junit.HibernateTestCase;
 import net.frontlinesms.messaging.sms.internet.ClickatellInternetService;
 
 import net.frontlinesms.data.DuplicateKeyException;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistedSettings;
 import net.frontlinesms.data.repository.SmsInternetServiceSettingsDao;
 
 import org.springframework.beans.factory.annotation.Required;
@@ -27,18 +27,18 @@ public class HibernateSmsInternetServiceSettingsDaoTest extends HibernateTestCas
 	 * @throws DuplicateKeyException 
 	 */
 	public void test() throws DuplicateKeyException {
-		assertEquals(0, dao.getSmsInternetServiceAccounts().size());
+		assertEquals(0, dao.getServiceAccounts().size());
 		
 		ClickatellInternetService clickatell = new ClickatellInternetService();
-		SmsInternetServiceSettings settings = new SmsInternetServiceSettings(clickatell);
+		PersistedSettings settings = new PersistedSettings(clickatell);
 		
-		dao.saveSmsInternetServiceSettings(settings);
+		dao.saveServiceSettings(settings);
 
-		assertEquals(1, dao.getSmsInternetServiceAccounts().size());
+		assertEquals(1, dao.getServiceAccounts().size());
 		
-		dao.deleteSmsInternetServiceSettings(settings);
+		dao.deleteServiceSettings(settings);
 		
-		assertEquals(0, dao.getSmsInternetServiceAccounts().size());
+		assertEquals(0, dao.getServiceAccounts().size());
 	}
 
 //> ACCESSORS

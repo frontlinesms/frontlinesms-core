@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.persistence.*;
 
 import net.frontlinesms.FrontlineUtils;
+import net.frontlinesms.data.ConfigurableService;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
 import net.frontlinesms.messaging.sms.properties.OptionalSection;
@@ -20,8 +21,8 @@ import net.frontlinesms.messaging.sms.properties.PhoneSection;
  * Class encapsulating settings of a {@link SmsInternetService}.
  * @author Alex
  */
-@Entity
-public class SmsInternetServiceSettings {
+@Entity(name="SmsInternetServiceSettings")
+public class PersistedSettings {
 //> INSTANCE PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
 	@SuppressWarnings("unused")
@@ -29,19 +30,23 @@ public class SmsInternetServiceSettings {
 	private long id;
 	/** The name of the class of the {@link SmsInternetService} these settings apply to. */
 	private String serviceClassName;
+	/** The class of service that these settings apply to.  Default must be SmsInternetService for backward compatibility. */
+	@SuppressWarnings("unused")
+	private String serviceTypeSuperclass = SmsInternetService.class.getSimpleName();
 	/** The properties for a {@link SmsInternetService} */
 	@OneToMany(targetEntity=PersistedSettingValue.class, fetch=FetchType.EAGER, cascade=CascadeType.ALL)
 	private final Map<String, PersistedSettingValue> properties = new HashMap<String, PersistedSettingValue>();
 	
 //> CONSTRUCTORS
 	/** Empty constructor for hibernate */
-	SmsInternetServiceSettings() {}
+	PersistedSettings() {}
 	
 	/**
 	 * Create a new instance of service settings for the supplied service.
 	 * @param service
 	 */
-	public SmsInternetServiceSettings(SmsInternetService service) {
+	public PersistedSettings(ConfigurableService service) {
+		this.serviceTypeSuperclass = service.getSuperType().getSimpleName();
 		this.serviceClassName = service.getClass().getCanonicalName();
 	}
 	
@@ -170,7 +175,7 @@ public class SmsInternetServiceSettings {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		SmsInternetServiceSettings other = (SmsInternetServiceSettings) obj;
+		PersistedSettings other = (PersistedSettings) obj;
 		if (serviceClassName == null) {
 			if (other.serviceClassName != null)
 				return false;

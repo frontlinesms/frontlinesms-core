@@ -12,7 +12,7 @@
 		<mapping class="net.frontlinesms.data.domain.FrontlineMessage" />
 		<mapping class="net.frontlinesms.data.domain.FrontlineMultimediaMessage" />
 		<mapping class="net.frontlinesms.data.domain.FrontlineMultimediaMessagePart" />
-		<mapping class="net.frontlinesms.data.domain.SmsInternetServiceSettings" />
+		<mapping class="net.frontlinesms.data.domain.PersistedSettings" />
 		<mapping class="net.frontlinesms.data.domain.PersistedSettingValue" />
 		<mapping class="net.frontlinesms.data.domain.SmsModemSettings" />
 	</session-factory>

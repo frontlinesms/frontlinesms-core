@@ -3,6 +3,7 @@ package net.frontlinesms.ui.handler.settings;
 import java.util.Collection;
 import java.util.List;
 
+import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.messaging.sms.events.InternetServiceEventNotification;
@@ -105,7 +106,7 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 		for (Object object : obj) {
 			SmsInternetService service = (SmsInternetService) this.uiController.getAttachedObject(object);
 			this.eventBus.notifyObservers(new InternetServiceEventNotification(InternetServiceEventNotification.EventType.DELETE, service));
-			this.uiController.getSmsInternetServiceSettingsDao().deleteSmsInternetServiceSettings(service.getSettings());
+			uiController.getSmsInternetServiceSettingsDao().deleteServiceSettings(service.getSettings());
 			this.uiController.remove(object);
 		}
 		selectionChanged(lsProviders, find("pnButtons"));

@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.PersistedSettingValue;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistedSettings;
 import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
 import net.frontlinesms.messaging.sms.properties.OptionalSection;
 
@@ -57,7 +57,7 @@ public class StructuredProperties {
 				OptionalSection section = (OptionalSection) value;
 				value = section.getValue();
 				if (dbProperties.containsKey(key)) {
-					value = SmsInternetServiceSettings.fromValue(section, dbProperties.get(key));
+					value = PersistedSettings.fromValue(section, dbProperties.get(key));
 				}
 				section.setValue((Boolean) value);
 				loadPropertiesFromDbIntoStructure(section.getDependencies(), dbProperties);
@@ -66,7 +66,7 @@ public class StructuredProperties {
 				OptionalRadioSection section = (OptionalRadioSection) value;
 				value = section.getValue();
 				if (dbProperties.containsKey(key)) {
-					OptionalRadioSection tmp = (OptionalRadioSection) SmsInternetServiceSettings.fromValue(section, dbProperties.get(key));
+					OptionalRadioSection tmp = (OptionalRadioSection) PersistedSettings.fromValue(section, dbProperties.get(key));
 					section.setValue(tmp.getValue());
 					value = section.getValue();
 				}
@@ -84,7 +84,7 @@ public class StructuredProperties {
 				toUpdate.put(key, section);
 			} else {
 				if (dbProperties.containsKey(key)) {
-					value = SmsInternetServiceSettings.fromValue(value, dbProperties.get(key));
+					value = PersistedSettings.fromValue(value, dbProperties.get(key));
 					toUpdate.put(key, value);
 				}
 			}

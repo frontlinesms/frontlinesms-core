@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistedSettings;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
@@ -53,7 +53,7 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 //> INSTANCE PROPERTIES
 	/** Thinlet instance that owns this handler */
 	private final UiGeneratorController uiController;
-	/** dialog for editing {@link SmsInternetService} settings, {@link SmsInternetServiceSettings} instances */
+	/** dialog for editing {@link SmsInternetService} settings, {@link PersistedSettings} instances */
 	private Object settingsDialog;
 
 	private EventBus eventBus;

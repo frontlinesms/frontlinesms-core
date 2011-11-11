@@ -6,7 +6,7 @@ package net.frontlinesms.data.domain;
 import java.util.*;
 
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistedSettings;
 import net.frontlinesms.data.repository.SmsInternetServiceSettingsDao;
 import net.frontlinesms.junit.BaseTestCase;
 import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
@@ -72,7 +72,7 @@ public class SmsInternetServiceSettingsTest extends BaseTestCase {
 	 */
 	public void testGetValueFromString() {
 		for (Object obj : expectedTypes.keySet()) {
-			Object value = SmsInternetServiceSettings.fromValue(obj, new PersistedSettingValue(values.get(obj)));
+			Object value = PersistedSettings.fromValue(obj, new PersistedSettingValue(values.get(obj)));
 			assertEquals("Checking get value from string for class [" + obj.getClass() + "] and value [" + values.get(obj) + "]", value.getClass(), expectedTypes.get(obj));
 		}
 	}
@@ -82,7 +82,7 @@ public class SmsInternetServiceSettingsTest extends BaseTestCase {
 	 */
 	public void testGetValueAsString() {
 		for (Object obj : expectedTypes.keySet()) {
-			String ret = SmsInternetServiceSettings.toValue(obj).getValue();
+			String ret = PersistedSettings.toValue(obj).getValue();
 			assertEquals("Checking get value as string for obj [" + obj + "], class [" + obj.getClass() + "]", ret, values.get(obj));
 		}
 	}

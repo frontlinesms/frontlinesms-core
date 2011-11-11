@@ -3,8 +3,9 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
+import net.frontlinesms.data.ConfigurableService;
 import net.frontlinesms.data.StructuredProperties;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistedSettings;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.sms.SmsService;
 
@@ -12,7 +13,7 @@ import net.frontlinesms.messaging.sms.SmsService;
  * Service allowing sending and/or receiving of SMS messages over an internet connection.
  * @author Alex
  */
-public interface SmsInternetService extends SmsService {
+public interface SmsInternetService extends SmsService, ConfigurableService {
 	/**
 	 * Gets an identifier for this instance of {@link SmsInternetService}.  Usually this
 	 * will be the username used to login with the provider, or a similar identifer on
@@ -22,13 +23,13 @@ public interface SmsInternetService extends SmsService {
 	public String getIdentifier();
 
 	/** @return the settings attached to this {@link SmsInternetService} instance. */
-	public SmsInternetServiceSettings getSettings();
+	public PersistedSettings getSettings();
 
 	/**
 	 * Initialise the service using the supplied properties.
 	 * @param settings
 	 */
-	public void setSettings(SmsInternetServiceSettings settings);
+	public void setSettings(PersistedSettings settings);
 	
 	/** Sets the {@link SmsListener} attached to this {@link SmsInternetService}. */
 	public void setSmsListener(SmsListener smsListener);
