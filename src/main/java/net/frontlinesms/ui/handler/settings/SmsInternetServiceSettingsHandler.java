@@ -2,6 +2,7 @@ package net.frontlinesms.ui.handler.settings;
 
 import java.util.Collection;
 
+import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.messaging.sms.events.InternetServiceEventNotification;
@@ -43,5 +44,10 @@ public class SmsInternetServiceSettingsHandler extends BaseServiceSettingsHandle
 	@Override
 	public FrontlineEventNotification createSavedNotification(SmsInternetService service) {
 		return new InternetServiceEventNotification(InternetServiceEventNotification.EventType.ADD, service);
+	}
+
+	@Override
+	public String getIconMapLocation() {
+		return "sms.internet.icons";
 	}
 }

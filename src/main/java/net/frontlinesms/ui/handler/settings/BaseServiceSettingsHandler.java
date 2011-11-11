@@ -27,6 +27,7 @@ import net.frontlinesms.messaging.sms.properties.OptionalSection;
 import net.frontlinesms.messaging.sms.properties.PasswordString;
 import net.frontlinesms.messaging.sms.properties.PhoneSection;
 import net.frontlinesms.resources.UserHomeFilePropertySet;
+import net.frontlinesms.ui.IconMap;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.handler.contacts.ContactSelecter;
@@ -63,7 +64,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	private Object configurator;
 
 	/** Properties file containing mappings from property names to the icons that should be displayed next to input fields for these properties. */
-	private IconMap iconProperties;
+	private final IconMap iconProperties;
 	/** All possible {@link SmsInternetService} classes available. */
 	private final Collection<Class<? extends T>> serviceProviders;
 	private EventBus eventBus;
@@ -78,13 +79,14 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	public BaseServiceSettingsHandler(UiGeneratorController controller, Collection<Class<? extends T>> serviceProviders,
 			ConfigurableServiceSettingsDao<T> serviceDao) {
 		this.controller = controller;
+		this.iconProperties = controller.getIconMap();
 		this.eventBus = controller.getFrontlineController().getEventBus();
-		
-		iconProperties = new IconMap(FrontlineSMSConstants.PROPERTIES_SMS_INTERNET_ICONS);
 
 		this.serviceProviders = serviceProviders;
 		this.serviceDao = serviceDao;
 	}
+	
+	public abstract String getIconMapLocation();
 
 	/** Clears the desktop of all dialogs that this controls. */
 	private void clearDesktop() {
@@ -589,45 +591,4 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		}
 		return ret;
 	}
-}
-
-final class IconMap extends UserHomeFilePropertySet {
-//> STATIC CONSTANTS
-
-//> INSTANCE PROPERTIES
-	
-//> CONSTRUCTORS
-	/**
-	 * Set up a new {@link IconMap}.
-	 * @param name the name of the icon map
-	 */
-	IconMap(String name) {
-		super(name);
-	}
-
-//> ACCESSORS
-	/**
-	 * Check if there is an icon available. 
-	 * @param key The key for the icon.
-	 * @return <code>true</code> if there is an icon specified for this key; <code>false</code> otherwise.
-	 */
-	public boolean hasIcon(String key) {
-		return this.getIcon(key) != null;
-	}
-	
-	/**
-	 * Get the icon path for the specified key.
-	 * @param key
-	 * @return
-	 */
-	public String getIcon(String key) {
-		return super.getProperty(key);
-	}
-
-//> INSTANCE HELPER METHODS
-
-//> STATIC FACTORIES
-
-//> STATIC HELPER METHODS
-
 }

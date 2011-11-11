@@ -21,6 +21,7 @@ package net.frontlinesms.ui;
 
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -168,6 +169,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	private NoPhonesDetectedDialogHandler deviceConnectionDialogHandler;
 	/** A Lock object used to synchronise methods accessing the {@link #deviceConnectionDialogHandler} */
 	private Object deviceConnectionDialogHandlerLock = new Object();
+	private IconMap iconMap;
 	
 	/**
 	 * Creates a new instance of the UI Controller.
@@ -179,6 +181,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		this.frontlineController = frontlineController;
 		// We prepare listening events for device connection
 		this.frontlineController.getEventBus().registerObserver(this);
+
+		this.iconMap = new IconMap("META-INF/frontlinesms/icons.properties");
 		
 		// Load the requested language file.
 		AppProperties appProperties = AppProperties.getInstance();
@@ -348,6 +352,20 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			LOG.error("Problem starting User Interface module.", t);
 			super.destroy();
 			throw t;
+		}
+	}
+	
+	public IconMap getIconMap() {
+		return this.iconMap;
+	}
+	
+	public Image getIcon(String iconPath) {
+		if(iconPath == null) {
+			return null;
+		} else if(iconPath.startsWith("map:")) {
+			return super.getIcon(iconMap.getIcon(iconPath.substring(4)));
+		} else {
+			return super.getIcon(iconPath);
 		}
 	}
 

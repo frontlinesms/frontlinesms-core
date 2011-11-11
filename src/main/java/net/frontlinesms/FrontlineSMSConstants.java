@@ -63,8 +63,6 @@ public final class FrontlineSMSConstants {
 	public static final int MOBILE_ID_LIMIT = 256;
 	
 	public static final String DEFAULT_DATABASE_NAME = "frontline_database";
-	
-	public static final String PROPERTIES_SMS_INTERNET_ICONS = "sms.internet.icons";
 
 	public static final int RESULTS_PER_PAGE_DEFAULT = 100;
 

@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,26 +73,7 @@ class BasePropertySet {
 			
 			String line;
 			while((line = in.readLine()) != null) {
-				line = line.trim();				
-				if(line.length() == 0 || line.charAt(0) == '#') {
-					// This is a comment, so we should remember it to write back later
-				} else {
-					int splitChar =  line.indexOf('=');
-					if(splitChar <= 0) {
-						// there's no "key=value" pair on this line, but it does have text on it.  That's
-						// not strictly legal, so we'll log a warning and carry on.
-						LOG.warn("Bad line in properties file: '" + line + "'");
-					} else {
-						String key = line.substring(0, splitChar);					
-						if(map.containsKey(key)) {
-							// This key has already been read from the language file.  Ignore the new value.
-							LOG.warn("Duplicate key in properties file: ''");
-						} else {
-							String value = line.substring(splitChar + 1);
-							map.put(key, value);
-						}
-					}
-				}
+				add(map, line);
 			}
 			
 			LOG.trace("EXIT");
@@ -108,5 +90,43 @@ class BasePropertySet {
 		HashMap<String, String> map = new HashMap<String, String>();
 		load(map, inputStream);
 		return map;
+	}
+	
+	static HashMap<String, String> load(Collection<String> lines) {
+		HashMap<String, String> map = new HashMap<String, String>();
+		for(String line: lines) add(map, line, true);
+		return map;
+	}
+	
+	static void add(Map<String, String> map, String line, boolean overwrite) {
+		line = line.trim();				
+		if(line.length() == 0 || line.charAt(0) == '#') {
+			// This is a comment, so we should remember it to write back later
+		} else {
+			int splitChar =  line.indexOf('=');
+			if(splitChar <= 0) {
+				// there's no "key=value" pair on this line, but it does have text on it.  That's
+				// not strictly legal, so we'll log a warning and carry on.
+				LOG.warn("Bad line in properties file: '" + line + "'");
+			} else {
+				String key = line.substring(0, splitChar);
+				boolean insert = true;
+				if(map.containsKey(key)) {
+					// This key has already been read from the language file.
+					LOG.warn("Duplicate key in properties file: ''");
+					if(!overwrite) {
+						insert = false;
+					}
+				}
+				if(insert) {
+					String value = line.substring(splitChar + 1);
+					map.put(key, value);
+				}
+			}
+		}
+	}
+	
+	static void add(Map<String, String> map, String line) {
+		add(map, line, false);
 	}
 }
