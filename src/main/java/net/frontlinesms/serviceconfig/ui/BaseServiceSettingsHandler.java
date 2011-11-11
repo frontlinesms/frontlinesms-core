@@ -1,4 +1,4 @@
-package net.frontlinesms.ui.handler.settings;
+package net.frontlinesms.serviceconfig.ui;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -30,6 +30,7 @@ import net.frontlinesms.ui.IconMap;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.handler.contacts.ContactSelecter;
+import net.frontlinesms.ui.handler.settings.SmsInternetServiceSettingsHandler;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 /**
@@ -68,7 +69,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	private final Collection<Class<? extends T>> serviceProviders;
 	private EventBus eventBus;
 	
-	private final ConfigurableServiceSettingsDao<T> serviceDao;
+	protected final ConfigurableServiceSettingsDao<T> serviceDao;
 
 //> CONSTRUCTORS
 	/**
@@ -141,6 +142,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 * Configure a provider given its UI component.
 	 * @param lsProviders
 	 */
+	@SuppressWarnings("unchecked")
 	public void configureService(Object lsProviders) {
 		Object serviceComponent = this.controller.getSelectedItem(lsProviders);
 		showConfigureService((T) controller.getAttachedObject(serviceComponent), settingsDialog);
@@ -213,10 +215,10 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		Object configPanel = controller.find(configurator, "pnConfigFields");
 		StructuredProperties properties = service.getPropertiesStructure();
 		if (service.getSettings() != null) {
-			properties.loadPropertiesFromDbIntoStructure(service.getSettings().getProperties());
+			properties.load(service.getSettings().getProperties());
 		}
 		for (String key : properties.keySet()) {
-			Object value = properties.get(key);
+			Object value = properties.getShallow(key);
 			for (Object comp : getPropertyComponents(key, value))
 				controller.add(configPanel, comp);
 		}
@@ -244,6 +246,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 * Delete the selected services from the system and remove them from the list.
 	 * @param lsProviders
 	 */
+	@SuppressWarnings("unchecked")
 	private void removeServices(Object lsProviders) {
 		Object[] obj = controller.getSelectedItems(lsProviders);
 		for (Object object : obj) {
@@ -256,7 +259,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		selectionChanged(lsProviders, controller.find(settingsDialog, "pnButtons"));
 	}
 	
-	public abstract FrontlineEventNotification createDeletedNotification(T service);
+	public abstract FrontlineEventNotification createDeletedNotification(T service); // TODO delete me - database notification is created anyway
 
 	/**
 	 * Gets a Thinlet UI component for configuring this property.  The current value of the property will
@@ -265,7 +268,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 * @param valueObj current value of the property
 	 * @return UI components for the property
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Object[] getPropertyComponents(String key, Object valueObj) {
 		Object[] components;
 		String label;
@@ -341,7 +344,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 			List<Object> objects = new LinkedList<Object>();
 			objects.add(checkbox);
 			for (String child : section.getDependencies().keySet()) {
-				for (Object comp : getPropertyComponents(child, section.getDependencies().get(child))) {
+				for (Object comp : getPropertyComponents(child, section.getDependencies().getShallow(child))) {
 					controller.add(panel, comp);
 				}
 			}
@@ -384,7 +387,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 					controller.setInteger(panelChild, "bottom", 10);
 					controller.setInteger(panelChild, "weightx", 1);
 					for (String childKey : child.keySet()) {
-						for (Object comp : getPropertyComponents(childKey, child.get(childKey))) {
+						for (Object comp : getPropertyComponents(childKey, child.getShallow(childKey))) {
 							controller.add(panelChild, comp);
 						}
 					}
@@ -508,6 +511,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 * @param pnSmsInternetServiceConfigure
 	 * @throws DuplicateKeyException 
 	 */
+	@SuppressWarnings("unchecked")
 	public void saveSettings(Object pnSmsInternetServiceConfigure, Object btSave) throws DuplicateKeyException {
 		T service = (T) controller.getAttachedObject(pnSmsInternetServiceConfigure);
 		PersistableSettings serviceSettings = service.getSettings(); 
@@ -525,20 +529,20 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		this.eventBus.notifyObservers(createSavedNotification(service));
 	}
 
-	public abstract FrontlineEventNotification createSavedNotification(T service);
+	public abstract FrontlineEventNotification createSavedNotification(T service); // TODO delete me - database notification is created anyway
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void saveSettings(Object pnSmsInternetServiceConfigure, PersistableSettings serviceSettings, StructuredProperties properties) {
 		for(String key : properties.keySet()) {
 			Object propertyUiComponent = controller.find(pnSmsInternetServiceConfigure, key);
-			Object newValue = getPropertyValue(propertyUiComponent, properties.get(key).getClass());
-			if (properties.get(key) instanceof OptionalSection) {
-				OptionalSection section = (OptionalSection) properties.get(key);
+			Object newValue = getPropertyValue(propertyUiComponent, properties.getShallow(key).getClass());
+			if (properties.getShallow(key) instanceof OptionalSection) {
+				OptionalSection section = (OptionalSection) properties.getShallow(key);
 				section.setValue((Boolean) newValue);
 				serviceSettings.set(key, section);
 				saveSettings(pnSmsInternetServiceConfigure, serviceSettings, section.getDependencies());
-			} else if (properties.get(key) instanceof OptionalRadioSection) {
-				OptionalRadioSection section = (OptionalRadioSection) properties.get(key);
+			} else if (properties.getShallow(key) instanceof OptionalRadioSection) {
+				OptionalRadioSection section = (OptionalRadioSection) properties.getShallow(key);
 				try {
 					Method getValueOf = section.getValue().getClass().getMethod("valueOf", String.class);
 					Enum enumm = (Enum) getValueOf.invoke(null, newValue);

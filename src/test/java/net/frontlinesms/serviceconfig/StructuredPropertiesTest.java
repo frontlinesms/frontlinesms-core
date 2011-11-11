@@ -1,7 +1,7 @@
 /**
  * 
  */
-package net.frontlinesms.messaging.sms.internet;
+package net.frontlinesms.serviceconfig;
 
 import net.frontlinesms.data.domain.SmsInternetServiceSettingsTest.Test;
 import net.frontlinesms.junit.BaseTestCase;
@@ -19,7 +19,7 @@ import net.frontlinesms.serviceconfig.StructuredProperties;
  * @author Alex
  * @author Carlos Eduardo Genz
  */
-public class AbstractSmsInternetServicePropertiesTest extends BaseTestCase {
+public class StructuredPropertiesTest extends BaseTestCase {
 	private StructuredProperties defaultSettings = new StructuredProperties();
 	private StructuredProperties expectedValues = new StructuredProperties();
 	
@@ -30,19 +30,19 @@ public class AbstractSmsInternetServicePropertiesTest extends BaseTestCase {
 		// TODO might be nicer to have e.g. addDefaultSettings() method, which adds to both defaultSettings and expectedValues
 		String key = "a";
 		defaultSettings.put(key, "");
-		expectedValues.put(key, defaultSettings.get(key));
+		expectedValues.put(key, defaultSettings.getShallow(key));
 		
 		defaultSettings.put(key = "b", new PasswordString(""));
-		expectedValues.put(key, defaultSettings.get(key));
+		expectedValues.put(key, defaultSettings.getShallow(key));
 		
 		defaultSettings.put(key = "c", new PhoneSection(""));
-		expectedValues.put(key, defaultSettings.get(key));
+		expectedValues.put(key, defaultSettings.getShallow(key));
 		
 		defaultSettings.put(key = "d", Boolean.FALSE);
-		expectedValues.put(key, defaultSettings.get(key));
+		expectedValues.put(key, defaultSettings.getShallow(key));
 		
 		defaultSettings.put(key = "e", 997);
-		expectedValues.put(key, defaultSettings.get(key));
+		expectedValues.put(key, defaultSettings.getShallow(key));
 		
 		OptionalRadioSection<Test> a = new OptionalRadioSection<Test>(Test.A);
 		String objj = "";
@@ -58,7 +58,7 @@ public class AbstractSmsInternetServicePropertiesTest extends BaseTestCase {
 		expectedValues.put(key, obj2);
 		
 		defaultSettings.put(key = "i", a);
-		expectedValues.put(key, defaultSettings.get(key));
+		expectedValues.put(key, defaultSettings.getShallow(key));
 		
 		OptionalSection section = new OptionalSection();
 		section.setValue(true);
@@ -69,7 +69,7 @@ public class AbstractSmsInternetServicePropertiesTest extends BaseTestCase {
 		expectedValues.put(key, obj);
 		
 		defaultSettings.put(key = "l", section);
-		expectedValues.put(key, defaultSettings.get(key));
+		expectedValues.put(key, defaultSettings.getShallow(key));
 	}
 	
 	/**
@@ -78,14 +78,12 @@ public class AbstractSmsInternetServicePropertiesTest extends BaseTestCase {
 	 */
 	public void testGetValue() {
 		for (String key : expectedValues.keySet()) {
-			Object obj = AbstractSmsInternetService.getValue(key, defaultSettings);
-			assertEquals("Checking get value for key '" + key + "'", obj, expectedValues.get(key)); 
+			Object obj = defaultSettings.getDeep(key);
+			assertEquals("Checking get value for key '" + key + "'", obj, expectedValues.getShallow(key)); 
 		}
 		String invalidKey = "invalidKey";
-		// Null map
-		assertNull("Checking get value from null map", AbstractSmsInternetService.getValue(invalidKey, null));
 		
 		// Invalid key
-		assertNull("Checking get value from null map", AbstractSmsInternetService.getValue(invalidKey, defaultSettings));
+		assertNull("Checking get value from null map", defaultSettings.getDeep(invalidKey));
 	}
 }

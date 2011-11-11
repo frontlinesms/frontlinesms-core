@@ -21,9 +21,9 @@ public class SettingsEmailSectionHandler extends SettingsAbstractEmailsSectionHa
 	}
 	
 	protected void init() {
-		this.panel = this.uiController.loadComponentFromFile(UI_FILE_EMAIL_ACCOUNTS_SETTINGS_PANEL, this);
+		this.panel = this.ui.loadComponentFromFile(UI_FILE_EMAIL_ACCOUNTS_SETTINGS_PANEL, this);
 
-		this.uiController.add(find(UI_COMPONENT_PN_EMAIL_ACCOUNTS), super.getAccountsListPanel());
+		this.ui.add(find(UI_COMPONENT_PN_EMAIL_ACCOUNTS), super.getAccountsListPanel());
 	}
 
 	public void save() {

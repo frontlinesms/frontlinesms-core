@@ -48,10 +48,10 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	
 	public SettingsAbstractEmailsSectionHandler (UiGeneratorController ui, boolean isForReceiving) {
 		super(ui);
-		this.emailAccountDao = this.uiController.getFrontlineController().getEmailAccountFactory();
-		this.emailManager = this.uiController.getFrontlineController().getEmailServerHandler();
+		this.emailAccountDao = this.ui.getFrontlineController().getEmailAccountFactory();
+		this.emailManager = this.ui.getFrontlineController().getEmailServerHandler();
 		this.isForReceiving = isForReceiving;
-		this.accountsListPanel = this.uiController.loadComponentFromFile(UI_FILE_LIST_EMAIL_ACCOUNTS_PANEL, this);
+		this.accountsListPanel = this.ui.loadComponentFromFile(UI_FILE_LIST_EMAIL_ACCOUNTS_PANEL, this);
 		
 		// Register with the EventBus to receive notification of new email accounts
 		this.eventBus.registerObserver(this);
@@ -64,9 +64,9 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	}
 
 	public void refresh() {
-		Object table = this.uiController.find(this.accountsListPanel, UI_COMPONENT_ACCOUNTS_LIST);
+		Object table = this.ui.find(this.accountsListPanel, UI_COMPONENT_ACCOUNTS_LIST);
 		if (table != null) {
-			this.uiController.removeAll(table);
+			this.ui.removeAll(table);
 			Collection<EmailAccount> emailAccounts;
 			
 			if (this.isForReceiving) {
@@ -76,7 +76,7 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 			}
 			
 			for (EmailAccount acc : emailAccounts) {
-				this.uiController.add(table, this.uiController.getRow(acc));
+				this.ui.add(table, this.ui.getRow(acc));
 			}
 			
 			new FrontlineUiUpateJob() {
@@ -94,28 +94,28 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	}
 	
 	public void editEmailAccountSettings(Object list) {
-		Object selected = this.uiController.getSelectedItem(list);
+		Object selected = this.ui.getSelectedItem(list);
 		if (selected != null) {
-			EmailAccount emailAccount = (EmailAccount) this.uiController.getAttachedObject(selected);
+			EmailAccount emailAccount = (EmailAccount) this.ui.getAttachedObject(selected);
 			showEmailAccountSettingsDialog(emailAccount);
 		}
 	}
 	
 	private void showEmailAccountSettingsDialog(EmailAccount emailAccount) {
-		EmailAccountSettingsDialogHandler emailAccountSettingsDialogHandler = new EmailAccountSettingsDialogHandler(this.uiController, this.isForReceiving);
+		EmailAccountSettingsDialogHandler emailAccountSettingsDialogHandler = new EmailAccountSettingsDialogHandler(this.ui, this.isForReceiving);
 		emailAccountSettingsDialogHandler.initDialog(emailAccount);
-		this.uiController.add(emailAccountSettingsDialogHandler.getDialog());
+		this.ui.add(emailAccountSettingsDialogHandler.getDialog());
 	}
 	
 	public void enableBottomButtons(Object table) {
 		if (table == null) {
-			table = this.uiController.find(UI_COMPONENT_ACCOUNTS_LIST);
+			table = this.ui.find(UI_COMPONENT_ACCOUNTS_LIST);
 		}
 		
-		boolean enableEditAndDelete = (this.uiController.getSelectedIndex(table) >= 0);
+		boolean enableEditAndDelete = (this.ui.getSelectedIndex(table) >= 0);
 		
-		this.uiController.setEnabled(this.uiController.find(this.accountsListPanel, UI_COMPONENT_BT_EDIT), enableEditAndDelete);
-		this.uiController.setEnabled(this.uiController.find(this.accountsListPanel, UI_COMPONENT_BT_DELETE), enableEditAndDelete);
+		this.ui.setEnabled(this.ui.find(this.accountsListPanel, UI_COMPONENT_BT_EDIT), enableEditAndDelete);
+		this.ui.setEnabled(this.ui.find(this.accountsListPanel, UI_COMPONENT_BT_DELETE), enableEditAndDelete);
 	}
 	
 	/**
@@ -130,22 +130,22 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	 * TODO check where this is used, and make sure there is no dead code
 	 */
 	public void enableOptions(Object list, Object popup, Object toolbar) {
-		Object[] selectedItems = this.uiController.getSelectedItems(list);
+		Object[] selectedItems = this.ui.getSelectedItems(list);
 		boolean hasSelection = selectedItems.length > 0;
 
-		if(popup!= null && !hasSelection && "emailServerListPopup".equals(this.uiController.getName(popup))) {
-			this.uiController.setVisible(popup, false);
+		if(popup!= null && !hasSelection && "emailServerListPopup".equals(this.ui.getName(popup))) {
+			this.ui.setVisible(popup, false);
 			return;
 		}
 		
 		if (hasSelection && popup != null) {
 			// If nothing is selected, hide the popup menu
-			this.uiController.setVisible(popup, hasSelection);
+			this.ui.setVisible(popup, hasSelection);
 		}
 		
 		if (toolbar != null && !toolbar.equals(popup)) {
-			for (Object o : this.uiController.getItems(toolbar)) {
-				this.uiController.setEnabled(o, hasSelection);
+			for (Object o : this.ui.getItems(toolbar)) {
+				this.ui.setEnabled(o, hasSelection);
 			}
 		}
 	}
@@ -155,11 +155,11 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	 */
 	public void removeSelectedFromAccountList() {
 		LOG.trace("ENTER");
-		this.uiController.removeConfirmationDialog();
-		Object list = this.uiController.find(this.accountsListPanel, UI_COMPONENT_ACCOUNTS_LIST);
-		Object[] selected = this.uiController.getSelectedItems(list);
+		this.ui.removeConfirmationDialog();
+		Object list = this.ui.find(this.accountsListPanel, UI_COMPONENT_ACCOUNTS_LIST);
+		Object[] selected = this.ui.getSelectedItems(list);
 		for (Object o : selected) {
-			EmailAccount acc = this.uiController.getAttachedObject(o, EmailAccount.class);
+			EmailAccount acc = this.ui.getAttachedObject(o, EmailAccount.class);
 			LOG.debug("Removing Account [" + acc.getAccountName() + "]");
 			emailManager.serverRemoved(acc);
 			emailAccountDao.deleteEmailAccount(acc);
@@ -180,7 +180,7 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 				}.execute();
 			}
 		} else if (event instanceof UiDestroyEvent) {
-			if(((UiDestroyEvent) event).isFor(this.uiController)) {
+			if(((UiDestroyEvent) event).isFor(this.ui)) {
 				this.eventBus.unregisterObserver(this);
 			}
 		}
@@ -190,18 +190,18 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 //> UI PASSTHROUGH METHODS
 	/** @see UiGeneratorController#showConfirmationDialog(String, Object) */
 	public void showConfirmationDialog(String methodToBeCalled) {
-		this.uiController.showConfirmationDialog(methodToBeCalled, this);
+		this.ui.showConfirmationDialog(methodToBeCalled, this);
 	}
 	/**
 	 * @param page page to show
 	 * @see UiGeneratorController#showHelpPage(String)
 	 */
 	public void showHelpPage(String page) {
-		this.uiController.showHelpPage(page);
+		this.ui.showHelpPage(page);
 	}
 	/** @see UiGeneratorController#removeDialog(Object) */
 	public void removeDialog(Object dialog) {
-		this.uiController.removeDialog(dialog);
+		this.ui.removeDialog(dialog);
 	}	
 //> UI HELPER METHODS
 }

@@ -3,7 +3,6 @@ package net.frontlinesms.ui.handler.settings;
 import java.util.Collection;
 import java.util.List;
 
-import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.messaging.sms.events.InternetServiceEventNotification;
@@ -32,7 +31,7 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	}
 	
 	protected void init() {
-		this.panel = uiController.loadComponentFromFile(UI_SECTION_INTERNET_SERVICES, this);
+		this.panel = ui.loadComponentFromFile(UI_SECTION_INTERNET_SERVICES, this);
 
 		// Update the list of accounts from the list provided
 		Object accountList = find(UI_COMPONENT_LS_ACCOUNTS);
@@ -52,10 +51,10 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	public void refreshAccounts() {
 		Object accountList = find(UI_COMPONENT_LS_ACCOUNTS);
 		if (accountList != null) {
-			this.uiController.removeAll(accountList);
-			Collection<SmsInternetService> smsInternetServices = this.uiController.getSmsInternetServices();
+			this.ui.removeAll(accountList);
+			Collection<SmsInternetService> smsInternetServices = this.ui.getSmsInternetServices();
 			for (SmsInternetService service : smsInternetServices) {
-				this.uiController.add(accountList, this.uiController.createListItem(SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier(), service));
+				this.ui.add(accountList, this.ui.createListItem(SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier(), service));
 			}
 		}
 		
@@ -68,11 +67,11 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	 * @param panel
 	 */
 	public void selectionChanged(Object list, Object panel) {
-		for (Object item : this.uiController.getItems(panel)) {
-			String name = this.uiController.getName(item); 
+		for (Object item : this.ui.getItems(panel)) {
+			String name = this.ui.getName(item); 
 			if (!"btNew".equals(name)
 					&& !"btCancel".equals(name)) {
-				this.uiController.setEnabled(item, this.uiController.getSelectedItem(list) != null);
+				this.ui.setEnabled(item, this.ui.getSelectedItem(list) != null);
 			}
 		}
 	}
@@ -87,13 +86,13 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 
 	/** Show the wizard for creating a new service. */
 	public void showNewServiceWizard() {
-		SmsInternetServiceSettingsHandler internetServiceSettingsHandler = new SmsInternetServiceSettingsHandler(this.uiController);
+		SmsInternetServiceSettingsHandler internetServiceSettingsHandler = new SmsInternetServiceSettingsHandler(this.ui);
 		internetServiceSettingsHandler.showNewServiceWizard();
 	}
 	
 	/** Confirms deletes of {@link SmsInternetService}(s) from the system and removes them from the list of services */
 	public void removeServices() {
-		this.uiController.removeConfirmationDialog();
+		this.ui.removeConfirmationDialog();
 		removeServices(find(UI_COMPONENT_LS_ACCOUNTS));
 	}
 	
@@ -102,12 +101,12 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	 * @param lsProviders
 	 */
 	private void removeServices(Object lsProviders) {
-		Object[] obj = this.uiController.getSelectedItems(lsProviders);
+		Object[] obj = this.ui.getSelectedItems(lsProviders);
 		for (Object object : obj) {
-			SmsInternetService service = (SmsInternetService) this.uiController.getAttachedObject(object);
+			SmsInternetService service = (SmsInternetService) this.ui.getAttachedObject(object);
 			this.eventBus.notifyObservers(new InternetServiceEventNotification(InternetServiceEventNotification.EventType.DELETE, service));
-			uiController.getSmsInternetServiceSettingsDao().deleteServiceSettings(service.getSettings());
-			this.uiController.remove(object);
+			ui.getSmsInternetServiceSettingsDao().deleteServiceSettings(service.getSettings());
+			this.ui.remove(object);
 		}
 		selectionChanged(lsProviders, find("pnButtons"));
 	}
@@ -117,22 +116,22 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	 * @param lsProviders
 	 */
 	public void configureService(Object lsProviders) {
-		Object serviceComponent = this.uiController.getSelectedItem(lsProviders);
-		SmsInternetServiceSettingsHandler internetServiceSettingsHandler = new SmsInternetServiceSettingsHandler(this.uiController);
-		internetServiceSettingsHandler.showConfigureService((SmsInternetService)this.uiController.getAttachedObject(serviceComponent), null);
+		Object serviceComponent = this.ui.getSelectedItem(lsProviders);
+		SmsInternetServiceSettingsHandler internetServiceSettingsHandler = new SmsInternetServiceSettingsHandler(this.ui);
+		internetServiceSettingsHandler.showConfigureService((SmsInternetService)this.ui.getAttachedObject(serviceComponent), null);
 	}
 	
 	
 	public void showConfirmationDialog(String methodToBeCalled) {
-		this.uiController.showConfirmationDialog(methodToBeCalled, this);
+		this.ui.showConfirmationDialog(methodToBeCalled, this);
 	}
 
 	public void notify(FrontlineEventNotification notification) {
 		if (notification instanceof InternetServiceEventNotification) {
 			this.refresh();
 		} else if (notification instanceof UiDestroyEvent) {
-			if(((UiDestroyEvent) notification).isFor(this.uiController)) {
-				this.uiController.getFrontlineController().getEventBus().unregisterObserver(this);
+			if(((UiDestroyEvent) notification).isFor(this.ui)) {
+				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
 			}
 		}
 	}

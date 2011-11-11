@@ -13,14 +13,14 @@ public class SettingsServicesSectionHandler extends SettingsEmptySectionHandler 
 	public Object getSectionNode() {
 		Object servicesRootNode = createSectionNode(InternationalisationUtils.getI18nString(I18N_SETTINGS_MENU_SERVICES), this, "/icons/database_execute.png");
 
-		SettingsDevicesSectionHandler devicesHandler = new SettingsDevicesSectionHandler(uiController);
-		uiController.add(servicesRootNode, devicesHandler.getSectionNode());
+		SettingsDevicesSectionHandler devicesHandler = new SettingsDevicesSectionHandler(ui);
+		ui.add(servicesRootNode, devicesHandler.getSectionNode());
 		
-		SettingsInternetServicesSectionHandler internetServicesHandler = new SettingsInternetServicesSectionHandler(uiController);
-		uiController.add(servicesRootNode, internetServicesHandler.getSectionNode());
+		SettingsInternetServicesSectionHandler internetServicesHandler = new SettingsInternetServicesSectionHandler(ui);
+		ui.add(servicesRootNode, internetServicesHandler.getSectionNode());
 		
-		SettingsMmsSectionHandler mmsHandler = new SettingsMmsSectionHandler(uiController);
-		uiController.add(servicesRootNode, mmsHandler.getSectionNode());
+		SettingsMmsSectionHandler mmsHandler = new SettingsMmsSectionHandler(ui);
+		ui.add(servicesRootNode, mmsHandler.getSectionNode());
 		
 		return servicesRootNode;
 	}

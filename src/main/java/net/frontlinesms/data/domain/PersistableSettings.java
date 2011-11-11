@@ -5,7 +5,6 @@ package net.frontlinesms.data.domain;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +27,6 @@ import net.frontlinesms.serviceconfig.StructuredProperties;
 public class PersistableSettings {
 //> INSTANCE PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
-	@SuppressWarnings("unused")
 	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false)
 	private long id;
 	/** The name of the class of the {@link SmsInternetService} these settings apply to. */
@@ -125,7 +123,7 @@ public class PersistableSettings {
 	 * @return
 	 * TODO move to {@link PersistableSettingValue}
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static Object fromValue(Object property, PersistableSettingValue value) {
 		String stringValue = value.getValue();
 		if (property.getClass().equals(String.class))
@@ -168,9 +166,10 @@ public class PersistableSettings {
 	 * @param <T> The class of the property's value
 	 * @return The property value, either the one stored on db (if any) or the default value.
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T extends Object> T getPropertyValue(StructuredProperties defaults, PersistableSettings settings, 
 			String key, Class<T> clazz) {
-		T defaultValue = (T) getValue(key, defaults);
+		T defaultValue = (T) defaults.getDeep(key);
 		if (defaultValue == null) throw new IllegalArgumentException("No default value could be found for key: " + key);
 		
 		PersistableSettingValue setValue = settings.get(key);
@@ -178,39 +177,6 @@ public class PersistableSettings {
 		else return (T) PersistableSettings.fromValue(defaultValue, setValue);
 	}
 
-//> STATIC HELPER METHODS
-	/**
-	 * Deep-searches nested maps for a propertt's value.  Maps may be nested as values
-	 * inside other maps by wrapping them in either an {@link OptionalSection} or an
-	 * {@link OptionalRadioSection}.
-	 * @param key
-	 * @param map
-	 * @return
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	static Object getValue(String key, StructuredProperties map) {
-		if (map == null) {
-			// TODO when would map be null?  perhaps we should just be clear that the result is undefined when this is the case?
-			return null;
-		} else if (map.containsKey(key)) {
-			return map.get(key);
-		} else {
-			for(Object mapValue : map.values()) {
-				if(mapValue instanceof OptionalSection) {
-					Object value = getValue(key, ((OptionalSection)mapValue).getDependencies());
-					if(value != null) return value;
-				} else if(mapValue instanceof OptionalRadioSection) {
-					Collection<StructuredProperties> dependencies = ((OptionalRadioSection) mapValue).getAllDependencies();
-					for(StructuredProperties dependencyMap : dependencies) {
-						Object value = getValue(key, dependencyMap);
-						if(value != null) return value;
-					}
-				}
-			}
-		}
-		return null;
-	}
-	
 //> GENERATED METHODS
 	/** @see java.lang.Object#hashCode() */
 	@Override

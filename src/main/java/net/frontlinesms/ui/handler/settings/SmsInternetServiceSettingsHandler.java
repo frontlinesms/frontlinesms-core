@@ -2,12 +2,12 @@ package net.frontlinesms.ui.handler.settings;
 
 import java.util.Collection;
 
-import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.messaging.sms.events.InternetServiceEventNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.internet.SmsInternetServiceLoader;
+import net.frontlinesms.serviceconfig.ui.BaseServiceSettingsHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 
 /**

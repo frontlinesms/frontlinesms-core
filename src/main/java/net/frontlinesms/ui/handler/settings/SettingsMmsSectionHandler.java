@@ -30,9 +30,9 @@ public class SettingsMmsSectionHandler extends SettingsAbstractEmailsSectionHand
 	}
 	
 	protected void init() {
-		this.panel = this.uiController.loadComponentFromFile(UI_FILE_EMAIL_ACCOUNTS_SETTINGS_PANEL, this);
+		this.panel = this.ui.loadComponentFromFile(UI_FILE_EMAIL_ACCOUNTS_SETTINGS_PANEL, this);
 
-		this.uiController.add(find(UI_COMPONENT_PN_EMAIL_ACCOUNTS), super.getAccountsListPanel());
+		this.ui.add(find(UI_COMPONENT_PN_EMAIL_ACCOUNTS), super.getAccountsListPanel());
 		this.populateMmsSettings();
 	}
 	
@@ -40,7 +40,7 @@ public class SettingsMmsSectionHandler extends SettingsAbstractEmailsSectionHand
 		AppProperties appProperties = AppProperties.getInstance();
 		
 		String pollingFrequency = String.valueOf(appProperties.getMmsPollingFrequency() / 1000);
-		this.uiController.setText(find(UI_COMPONENT_TF_POLLING_FREQUENCY), pollingFrequency);
+		this.ui.setText(find(UI_COMPONENT_TF_POLLING_FREQUENCY), pollingFrequency);
 		
 		this.originalValues.put(SECTION_ITEM_POLLING_FREQUENCY, pollingFrequency);
 	}
@@ -54,7 +54,7 @@ public class SettingsMmsSectionHandler extends SettingsAbstractEmailsSectionHand
 		
 		int frequency;
 		try {
-			frequency = Integer.parseInt(this.uiController.getText(find(UI_COMPONENT_TF_POLLING_FREQUENCY)));
+			frequency = Integer.parseInt(this.ui.getText(find(UI_COMPONENT_TF_POLLING_FREQUENCY)));
 		} catch (NumberFormatException e) {
 			// Should never happen
 			frequency = FrontlineSMSConstants.DEFAULT_MMS_POLLING_FREQUENCY;
@@ -70,7 +70,7 @@ public class SettingsMmsSectionHandler extends SettingsAbstractEmailsSectionHand
 	public List<FrontlineValidationMessage> validateFields() {
 		List<FrontlineValidationMessage> validationMessages = new ArrayList<FrontlineValidationMessage>();
 
-		String pollFrequency = this.uiController.getText(find(UI_COMPONENT_TF_POLLING_FREQUENCY));
+		String pollFrequency = this.ui.getText(find(UI_COMPONENT_TF_POLLING_FREQUENCY));
 		
 		try {
 			if (pollFrequency == null || Integer.parseInt(pollFrequency) <= 0) {

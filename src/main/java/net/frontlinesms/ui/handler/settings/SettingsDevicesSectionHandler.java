@@ -27,7 +27,7 @@ public class SettingsDevicesSectionHandler extends BaseSectionHandler implements
 	}
 	
 	protected void init() {
-		this.panel = uiController.loadComponentFromFile(UI_SECTION_DEVICES, this);
+		this.panel = ui.loadComponentFromFile(UI_SECTION_DEVICES, this);
 		
 		// Populating
 		AppProperties appProperties = AppProperties.getInstance();
@@ -35,8 +35,8 @@ public class SettingsDevicesSectionHandler extends BaseSectionHandler implements
 		//boolean disableAllDevices = appProperties.disableAllDevices();
 		boolean startDetectingAtStartup = appProperties.startDetectingAtStartup();
 		
-		this.uiController.setSelected(find(UI_COMPONENT_CB_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG), shouldPromptDeviceConnectionProblemDialog);
-		this.uiController.setSelected(find(UI_COMPONENT_CB_START_DETECTING), startDetectingAtStartup);
+		this.ui.setSelected(find(UI_COMPONENT_CB_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG), shouldPromptDeviceConnectionProblemDialog);
+		this.ui.setSelected(find(UI_COMPONENT_CB_START_DETECTING), startDetectingAtStartup);
 		//this.uiController.setSelected(find(UI_COMPONENT_CB_DISABLE_ALL), disableAllDevices);
 
 		this.originalValues.put(SECTION_ITEM_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG, shouldPromptDeviceConnectionProblemDialog);
@@ -61,8 +61,8 @@ public class SettingsDevicesSectionHandler extends BaseSectionHandler implements
 		/** PROPERTIES **/
 		AppProperties appProperties = AppProperties.getInstance();
 		
-		appProperties.setShouldPromptDeviceConnectionDialog(this.uiController.isSelected(find(UI_COMPONENT_CB_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG)));
-		appProperties.shouldStartDetectingAtStartup(this.uiController.isSelected(find(UI_COMPONENT_CB_START_DETECTING)));
+		appProperties.setShouldPromptDeviceConnectionDialog(this.ui.isSelected(find(UI_COMPONENT_CB_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG)));
+		appProperties.shouldStartDetectingAtStartup(this.ui.isSelected(find(UI_COMPONENT_CB_START_DETECTING)));
 		//appProperties.shouldDisableAllDevices(this.uiController.isSelected(find(UI_COMPONENT_CB_DISABLE_ALL)));
 
 		appProperties.saveToDisk();
@@ -86,18 +86,18 @@ public class SettingsDevicesSectionHandler extends BaseSectionHandler implements
 	public Object getSectionNode() {
 		Object devicesNode = createSectionNode(InternationalisationUtils.getI18nString(I18N_SETTINGS_MENU_DEVICES), this, "/icons/phone_manualConfigure.png");
 		addSubDevices(devicesNode);
-		uiController.setExpanded(devicesNode, false);
+		ui.setExpanded(devicesNode, false);
 		
 		return devicesNode;
 	}
 	
 	/**
 	 * Adds as many subnodes as there is known devices
-	 * @param uiController
+	 * @param ui
 	 * @param devicesNode 
 	 */
 	private void addSubDevices(Object devicesNode) {
-		List<SmsModemSettings> devicesSettings = this.uiController.getFrontlineController().getSmsModemSettingsDao().getAll();
+		List<SmsModemSettings> devicesSettings = this.ui.getFrontlineController().getSmsModemSettingsDao().getAll();
 		
 		for (SmsModemSettings deviceSettings : devicesSettings) {
 			String deviceItemName = deviceSettings.getManufacturer() + " " + deviceSettings.getModel();
@@ -105,8 +105,8 @@ public class SettingsDevicesSectionHandler extends BaseSectionHandler implements
 				deviceItemName = deviceSettings.getSerial();
 			}
 			
-			SettingsDeviceSectionHandler deviceHandler = new SettingsDeviceSectionHandler(this.uiController, deviceSettings);
-			this.uiController.add(devicesNode, createSectionNode(deviceItemName, deviceHandler, "/icons/phone_number.png"));
+			SettingsDeviceSectionHandler deviceHandler = new SettingsDeviceSectionHandler(this.ui, deviceSettings);
+			this.ui.add(devicesNode, createSectionNode(deviceItemName, deviceHandler, "/icons/phone_number.png"));
 		}
 	}
 }
