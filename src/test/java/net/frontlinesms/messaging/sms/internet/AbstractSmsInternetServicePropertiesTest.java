@@ -3,14 +3,14 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
-import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.SmsInternetServiceSettingsTest.Test;
 import net.frontlinesms.junit.BaseTestCase;
 import net.frontlinesms.messaging.sms.internet.AbstractSmsInternetService;
-import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.OptionalRadioSection;
+import net.frontlinesms.serviceconfig.OptionalSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 
 /**
  * Tests the various methods dealing with {@link AbstractSmsInternetService}'s properties classes.

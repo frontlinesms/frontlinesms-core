@@ -1,4 +1,4 @@
-package net.frontlinesms.data;
+package net.frontlinesms.serviceconfig;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -11,8 +11,6 @@ import org.apache.log4j.Logger;
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.PersistableSettingValue;
 import net.frontlinesms.data.domain.PersistableSettings;
-import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
 
 public class StructuredProperties {
 	private static final Logger LOG = FrontlineUtils.getLogger(StructuredProperties.class);

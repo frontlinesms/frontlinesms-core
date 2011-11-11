@@ -26,8 +26,8 @@ import net.frontlinesms.data.repository.SmsInternetServiceSettingsDao;
 import net.frontlinesms.data.repository.SmsModemSettingsDao;
 import net.frontlinesms.email.EmailException;
 import net.frontlinesms.email.smtp.SmtpEmailSender;
-import net.frontlinesms.messaging.Provider;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 import org.apache.log4j.Logger;
@@ -295,7 +295,7 @@ public class StatisticsManager {
 			
 			try {
 				Class<SmsInternetService> serviceClass = (Class<SmsInternetService>) Class.forName(e.getKey());
-				Provider anna = (Provider) serviceClass.getAnnotation(Provider.class);
+				ConfigurableServiceProperties anna = (ConfigurableServiceProperties) serviceClass.getAnnotation(ConfigurableServiceProperties.class);
 				this.statisticsList.put(I18N_KEY_INTERNET_SERVICE_ACCOUNTS + STATS_LIST_KEY_SEPARATOR + anna.name(), value);
 			} catch (Exception ex) {
 				log.warn("Ignoring unrecognized internet service for stats: " + e.getKey(), ex);

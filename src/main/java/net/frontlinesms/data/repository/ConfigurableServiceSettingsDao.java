@@ -5,9 +5,9 @@ package net.frontlinesms.data.repository;
 
 import java.util.Collection;
 
-import net.frontlinesms.data.ConfigurableService;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.*;
+import net.frontlinesms.serviceconfig.ConfigurableService;
 
 /**
  * Data Access Object interface for {@link PersistableSettings}.

@@ -17,27 +17,44 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with FrontlineSMS. If not, see <http://www.gnu.org/licenses/>.
  */
-package net.frontlinesms.messaging.sms.properties;
+package net.frontlinesms.serviceconfig;
 
 
 /**
- * Encapsulates a String representing a phone.
+ * Defines a checkbox that enbales or disables its fields according to
+ * the selection.
  *
  * @author Carlos Eduardo Endler Genz
- * @date 09/02/2009
+ * @date 05/02/2009
  */
-public final class PhoneSection {
-	public static final String BUTTON_ICON = "/icons/user_sender.png";
-	private String value;
-
-	public PhoneSection(String value) {
-		this.value = value;
+public class OptionalSection {
+	private boolean value;
+	private StructuredProperties dependencies;
+	
+	public OptionalSection() {
+		dependencies = new StructuredProperties();
 	}
-
+	
 	/**
 	 * @return the value
 	 */
-	public String getValue() {
+	public boolean getValue() {
 		return value;
+	}
+	/**
+	 * @param value the value to set
+	 */
+	public void setValue(boolean value) {
+		this.value = value;
+	}
+	/**
+	 * @return the dependencies
+	 */
+	public StructuredProperties getDependencies() {
+		return dependencies;
+	}
+	
+	public void addDependency(String property, Object value) {
+		dependencies.put(property, value);
 	}
 }

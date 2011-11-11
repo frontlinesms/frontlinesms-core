@@ -3,11 +3,11 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
-import net.frontlinesms.data.ConfigurableService;
-import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.sms.SmsService;
+import net.frontlinesms.serviceconfig.ConfigurableService;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 
 /**
  * Service allowing sending and/or receiving of SMS messages over an internet connection.

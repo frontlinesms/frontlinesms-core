@@ -13,20 +13,19 @@ import thinlet.Thinlet;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.data.ConfigurableService;
 import net.frontlinesms.data.DuplicateKeyException;
-import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.events.FrontlineEventNotification;
-import net.frontlinesms.messaging.Provider;
-import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
-import net.frontlinesms.resources.UserHomeFilePropertySet;
+import net.frontlinesms.serviceconfig.ConfigurableService;
+import net.frontlinesms.serviceconfig.OptionalRadioSection;
+import net.frontlinesms.serviceconfig.OptionalSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.ui.IconMap;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -567,8 +566,8 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 */
 	public static String getProviderIcon(Class<?> clazz) {
 		String ret = null; //Default return value
-		if (clazz.isAnnotationPresent(Provider.class)) {
-			Provider provider = clazz.getAnnotation(Provider.class);
+		if (clazz.isAnnotationPresent(ConfigurableServiceProperties.class)) {
+			ConfigurableServiceProperties provider = clazz.getAnnotation(ConfigurableServiceProperties.class);
 			if (provider != null && !provider.icon().equals("")) {
 				ret = provider.icon();
 			}
@@ -583,8 +582,8 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 */
 	public static String getProviderName(Class<?> clazz) {
 		String ret = clazz.getCanonicalName(); //Default return value
-		if (clazz.isAnnotationPresent(Provider.class)) {
-			Provider provider = clazz.getAnnotation(Provider.class);
+		if (clazz.isAnnotationPresent(ConfigurableServiceProperties.class)) {
+			ConfigurableServiceProperties provider = clazz.getAnnotation(ConfigurableServiceProperties.class);
 			if (provider != null && !provider.name().equals("")) {
 				ret = provider.name();
 			}

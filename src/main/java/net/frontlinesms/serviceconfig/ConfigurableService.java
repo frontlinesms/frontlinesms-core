@@ -1,4 +1,4 @@
-package net.frontlinesms.data;
+package net.frontlinesms.serviceconfig;
 
 import net.frontlinesms.data.domain.PersistableSettings;
 

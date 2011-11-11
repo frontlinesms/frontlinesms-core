@@ -8,11 +8,11 @@ import java.util.Collection;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 
-import net.frontlinesms.data.ConfigurableService;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
+import net.frontlinesms.serviceconfig.ConfigurableService;
 
 /**
  * @author Alex Anderson <alex@frontlinesms.com>

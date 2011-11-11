@@ -20,12 +20,12 @@
 package net.frontlinesms.messaging.sms.internet;
 
 import net.frontlinesms.*;
-import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
-import net.frontlinesms.messaging.Provider;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.ui.handler.settings.SmsInternetServiceSettingsHandler;
 
 import org.apache.log4j.Logger;
@@ -39,7 +39,7 @@ import org.smslib.v3.http.ClickatellHTTPGateway;
  * @author Carlos Eduardo Endler Genz
  * @date 26/01/2009
  */
-@Provider(name = "Clickatell", icon = "/icons/sms_http.png")
+@ConfigurableServiceProperties(name = "Clickatell", icon = "/icons/sms_http.png")
 public class ClickatellInternetService extends AbstractSmsInternetService {
 	/** Prefix attached to every property name. */
 	private static final String PROPERTY_PREFIX = "smsdevice.internet.clickatell.";

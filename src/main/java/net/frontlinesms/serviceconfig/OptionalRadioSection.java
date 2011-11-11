@@ -17,12 +17,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with FrontlineSMS. If not, see <http://www.gnu.org/licenses/>.
  */
-package net.frontlinesms.messaging.sms.properties;
+package net.frontlinesms.serviceconfig;
 
 import java.util.*;
-
-import net.frontlinesms.data.StructuredProperties;
-import net.frontlinesms.data.StructuredPropertiesContent;
 
 
 /**
@@ -32,7 +29,7 @@ import net.frontlinesms.data.StructuredPropertiesContent;
  * @author Carlos Eduardo Endler Genz
  * @date 09/02/2009
  */
-public final class OptionalRadioSection<T extends Enum<?>> implements StructuredPropertiesContent {
+public final class OptionalRadioSection<T extends Enum<?>> {
 	private T value;
 	private Map<T, StructuredProperties> dependencies;
 
@@ -51,7 +48,7 @@ public final class OptionalRadioSection<T extends Enum<?>> implements Structured
 		return this.dependencies.values();
 	}
 
-	public void addDependency(T value, String property, StructuredPropertiesContent propValue) {
+	public void addDependency(T value, String property, Object propValue) {
 		if (!dependencies.containsKey(value)) {
 			dependencies.put(value, new StructuredProperties());
 		}

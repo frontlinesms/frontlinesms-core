@@ -12,13 +12,13 @@ import java.util.Map;
 import javax.persistence.*;
 
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.data.ConfigurableService;
-import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
-import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.ConfigurableService;
+import net.frontlinesms.serviceconfig.OptionalRadioSection;
+import net.frontlinesms.serviceconfig.OptionalSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 
 /**
  * Class encapsulating settings of a {@link SmsInternetService}.

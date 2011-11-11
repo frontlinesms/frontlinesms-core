@@ -9,10 +9,10 @@ import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.repository.SmsInternetServiceSettingsDao;
 import net.frontlinesms.junit.BaseTestCase;
-import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.OptionalRadioSection;
+import net.frontlinesms.serviceconfig.OptionalSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneSection;
 
 /**
  * Unit tests for {@link SmsInternetServiceSettingsDao}.

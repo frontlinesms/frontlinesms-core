@@ -23,13 +23,13 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.data.ConfigurableService;
-import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.listener.SmsListener;
-import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
+import net.frontlinesms.serviceconfig.ConfigurableService;
+import net.frontlinesms.serviceconfig.OptionalRadioSection;
+import net.frontlinesms.serviceconfig.OptionalSection;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 
 import org.apache.log4j.Logger;
 

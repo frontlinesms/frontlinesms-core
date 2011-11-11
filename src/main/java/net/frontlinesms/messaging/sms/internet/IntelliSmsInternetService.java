@@ -22,14 +22,14 @@ package net.frontlinesms.messaging.sms.internet;
 import java.util.*;
 
 import net.frontlinesms.*;
-import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.email.receive.*;
-import net.frontlinesms.messaging.Provider;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.OptionalSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.ui.handler.settings.SmsInternetServiceSettingsHandler;
 
 import org.apache.log4j.Logger;
@@ -46,7 +46,7 @@ import IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.*;
  * @author Carlos Eduardo Endler Genz
  * @date 31/01/2009
  */
-@Provider(name = "IntelliSms", icon = "/icons/sms_http.png") 
+@ConfigurableServiceProperties(name = "IntelliSms", icon = "/icons/sms_http.png") 
 public class IntelliSmsInternetService extends AbstractSmsInternetService implements EmailReceiveProcessor {
 	
 //> STATIC CONSTANTS

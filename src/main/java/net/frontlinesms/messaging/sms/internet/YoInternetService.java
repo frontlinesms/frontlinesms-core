@@ -25,12 +25,12 @@ import java.util.LinkedHashMap;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
-import net.frontlinesms.messaging.Provider;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.ui.handler.settings.SmsInternetServiceSettingsHandler;
 
 import org.apache.log4j.Logger;
@@ -49,7 +49,7 @@ import yo.sms.service.XmlEntityBuilder;
  * @author Eric <elwanga@yo.co.ug>
  *
  */
-@Provider(name = "Yo! (beta)", icon = "/icons/sms_http.png")
+@ConfigurableServiceProperties(name = "Yo! (beta)", icon = "/icons/sms_http.png")
 public class YoInternetService extends AbstractSmsInternetService {
     /**
      * Prefix attached to every property name. Used in application internet
