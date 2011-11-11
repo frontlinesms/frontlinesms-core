@@ -21,6 +21,8 @@ package net.frontlinesms.messaging.sms.properties;
 
 import java.util.*;
 
+import net.frontlinesms.data.StructuredProperties;
+
 /**
  * Defines a checkbox that enbales or disables its fields according to
  * the selection.
@@ -30,10 +32,10 @@ import java.util.*;
  */
 public class OptionalSection {
 	private boolean value;
-	private LinkedHashMap<String, Object> dependencies;
+	private StructuredProperties dependencies;
 	
 	public OptionalSection() {
-		dependencies = new LinkedHashMap<String, Object>();
+		dependencies = new StructuredProperties();
 	}
 	
 	/**
@@ -51,7 +53,7 @@ public class OptionalSection {
 	/**
 	 * @return the dependencies
 	 */
-	public LinkedHashMap<String, Object> getDependencies() {
+	public StructuredProperties getDependencies() {
 		return dependencies;
 	}
 	

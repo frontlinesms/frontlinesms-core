@@ -21,6 +21,8 @@ package net.frontlinesms.messaging.sms.properties;
 
 import java.util.*;
 
+import net.frontlinesms.data.StructuredProperties;
+
 
 /**
  * Encapsulates a a set of radio buttons that enable/disabled a set of
@@ -31,26 +33,26 @@ import java.util.*;
  */
 public final class OptionalRadioSection <T extends Enum<?>> {
 	private T value;
-	private Map<T, LinkedHashMap<String, Object>> dependencies;
+	private Map<T, StructuredProperties> dependencies;
 
 	public OptionalRadioSection(T value) {
 		this.value = value;
-		dependencies = new HashMap<T, LinkedHashMap<String,Object>>();
+		dependencies = new HashMap<T, StructuredProperties>();
 	}
 
 	/** @return the dependencies for a particular option. */
-	public Map<String, Object> getDependencies(T value) {
+	public StructuredProperties getDependencies(T value) {
 		return dependencies.get(value);
 	}
 	
 	/** Gets all dependencies. */
-	public Collection<LinkedHashMap<String, Object>> getAllDependencies() {
+	public Collection<StructuredProperties> getAllDependencies() {
 		return this.dependencies.values();
 	}
 
 	public void addDependency(T value, String property, Object propValue) {
 		if (!dependencies.containsKey(value)) {
-			dependencies.put(value, new LinkedHashMap<String, Object>());
+			dependencies.put(value, new StructuredProperties());
 		}
 		dependencies.get(value).put(property, propValue);
 	}

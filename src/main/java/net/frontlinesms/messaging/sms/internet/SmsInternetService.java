@@ -3,8 +3,7 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
-import java.util.Map;
-
+import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.SmsInternetServiceSettings;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.sms.SmsService;
@@ -64,7 +63,7 @@ public interface SmsInternetService extends SmsService {
 	 * TODO should probably be called getDefaultProperties()...
 	 * @return gets the structure for the properties of this service type
 	 */
-	public Map<String, Object> getPropertiesStructure();
+	public StructuredProperties getPropertiesStructure();
 	
 	/** @see SmsService#getStatus() */
 	public SmsInternetServiceStatus getStatus();

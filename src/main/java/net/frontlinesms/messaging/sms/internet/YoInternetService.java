@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.frontlinesms.FrontlineUtils;
+import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.messaging.Provider;
@@ -150,15 +151,15 @@ public class YoInternetService extends AbstractSmsInternetService {
 	return getPropertyValue(PROPERTY_FROM_MSISDN, PhoneSection.class).getValue();
     }
 
-    public LinkedHashMap<String, Object> getPropertiesStructure() {
-	LinkedHashMap<String, Object> defaultSettings = new LinkedHashMap<String, Object>();
-	defaultSettings.put(PROPERTY_USERNAME, "");
-	defaultSettings.put(PROPERTY_PASSWORD, new PasswordString(""));
-	defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneSection(""));
-	// defaultSettings.put(PROPERTY_SSL, Boolean.FALSE);
-	defaultSettings.put(PROPERTY_USE_FOR_SENDING, Boolean.TRUE);
-	// defaultSettings.put(PROPERTY_USE_FOR_RECEIVING, Boolean.FALSE);
-	return defaultSettings;
+    public StructuredProperties getPropertiesStructure() {
+		StructuredProperties defaultSettings = new StructuredProperties();
+		defaultSettings.put(PROPERTY_USERNAME, "");
+		defaultSettings.put(PROPERTY_PASSWORD, new PasswordString(""));
+		defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneSection(""));
+		// defaultSettings.put(PROPERTY_SSL, Boolean.FALSE);
+		defaultSettings.put(PROPERTY_USE_FOR_SENDING, Boolean.TRUE);
+		// defaultSettings.put(PROPERTY_USE_FOR_RECEIVING, Boolean.FALSE);
+		return defaultSettings;
     }
 
     public boolean isConnected() {

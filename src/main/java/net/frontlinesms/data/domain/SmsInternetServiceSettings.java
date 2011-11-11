@@ -30,8 +30,8 @@ public class SmsInternetServiceSettings {
 	/** The name of the class of the {@link SmsInternetService} these settings apply to. */
 	private String serviceClassName;
 	/** The properties for a {@link SmsInternetService} */
-	@OneToMany(targetEntity=SmsInternetServiceSettingValue.class, fetch=FetchType.EAGER, cascade=CascadeType.ALL)
-	private final Map<String, SmsInternetServiceSettingValue> properties = new HashMap<String, SmsInternetServiceSettingValue>();
+	@OneToMany(targetEntity=PersistedSettingValue.class, fetch=FetchType.EAGER, cascade=CascadeType.ALL)
+	private final Map<String, PersistedSettingValue> properties = new HashMap<String, PersistedSettingValue>();
 	
 //> CONSTRUCTORS
 	/** Empty constructor for hibernate */
@@ -60,7 +60,7 @@ public class SmsInternetServiceSettings {
 	 * @param key the key of the property to fetch
 	 * @return the value stored for the supplied key, or <code>null</code> if no value is stored.
 	 */
-	public SmsInternetServiceSettingValue get(String key) {
+	public PersistedSettingValue get(String key) {
 		return this.properties.get(key);
 	}
 	
@@ -73,7 +73,7 @@ public class SmsInternetServiceSettings {
 	 * Get an ordered list of the properties set on this object.
 	 * @return
 	 */
-	public Map<String, SmsInternetServiceSettingValue> getProperties() {
+	public Map<String, PersistedSettingValue> getProperties() {
 		return this.properties;
 	}
 	
@@ -83,9 +83,9 @@ public class SmsInternetServiceSettings {
 	 * Converts the supplied property value to the string representation of it. 
 	 * @param value
 	 * @return
-	 * TODO move to {@link SmsInternetServiceSettingValue}
+	 * TODO move to {@link PersistedSettingValue}
 	 */
-	public static SmsInternetServiceSettingValue toValue(Object value) {
+	public static PersistedSettingValue toValue(Object value) {
 		String stringValue;
 		if (value instanceof String) stringValue = (String)value;
 		else if (value instanceof Boolean) stringValue = Boolean.toString((Boolean)value);
@@ -100,7 +100,7 @@ public class SmsInternetServiceSettings {
 		}
 		else throw new RuntimeException("Unsupported property type: " + value.getClass());
 		
-		return new SmsInternetServiceSettingValue(stringValue);
+		return new PersistedSettingValue(stringValue);
 	}
 
 	/**
@@ -108,10 +108,10 @@ public class SmsInternetServiceSettings {
 	 * @param property 
 	 * @param value 
 	 * @return
-	 * TODO move to {@link SmsInternetServiceSettingValue}
+	 * TODO move to {@link PersistedSettingValue}
 	 */
 	@SuppressWarnings("unchecked")
-	public static Object fromValue(Object property, SmsInternetServiceSettingValue value) {
+	public static Object fromValue(Object property, PersistedSettingValue value) {
 		String stringValue = value.getValue();
 		if (property.getClass().equals(String.class))
 			return stringValue;

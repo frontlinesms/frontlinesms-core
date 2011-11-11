@@ -22,6 +22,7 @@ package net.frontlinesms.messaging.sms.internet;
 import java.util.LinkedHashMap;
 
 import net.frontlinesms.*;
+import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.messaging.Provider;
@@ -188,8 +189,8 @@ public class ClickatellInternetService extends AbstractSmsInternetService {
 	/** 
 	 * Get the default properties for this class.
 	 */
-	public LinkedHashMap<String, Object> getPropertiesStructure() {
-		LinkedHashMap<String, Object> defaultSettings = new LinkedHashMap<String, Object>();
+	public StructuredProperties getPropertiesStructure() {
+		StructuredProperties defaultSettings = new StructuredProperties();
 		defaultSettings.put(PROPERTY_USERNAME, "");
 		defaultSettings.put(PROPERTY_PASSWORD, new PasswordString(""));
 		defaultSettings.put(PROPERTY_API, "");

@@ -142,6 +142,7 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 					this.uiController.add(find(UI_COMPONENT_PLUGIN_TREE), pluginRootNode);
 				}
 			} catch (Throwable t) {
+				t.printStackTrace();
 				LOG.warn("Error when trying to load settings for Plugin " + pluginClass.getSimpleName(), t);
 			}
 		}

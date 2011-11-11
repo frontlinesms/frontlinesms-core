@@ -3,8 +3,7 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
-import java.util.*;
-
+import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.SmsInternetServiceSettingsTest.Test;
 import net.frontlinesms.junit.BaseTestCase;
 import net.frontlinesms.messaging.sms.internet.AbstractSmsInternetService;
@@ -21,8 +20,8 @@ import net.frontlinesms.messaging.sms.properties.PhoneSection;
  * @author Carlos Eduardo Genz
  */
 public class AbstractSmsInternetServicePropertiesTest extends BaseTestCase {
-	private Map<String, Object> defaultSettings = new HashMap<String, Object>();
-	private Map<String, Object> expectedValues = new HashMap<String, Object>();
+	private StructuredProperties defaultSettings = new StructuredProperties();
+	private StructuredProperties expectedValues = new StructuredProperties();
 	
 	@Override
 	protected void setUp() throws Exception {
@@ -88,11 +87,5 @@ public class AbstractSmsInternetServicePropertiesTest extends BaseTestCase {
 		
 		// Invalid key
 		assertNull("Checking get value from null map", AbstractSmsInternetService.getValue(invalidKey, defaultSettings));
-	}
-	
-	@Override
-	protected void tearDown() throws Exception {
-		defaultSettings.clear();
-		expectedValues.clear();
 	}
 }

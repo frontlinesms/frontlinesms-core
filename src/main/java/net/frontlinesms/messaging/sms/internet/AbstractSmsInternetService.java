@@ -20,11 +20,10 @@
 package net.frontlinesms.messaging.sms.internet;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.frontlinesms.FrontlineUtils;
+import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.listener.SmsListener;
@@ -153,7 +152,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 		T defaultValue = (T) getValue(key, getPropertiesStructure());
 		if (defaultValue == null) throw new IllegalArgumentException("No default value could be found for key: " + key);
 		
-		SmsInternetServiceSettingValue setValue = this.settings.get(key);
+		PersistedSettingValue setValue = this.settings.get(key);
 		if(setValue == null) return defaultValue;
 		else return (T) SmsInternetServiceSettings.fromValue(defaultValue, setValue);
 	}
@@ -286,8 +285,8 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	 * @param map
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	static Object getValue(String key, Map<String, Object> map) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	static Object getValue(String key, StructuredProperties map) {
 		if (map == null) {
 			// TODO when would map be null?  perhaps we should just be clear that the result is undefined when this is the case?
 			return null;
@@ -299,8 +298,8 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 					Object value = getValue(key, ((OptionalSection)mapValue).getDependencies());
 					if(value != null) return value;
 				} else if(mapValue instanceof OptionalRadioSection) {
-					Collection<LinkedHashMap<String, Object>> dependencies = ((OptionalRadioSection)mapValue).getAllDependencies();
-					for(LinkedHashMap<String, Object> dependencyMap : dependencies) {
+					Collection<StructuredProperties> dependencies = ((OptionalRadioSection) mapValue).getAllDependencies();
+					for(StructuredProperties dependencyMap : dependencies) {
 						Object value = getValue(key, dependencyMap);
 						if(value != null) return value;
 					}

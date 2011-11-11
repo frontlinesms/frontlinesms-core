@@ -207,9 +207,9 @@ public class SmsInternetServiceSettingsHandler implements ThinletUiEventHandler 
 		controller.setAttachedObject(configurator, service);
 		controller.setText(configurator, getProviderName(service.getClass()) + " " + controller.getText(configurator));
 		Object configPanel = controller.find(configurator, "pnConfigFields");
-		Map<String, Object> properties = service.getPropertiesStructure();
+		StructuredProperties properties = service.getPropertiesStructure();
 		if (service.getSettings() != null) {
-			loadPropertiesFromDbIntoStructure(properties, service.getSettings().getProperties());
+			properties.loadPropertiesFromDbIntoStructure(service.getSettings().getProperties());
 		}
 		for (String key : properties.keySet()) {
 			Object value = properties.get(key);
@@ -228,56 +228,6 @@ public class SmsInternetServiceSettingsHandler implements ThinletUiEventHandler 
 		
 		clearDesktop();
 		controller.add(configurator);
-	}
-
-	/**
-	 * @param properties
-	 * @param dbProperties
-	 */
-	@SuppressWarnings("unchecked")
-	private void loadPropertiesFromDbIntoStructure(Map<String, Object> properties, Map<String, SmsInternetServiceSettingValue> dbProperties) {
-		Map<String, Object> toUpdate = new LinkedHashMap<String, Object>();
-		for (String key : properties.keySet()) {
-			Object value = properties.get(key);
-			if (properties.get(key) instanceof OptionalSection) {
-				OptionalSection section = (OptionalSection) value;
-				value = section.getValue();
-				if (dbProperties.containsKey(key)) {
-					value = SmsInternetServiceSettings.fromValue(section, dbProperties.get(key));
-				}
-				section.setValue((Boolean) value);
-				loadPropertiesFromDbIntoStructure(section.getDependencies(), dbProperties);
-				toUpdate.put(key, section);
-			} else if (properties.get(key) instanceof OptionalRadioSection) {
-				OptionalRadioSection section = (OptionalRadioSection) value;
-				value = section.getValue();
-				if (dbProperties.containsKey(key)) {
-					OptionalRadioSection tmp = (OptionalRadioSection) SmsInternetServiceSettings.fromValue(section, dbProperties.get(key));
-					section.setValue(tmp.getValue());
-					value = section.getValue();
-				}
-				Enum enumm = (Enum) value;
-				section.setValue(enumm);
-				try {
-					Method getValues = enumm.getClass().getMethod("values");
-					Enum[] vals = (Enum[]) getValues.invoke(null);
-					for (Enum val : vals) {
-						loadPropertiesFromDbIntoStructure(section.getDependencies(val), dbProperties);
-					}
-				} catch (Throwable t) {
-					LOG.error("Could not get values from enum.", t);
-				}
-				toUpdate.put(key, section);
-			} else {
-				if (dbProperties.containsKey(key)) {
-					value = SmsInternetServiceSettings.fromValue(value, dbProperties.get(key));
-					toUpdate.put(key, value);
-				}
-			}
-		}
-		for (String key : toUpdate.keySet()) {
-			properties.put(key, toUpdate.get(key));
-		}
 	}
 
 	/** Confirms deletes of {@link SmsInternetService}(s) from the system and removes them from the list of services */
@@ -417,7 +367,7 @@ public class SmsInternetServiceSettingsHandler implements ThinletUiEventHandler 
 				for (Enum val : vals) {
 					Object rb = controller.createRadioButton(key + val.name(), val.name(), key, val.name().equals(valueString));
 					controller.add(panel, rb);
-					Map<String, Object> child = section.getDependencies(val);
+					StructuredProperties child = section.getDependencies(val);
 					Object panelChild = controller.createPanel(key + val.ordinal());
 					controller.setColspan(panelChild, 2);
 					controller.setColumns(panelChild, 2);
@@ -555,7 +505,7 @@ public class SmsInternetServiceSettingsHandler implements ThinletUiEventHandler 
 			serviceSettings = new SmsInternetServiceSettings(service);
 			controller.getSmsInternetServiceSettingsDao().saveSmsInternetServiceSettings(serviceSettings);
 		}
-		Map<String, Object> properties = service.getPropertiesStructure();
+		StructuredProperties properties = service.getPropertiesStructure();
 		saveSettings(pnSmsInternetServiceConfigure, serviceSettings, properties);
 		service.setSettings(serviceSettings);
 		controller.getSmsInternetServiceSettingsDao().updateSmsInternetServiceSettings(service.getSettings());
@@ -566,7 +516,7 @@ public class SmsInternetServiceSettingsHandler implements ThinletUiEventHandler 
 	}
 
 	@SuppressWarnings("unchecked")
-	private void saveSettings(Object pnSmsInternetServiceConfigure, SmsInternetServiceSettings serviceSettings, Map<String, Object> properties) {
+	private void saveSettings(Object pnSmsInternetServiceConfigure, SmsInternetServiceSettings serviceSettings, StructuredProperties properties) {
 		for(String key : properties.keySet()) {
 			Object propertyUiComponent = controller.find(pnSmsInternetServiceConfigure, key);
 			Object newValue = getPropertyValue(propertyUiComponent, properties.get(key).getClass());

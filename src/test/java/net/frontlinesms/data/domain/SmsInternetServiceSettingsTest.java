@@ -72,7 +72,7 @@ public class SmsInternetServiceSettingsTest extends BaseTestCase {
 	 */
 	public void testGetValueFromString() {
 		for (Object obj : expectedTypes.keySet()) {
-			Object value = SmsInternetServiceSettings.fromValue(obj, new SmsInternetServiceSettingValue(values.get(obj)));
+			Object value = SmsInternetServiceSettings.fromValue(obj, new PersistedSettingValue(values.get(obj)));
 			assertEquals("Checking get value from string for class [" + obj.getClass() + "] and value [" + values.get(obj) + "]", value.getClass(), expectedTypes.get(obj));
 		}
 	}

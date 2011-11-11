@@ -22,6 +22,7 @@ package net.frontlinesms.messaging.sms.internet;
 import java.util.*;
 
 import net.frontlinesms.*;
+import net.frontlinesms.data.StructuredProperties;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.email.receive.*;
@@ -268,8 +269,8 @@ public class IntelliSmsInternetService extends AbstractSmsInternetService implem
 	/** 
 	 * Get the default properties for this class. 
 	 */
-	public LinkedHashMap<String, Object> getPropertiesStructure() {
-		LinkedHashMap<String, Object> defaultSettings = new LinkedHashMap<String, Object>();
+	public StructuredProperties getPropertiesStructure() {
+		StructuredProperties defaultSettings = new StructuredProperties();
 		defaultSettings.put(PROPERTY_USERNAME, "");
 		defaultSettings.put(PROPERTY_PASSWORD, new PasswordString(""));
 		defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneSection(""));

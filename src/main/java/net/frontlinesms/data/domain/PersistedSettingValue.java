@@ -10,11 +10,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 /**
- * Wraps a {@link String} value for {@link SmsInternetServiceSettings} in a persistable {@link Entity}.
+ * Wraps a {@link String} value for a property in a persistable {@link Entity}.
  * @author Alex
  */
-@Entity
-public class SmsInternetServiceSettingValue {
+@Entity(name="SmsInternetServiceSettingValue")
+public class PersistedSettingValue {
 //> STATIC CONSTANTS
 
 //> INSTANCE PROPERTIES
@@ -29,13 +29,13 @@ public class SmsInternetServiceSettingValue {
 //> CONSTRUCTORS
 	/** Empty default constructor for Hibernate. */
 	@SuppressWarnings("unused")
-	private SmsInternetServiceSettingValue() {}
+	private PersistedSettingValue() {}
 	
 	/**
-	 * Creates a new {@link SmsInternetServiceSettingValue}.
+	 * Creates a new {@link PersistedSettingValue}.
 	 * @param value The value for {@link #value}.
 	 */
-	public SmsInternetServiceSettingValue(String value) {
+	public PersistedSettingValue(String value) {
 		this.value = value;
 	}
 
