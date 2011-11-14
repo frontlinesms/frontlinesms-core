@@ -33,18 +33,22 @@ public class SmsServiceManagerTest extends BaseTestCase {
 	/**
 	 * Test that all messages sent will be given to the {@link SmsInternetService} in preference to
 	 * any {@link SmsModem}s available.
+	 * @throws IllegalAccessException 
+	 * @throws NoSuchFieldException 
+	 * @throws IllegalArgumentException 
+	 * @throws SecurityException 
 	 */
-	public void testMessageDispatchPriorities_text() {
+	public void testMessageDispatchPriorities_text() throws SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
 		SmsServiceManager manager = new SmsServiceManager();
 
 		SmsInternetService sisNoSend = createMockSmsInternetService(false, true);
-		manager.addSmsInternetService(sisNoSend);
+		addSmsInternetService(manager, 1, sisNoSend);
 		SmsInternetService sisNoSendNoBinary = createMockSmsInternetService(false, false);
-		manager.addSmsInternetService(sisNoSendNoBinary);
+		addSmsInternetService(manager, 2, sisNoSendNoBinary);
 		SmsInternetService sisBinary = createMockSmsInternetService(true, true);
-		manager.addSmsInternetService(sisBinary);
+		addSmsInternetService(manager, 3, sisBinary);
 		SmsInternetService sisNoBinary = createMockSmsInternetService(true, false);
-		manager.addSmsInternetService(sisNoBinary);
+		addSmsInternetService(manager, 4, sisNoBinary);
 		
 		SmsModem modem = createMockModem(true, true, true, true);
 		addModem(manager, modem, "TestModem1");
@@ -64,18 +68,22 @@ public class SmsServiceManagerTest extends BaseTestCase {
 	/**
 	 * Test that all messages sent will be given to the {@link SmsInternetService} in preference to
 	 * any {@link SmsModem}s available.
+	 * @throws IllegalAccessException 
+	 * @throws NoSuchFieldException 
+	 * @throws IllegalArgumentException 
+	 * @throws SecurityException 
 	 */
-	public void testMessageDispatchPriorities_binary() {
+	public void testMessageDispatchPriorities_binary() throws SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
 		SmsServiceManager manager = new SmsServiceManager();
 
 		SmsInternetService sisNoSend = createMockSmsInternetService(false, true);
-		manager.addSmsInternetService(sisNoSend);
+		addSmsInternetService(manager, 1, sisNoSend);
 		SmsInternetService sisNoSendNoBinary = createMockSmsInternetService(false, false);
-		manager.addSmsInternetService(sisNoSendNoBinary);
+		addSmsInternetService(manager, 2, sisNoSendNoBinary);
 		SmsInternetService sisBinary = createMockSmsInternetService(true, true);
-		manager.addSmsInternetService(sisBinary);
+		addSmsInternetService(manager, 3, sisBinary);
 		SmsInternetService sisNoBinary = createMockSmsInternetService(true, false);
-		manager.addSmsInternetService(sisNoBinary);
+		addSmsInternetService(manager, 4, sisNoBinary);
 		
 		SmsModem modem = createMockModem(true, true, true, true);
 		addModem(manager, modem, "TestModem1");
@@ -92,6 +100,14 @@ public class SmsServiceManagerTest extends BaseTestCase {
 		verify(sisBinary, times(20)).sendSMS(any(FrontlineMessage.class));
 	}
 	
+	@SuppressWarnings("unchecked")
+	private void addSmsInternetService(SmsServiceManager manager, long id,
+			SmsInternetService service) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+		Field f = manager.getClass().getDeclaredField("smsInternetServices");
+		f.setAccessible(true);
+		((Map<Long, SmsInternetService>) f.get(manager)).put(id, service);
+	}
+
 	/** Test that text messages are sent only with suitable modems. */
 	public void testModemSend_text() {
 		SmsServiceManager manager = new SmsServiceManager();

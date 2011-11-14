@@ -3,7 +3,7 @@
  */
 package net.frontlinesms.serviceconfig;
 
-import net.frontlinesms.data.domain.SmsInternetServiceSettingsTest.Test;
+import net.frontlinesms.data.domain.SmsInternetServiceSettingsDaoTest.Test;
 import net.frontlinesms.junit.BaseTestCase;
 import net.frontlinesms.messaging.sms.internet.AbstractSmsInternetService;
 import net.frontlinesms.serviceconfig.OptionalRadioSection;
