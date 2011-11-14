@@ -53,6 +53,7 @@ public interface SmsListener {
 	 * @param activeDevice
 	 * @param smsDeviceStatus the new status of the {@link SmsService}
 	 */
+	@Deprecated // Use of this method should almost exclusively be replaced by use of the EventBus.
 	public <T extends SmsService> void smsDeviceEvent(T activeDevice, SmsServiceStatus<T> smsDeviceStatus);
 		
 }

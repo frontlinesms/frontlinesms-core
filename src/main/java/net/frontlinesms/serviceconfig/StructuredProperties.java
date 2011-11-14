@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.PersistableSettingValue;
-import net.frontlinesms.data.domain.PersistableSettings;
 
 public class StructuredProperties {
 	private static final Logger LOG = FrontlineUtils.getLogger(StructuredProperties.class);
@@ -80,7 +79,7 @@ public class StructuredProperties {
 				OptionalSection section = (OptionalSection) value;
 				value = section.getValue();
 				if (dbProperties.containsKey(key)) {
-					value = PersistableSettings.fromValue(section, dbProperties.get(key));
+					value = dbProperties.get(key).toObject(section);
 				}
 				section.setValue((Boolean) value);
 				section.getDependencies().load(dbProperties);
@@ -89,7 +88,7 @@ public class StructuredProperties {
 				OptionalRadioSection section = (OptionalRadioSection) value;
 				value = section.getValue();
 				if (dbProperties.containsKey(key)) {
-					OptionalRadioSection tmp = (OptionalRadioSection) PersistableSettings.fromValue(section, dbProperties.get(key));
+					OptionalRadioSection tmp = (OptionalRadioSection) dbProperties.get(key).toObject(section); 
 					section.setValue(tmp.getValue());
 					value = section.getValue();
 				}
@@ -107,7 +106,7 @@ public class StructuredProperties {
 				toUpdate.put(key, section);
 			} else {
 				if (dbProperties.containsKey(key)) {
-					value = PersistableSettings.fromValue(value, dbProperties.get(key));
+					value = dbProperties.get(key).toObject(value);
 					toUpdate.put(key, value);
 				}
 			}

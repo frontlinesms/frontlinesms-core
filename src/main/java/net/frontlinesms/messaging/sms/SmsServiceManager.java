@@ -28,6 +28,7 @@ import net.frontlinesms.CommUtils;
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
+import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.CommProperties;
@@ -85,8 +86,8 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	private final ConcurrentLinkedQueue<FrontlineMessage> binOutbox = new ConcurrentLinkedQueue<FrontlineMessage>();
 	/** List of phone handlers that this manager is currently looking after. */
 	private final ConcurrentMap<String, SmsModem> phoneHandlers = new ConcurrentHashMap<String, SmsModem>();
-	/** Set of SMS internet services */
-	private Set<SmsInternetService> smsInternetServices = new  CopyOnWriteArraySet<SmsInternetService>();
+	/** List of SMS internet services, the map key being the database ID of their settings */
+	private Map<Long, SmsInternetService> smsInternetServices = new  ConcurrentHashMap<Long, SmsInternetService>();
 
 	/** Listener to be passed SMS Listener events from this */
 	private SmsListener smsListener;
@@ -279,7 +280,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 		}
 		
 		// Stop all SMS Internet Services
-		for(SmsInternetService service : this.smsInternetServices) {
+		for(SmsInternetService service : this.smsInternetServices.values()) {
 			service.stopThisThing();
 		}
 	}
@@ -459,7 +460,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	public Collection<SmsService> getAll() {
 		Set<SmsService> ret = new HashSet<SmsService>();
 		ret.addAll(phoneHandlers.values());
-		ret.addAll(smsInternetServices);
+		ret.addAll(smsInternetServices.values());
 		return ret;
 	}
 
@@ -511,28 +512,42 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 		}
 	}
 
-	public void addSmsInternetService(SmsInternetService smsInternetService) {
-		smsInternetService.setSmsListener(smsListener);
-		if (smsInternetServices.contains(smsInternetService)) {
-			smsInternetService.restartThisThing();
-		} else {
-			smsInternetServices.add(smsInternetService);
-			smsInternetService.startThisThing();
+	public void addSmsInternetService(PersistableSettings settings) {
+		try {
+			SmsInternetService service = (SmsInternetService) settings.getServiceClass().newInstance();
+			service.setSettings(settings);
+			service.setSmsListener(smsListener);
+			smsInternetServices.put(settings.getId(), service);
+			service.startThisThing();
+		} catch(IllegalAccessException ex) {
+			handleServiceLoadException(settings, ex);
+		} catch (InstantiationException ex) {
+			handleServiceLoadException(settings, ex);
 		}
+	}
+	
+	public void restartSmsInternetService(PersistableSettings settings) {
+		SmsInternetService service = smsInternetServices.get(settings.getId());
+		service.setSettings(settings);
+		service.restartThisThing();
+	}
+	
+	private void handleServiceLoadException(PersistableSettings settings, Exception ex) {
+		LOG.warn("Could not create srvice with class " + settings.getServiceClass() + " for settings with ID " + settings.getId(), ex);
 	}
 
 	/**
 	 * Remove a service from this {@link SmsServiceManager}.
-	 * @param service
+	 * @param settings
 	 */
-	public void removeSmsInternetService(SmsInternetService service) {
-		smsInternetServices.remove(service);
+	public void removeSmsInternetService(PersistableSettings settings) {
+		SmsInternetService service = smsInternetServices.remove(settings.getId());
 		disconnectSmsInternetService(service);
 	}
 	
-	public void disconnect(SmsService device) {
-		if(device instanceof SmsModem) disconnectPhone((SmsModem)device);
-		else if(device instanceof SmsInternetService) disconnectSmsInternetService((SmsInternetService)device);
+	public void disconnect(SmsService service) {
+		if(service instanceof SmsModem) disconnectPhone((SmsModem) service);
+		else if(service instanceof SmsInternetService) disconnectSmsInternetService((SmsInternetService) service);
 	}
 
 	private void disconnectPhone(SmsModem modem) {
@@ -548,8 +563,8 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 		}
 	}
 
-	private void disconnectSmsInternetService(SmsInternetService device) {
-		device.stopThisThing();
+	private void disconnectSmsInternetService(SmsInternetService service) {
+		service.stopThisThing();
 	}
 
 	/**
@@ -603,7 +618,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	}
 
 	public Collection<SmsInternetService> getSmsInternetServices() {
-		return this.smsInternetServices;
+		return this.smsInternetServices.values();
 	}
 	
 	public Collection<SmsModem> getSmsModems() {
@@ -721,7 +736,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	/** @return all {@link SmsInternetService} which are available for sending messages. */
 	private List<SmsInternetService> getSmsInternetServicesForSending(MessageType messageType) {
 		ArrayList<SmsInternetService> senders = new ArrayList<SmsInternetService>();
-		for(SmsInternetService service : this.smsInternetServices) {
+		for(SmsInternetService service : this.smsInternetServices.values()) {
 			if(service.isConnected() && service.isUseForSending()) {
 				boolean addService;
 				switch(messageType) {
@@ -785,7 +800,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 			}
 		}
 		
-		for (SmsInternetService service : this.smsInternetServices) {
+		for (SmsInternetService service : this.smsInternetServices.values()) {
 			if (service.isConnected()) {
 				++total;
 			}

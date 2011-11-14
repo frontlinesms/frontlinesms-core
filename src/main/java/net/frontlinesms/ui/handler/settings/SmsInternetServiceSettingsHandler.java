@@ -3,8 +3,6 @@ package net.frontlinesms.ui.handler.settings;
 import java.util.Collection;
 
 import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
-import net.frontlinesms.events.FrontlineEventNotification;
-import net.frontlinesms.messaging.sms.events.InternetServiceEventNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.internet.SmsInternetServiceLoader;
 import net.frontlinesms.serviceconfig.ui.BaseServiceSettingsHandler;
@@ -27,23 +25,18 @@ public class SmsInternetServiceSettingsHandler extends BaseServiceSettingsHandle
 			controller.removeAll(accountList);
 			Collection<SmsInternetService> smsInternetServices = controller.getSmsInternetServices();
 			for (SmsInternetService service : smsInternetServices) {
-				controller.add(accountList, controller.createListItem(getProviderName(service.getClass()) + " - " + service.getIdentifier(), service));
+				controller.add(accountList, controller.createListItem(getProviderName(service.getClass()) + " - " + service.getIdentifier(), service.getSettings()));
 			}
 		}
 	}
 	
-	public ConfigurableServiceSettingsDao getServiceDao() {
+	@Override
+	public Class<SmsInternetService> getServiceSupertype() {
+		return SmsInternetService.class;
+	}
+	
+	public ConfigurableServiceSettingsDao<SmsInternetService> getServiceDao() {
 		return controller.getSmsInternetServiceSettingsDao();
-	}
-
-	@Override
-	public FrontlineEventNotification createDeletedNotification(SmsInternetService service) {
-		return new InternetServiceEventNotification(InternetServiceEventNotification.EventType.DELETE, service);
-	}
-
-	@Override
-	public FrontlineEventNotification createSavedNotification(SmsInternetService service) {
-		return new InternetServiceEventNotification(InternetServiceEventNotification.EventType.ADD, service);
 	}
 
 	@Override

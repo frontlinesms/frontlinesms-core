@@ -35,7 +35,9 @@ import net.frontlinesms.data.*;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.data.domain.FrontlineMessage.Type;
+import net.frontlinesms.data.events.EntityDeletedNotification;
 import net.frontlinesms.data.events.EntitySavedNotification;
+import net.frontlinesms.data.events.EntityUpdatedNotification;
 import net.frontlinesms.data.repository.*;
 import net.frontlinesms.debug.RandomDataGenerator;
 import net.frontlinesms.email.EmailException;
@@ -46,7 +48,6 @@ import net.frontlinesms.messaging.mms.email.MmsEmailServiceStatus;
 import net.frontlinesms.messaging.mms.events.MmsServiceStatusNotification;
 import net.frontlinesms.messaging.sms.SmsService;
 import net.frontlinesms.messaging.sms.SmsServiceManager;
-import net.frontlinesms.messaging.sms.events.InternetServiceEventNotification;
 import net.frontlinesms.messaging.sms.events.NoSmsServicesConnectedNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.plugins.*;
@@ -1588,14 +1589,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	public Collection<SmsInternetService> getSmsInternetServices() {
 		return this.frontlineController.getSmsInternetServices();
 	}
-	
-	public void addSmsInternetService(SmsInternetService smsInternetService) {
-		this.phoneManager.addSmsInternetService(smsInternetService);
-	}
-
-	private void removeSmsInternetService(SmsInternetService service) {
-		this.phoneManager.removeSmsInternetService(service);
-	}
 
 	public void contactRemovedFromGroup(Contact contact, Group group) {
 		if(this.currentTab.equals(TAB_CONTACT_MANAGER)) {
@@ -1731,19 +1724,18 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			if (entity instanceof FrontlineMultimediaMessage) {
 				// A new Multimedia Message has been received
 				this.incomingMessageEvent((FrontlineMultimediaMessage) entity);
-			}
-		} else if (notification instanceof InternetServiceEventNotification) {
-			// An Internet Service has been added or deleted
-			InternetServiceEventNotification internetServiceNotification = (InternetServiceEventNotification) notification;
-			switch (internetServiceNotification.getEventType()) {
-				case ADD:
-					this.addSmsInternetService(internetServiceNotification.getService());
-					break;
-				case DELETE:
-					this.removeSmsInternetService(internetServiceNotification.getService());
-					break;
-				default:
-					break;
+			} else if(entity instanceof PersistableSettings) {
+				PersistableSettings settings = (PersistableSettings) entity;
+				if(settings.getServiceTypeSuperclass().equals(SmsInternetService.class)) {
+					// An Internet Service has been added or deleted
+					if(notification instanceof EntitySavedNotification) {
+						phoneManager.addSmsInternetService(settings);
+					} else if(notification instanceof EntityUpdatedNotification) {
+						phoneManager.restartSmsInternetService(settings);
+					} else if(notification instanceof EntityDeletedNotification) {
+						phoneManager.removeSmsInternetService(settings);
+					}
+				}
 			}
 		}
 	}

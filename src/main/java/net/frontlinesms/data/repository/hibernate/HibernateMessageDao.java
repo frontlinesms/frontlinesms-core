@@ -181,9 +181,8 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 	}
 
 	/** @see MessageDao#getMessagesForKeyword(int, Keyword) */
-	@SuppressWarnings("unchecked")
 	public List<FrontlineMessage> getMessagesForKeyword(FrontlineMessage.Type messageType, Keyword keyword) {
-		PartialQuery q = createQueryStringForKeyword(false, messageType, keyword);
+		PartialQuery<FrontlineMessage> q = createQueryStringForKeyword(false, messageType, keyword);
 		return super.getList(q.getQueryString(), q.getInsertValues());
 	}
 	

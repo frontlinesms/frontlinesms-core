@@ -37,7 +37,7 @@ public class EmailAccount {
 
 //> PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
-	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false) @SuppressWarnings("unused")
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false)
 	private long id;
 	/** Username. It should be unique within the system, but may be changed. */
 	@Column(unique=true, nullable=true, updatable=true) // XXX: Should now be possible to have a username twice (Sending + Receiving). Does this require a database reload?

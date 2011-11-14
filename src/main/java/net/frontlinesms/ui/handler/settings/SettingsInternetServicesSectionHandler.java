@@ -1,11 +1,11 @@
 package net.frontlinesms.ui.handler.settings;
 
-import java.util.Collection;
 import java.util.List;
 
+import net.frontlinesms.data.domain.PersistableSettings;
+import net.frontlinesms.data.events.DatabaseEntityNotification;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
-import net.frontlinesms.messaging.sms.events.InternetServiceEventNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.settings.BaseSectionHandler;
 import net.frontlinesms.settings.FrontlineValidationMessage;
@@ -43,22 +43,19 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	private void refresh() {
 		new FrontlineUiUpateJob() {
 			public void run() {
-				refreshAccounts();
+				Object accountList = find(UI_COMPONENT_LS_ACCOUNTS);
+				if (accountList != null) {
+					ui.removeAll(accountList);
+					for (SmsInternetService service : ui.getSmsInternetServices()) {
+						String description = SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier();
+						Object listItem = ui.createListItem(description, service.getSettings());
+						ui.add(accountList, listItem);
+					}
+				}
+				
+				selectionChanged(accountList, find("pnButtons"));
 			}
 		}.execute();
-	}
-	
-	public void refreshAccounts() {
-		Object accountList = find(UI_COMPONENT_LS_ACCOUNTS);
-		if (accountList != null) {
-			this.ui.removeAll(accountList);
-			Collection<SmsInternetService> smsInternetServices = this.ui.getSmsInternetServices();
-			for (SmsInternetService service : smsInternetServices) {
-				this.ui.add(accountList, this.ui.createListItem(SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier(), service));
-			}
-		}
-		
-		this.selectionChanged(accountList, find("pnButtons"));
 	}
 	
 	/**
@@ -103,9 +100,8 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	private void removeServices(Object lsProviders) {
 		Object[] obj = this.ui.getSelectedItems(lsProviders);
 		for (Object object : obj) {
-			SmsInternetService service = (SmsInternetService) this.ui.getAttachedObject(object);
-			this.eventBus.notifyObservers(new InternetServiceEventNotification(InternetServiceEventNotification.EventType.DELETE, service));
-			ui.getSmsInternetServiceSettingsDao().deleteServiceSettings(service.getSettings());
+			PersistableSettings settings = this.ui.getAttachedObject(object, PersistableSettings.class);
+			ui.getSmsInternetServiceSettingsDao().deleteServiceSettings(settings);
 			this.ui.remove(object);
 		}
 		selectionChanged(lsProviders, find("pnButtons"));
@@ -118,7 +114,8 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	public void configureService(Object lsProviders) {
 		Object serviceComponent = this.ui.getSelectedItem(lsProviders);
 		SmsInternetServiceSettingsHandler internetServiceSettingsHandler = new SmsInternetServiceSettingsHandler(this.ui);
-		internetServiceSettingsHandler.showConfigureService((SmsInternetService)this.ui.getAttachedObject(serviceComponent), null);
+		PersistableSettings settings = this.ui.getAttachedObject(serviceComponent, PersistableSettings.class);
+		internetServiceSettingsHandler.showConfigureService(settings);
 	}
 	
 	
@@ -127,7 +124,8 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	}
 
 	public void notify(FrontlineEventNotification notification) {
-		if (notification instanceof InternetServiceEventNotification) {
+		if (notification instanceof DatabaseEntityNotification<?>
+				&& ((DatabaseEntityNotification<?>) notification).getDatabaseEntity() instanceof PersistableSettings) {
 			this.refresh();
 		} else if (notification instanceof UiDestroyEvent) {
 			if(((UiDestroyEvent) notification).isFor(this.ui)) {

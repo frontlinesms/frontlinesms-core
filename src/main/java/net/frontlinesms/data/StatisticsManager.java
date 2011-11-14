@@ -282,7 +282,7 @@ public class StatisticsManager {
 		
 		Map<String, Integer> counts = new HashMap<String, Integer>();
 		for(PersistableSettings settings : smsInternetServicesSettings) {
-			String className = settings.getServiceClassName();
+			String className = settings.getServiceClass().getName();
 			if(!counts.containsKey(className)) {
 				counts.put(className, 1);
 			} else {

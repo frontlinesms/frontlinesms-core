@@ -10,7 +10,6 @@ import org.hibernate.criterion.Restrictions;
 
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.PersistableSettings;
-import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.serviceconfig.ConfigurableService;
 
@@ -33,10 +32,10 @@ public abstract class BaseHibernateConfigurableServiceSettingsDao extends BaseHi
 		DetachedCriteria c = super.getCriterion();
 		if(getServiceClass().equals(SmsInternetService.class)) {
 			c.add(Restrictions.or(
-					Restrictions.eq("serviceTypeSuperclass", getServiceClass().getSimpleName()),
+					Restrictions.eq("serviceTypeSuperclass", getServiceClass()),
 					Restrictions.isNull("serviceTypeSuperclass")));
 		} else {
-			c.add(Restrictions.eq("serviceTypeSuperclass", getServiceClass().getSimpleName()));
+			c.add(Restrictions.eq("serviceTypeSuperclass", getServiceClass()));
 		}
 		return super.getList(c);
 	}

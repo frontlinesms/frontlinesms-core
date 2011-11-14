@@ -146,7 +146,7 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 				}
 			} else if (service instanceof SmsInternetService) {
 				SmsInternetServiceSettingsHandler serviceHandler = new SmsInternetServiceSettingsHandler(this.ui);
-				serviceHandler.showConfigureService((SmsInternetService) service, null);
+				serviceHandler.showConfigureService(((SmsInternetService) service).getSettings());
 			} else if (service instanceof MmsEmailService) {
 				EmailAccountSettingsDialogHandler emailAccountSettingsDialogHandler = new EmailAccountSettingsDialogHandler(ui, true);
 				emailAccountSettingsDialogHandler.initDialog(((MmsEmailService) service).getEmailAccount());
@@ -258,10 +258,10 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 				try {
 					phoneManager.requestConnect(modem.getPort());
 				} catch (NoSuchPortException ex) {
-					log.info("", ex);
+					log.info("Unable to connect to requested modem/phone.", ex);
 				}
 			} else if (service instanceof SmsInternetService) {
-				phoneManager.addSmsInternetService((SmsInternetService) service);
+				((SmsInternetService) service).restartThisThing();
 			} else if (service instanceof MmsEmailService) {
 				this.mmsServiceManager.connectMmsEmailService((MmsEmailService) service, true);
 			}

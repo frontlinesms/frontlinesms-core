@@ -3,37 +3,29 @@
  */
 package net.frontlinesms.data.domain;
 
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.*;
 
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.serviceconfig.ConfigurableService;
-import net.frontlinesms.serviceconfig.OptionalRadioSection;
-import net.frontlinesms.serviceconfig.OptionalSection;
-import net.frontlinesms.serviceconfig.PasswordString;
-import net.frontlinesms.serviceconfig.PhoneSection;
 import net.frontlinesms.serviceconfig.StructuredProperties;
 
 /**
- * Class encapsulating settings of a {@link SmsInternetService}.
+ * Class encapsulating settings of a {@link ConfigurableService}.
  * @author Alex
  */
-@Entity(name="SmsInternetServiceSettings")
+@Entity
 public class PersistableSettings {
 //> INSTANCE PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
 	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false)
 	private long id;
-	/** The name of the class of the {@link SmsInternetService} these settings apply to. */
-	private String serviceClassName;
-	/** The class of service that these settings apply to.  Default must be SmsInternetService for backward compatibility. */
-	@SuppressWarnings("unused")
-	private String serviceTypeSuperclass = SmsInternetService.class.getSimpleName();
+	/** The name class of the {@link ConfigurableService} these settings apply to. */
+	private Class<? extends ConfigurableService> serviceClass;
+	/** The class of service that these settings apply to. */
+	private Class<? extends ConfigurableService> serviceTypeSuperclass;
 	/** The properties for a {@link SmsInternetService} */
 	@OneToMany(targetEntity=PersistableSettingValue.class, fetch=FetchType.EAGER, cascade=CascadeType.ALL)
 	private final Map<String, PersistableSettingValue> properties = new HashMap<String, PersistableSettingValue>();
@@ -47,10 +39,15 @@ public class PersistableSettings {
 	 * @param service
 	 */
 	public PersistableSettings(ConfigurableService service) {
-		this.serviceTypeSuperclass = service.getSuperType().getSimpleName();
-		this.serviceClassName = service.getClass().getCanonicalName();
+		this(service.getSuperType(), service.getClass());
 	}
 	
+	public PersistableSettings(Class<? extends ConfigurableService> serviceTypeSuperclass,
+			Class<? extends ConfigurableService> serviceClass) {
+		this.serviceTypeSuperclass = serviceTypeSuperclass;
+		this.serviceClass = serviceClass;
+	}
+
 //> ACCESSOR METHODS
 	/** @return the database ID of these settings. */
 	public long getId() {
@@ -64,7 +61,7 @@ public class PersistableSettings {
 	 * @param value The value of the property to save
 	 */
 	public void set(String key, Object value) {
-		this.properties.put(key, toValue(value));
+		this.properties.put(key, PersistableSettingValue.create(value));
 	}
 	
 	/**
@@ -75,9 +72,14 @@ public class PersistableSettings {
 		return this.properties.get(key);
 	}
 	
-	/** @return the class name of {@link SmsInternetService} implementation that these settings apply to */
-	public String getServiceClassName() {
-		return this.serviceClassName;
+	/** @return the class name of {@link ConfigurableService} implementation that these settings apply to */
+	public Class<? extends ConfigurableService> getServiceClass() {
+		return this.serviceClass;
+	}
+	
+	/** @return the superclass of the service that this implements, e.g. {@link SmsInternetService} */
+	public Class<? extends ConfigurableService> getServiceTypeSuperclass() {
+		return serviceTypeSuperclass;
 	}
 	
 	/**
@@ -88,78 +90,17 @@ public class PersistableSettings {
 		return this.properties;
 	}
 	
+	public StructuredProperties getStructuredProperties() {
+		try {
+			StructuredProperties structured = serviceClass.newInstance().getPropertiesStructure();
+			structured.load(this.properties);
+			return structured;
+		} catch(Exception ex) {
+			throw new RuntimeException("Unable to load structured properties.", ex);
+		}
+	}
 
 //> STATIC HELPER METHODS
-	/**
-	 * Converts the supplied property value to the string representation of it. 
-	 * @param value
-	 * @return
-	 * TODO move to {@link PersistableSettingValue}
-	 */
-	public static PersistableSettingValue toValue(Object value) {
-		String stringValue;
-		if (value instanceof String) stringValue = (String)value;
-		else if (value instanceof Boolean) stringValue = Boolean.toString((Boolean) value);
-		else if (value instanceof Integer) stringValue = Integer.toString((Integer) value);
-		else if (value instanceof Long) stringValue = Long.toString((Long) value);
-		else if (value instanceof BigDecimal) stringValue = ((BigDecimal) value).toString();
-		else if (value instanceof PasswordString) stringValue = FrontlineUtils.encodeBase64(((PasswordString)value).getValue());
-		else if (value instanceof OptionalSection) stringValue = Boolean.toString(((OptionalSection)value).getValue());
-		else if (value instanceof Enum<?>) stringValue = ((Enum<?>)value).name();
-		else if (value instanceof PhoneSection) stringValue = ((PhoneSection)value).getValue();
-		else if (value instanceof OptionalRadioSection<?>) {
-			OptionalRadioSection<?> ors = (OptionalRadioSection<?>) value;
-			stringValue = ors.getValue().name();
-		}
-		else throw new RuntimeException("Unsupported property type: " + value.getClass());
-		
-		return new PersistableSettingValue(stringValue);
-	}
-
-	/**
-	 * Gets a property value from a string, and the canonical name of that class.
-	 * @param property 
-	 * @param value 
-	 * @return
-	 * TODO move to {@link PersistableSettingValue}
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static Object fromValue(Object property, PersistableSettingValue value) {
-		String stringValue = value.getValue();
-		if (property.getClass().equals(String.class))
-			return stringValue;
-		if (property.getClass().equals(Boolean.class))
-			return Boolean.parseBoolean(stringValue);
-		if (property.getClass().equals(Integer.class))
-			return Integer.parseInt(stringValue);
-		if (property.getClass().equals(PasswordString.class))
-			return new PasswordString(FrontlineUtils.decodeBase64(stringValue));
-		if (property.getClass().equals(OptionalSection.class)) {
-			return Boolean.parseBoolean(stringValue);
-		}
-		if (property.getClass().equals(PhoneSection.class))
-			return new PhoneSection(stringValue);
-		if (property.getClass().equals(OptionalRadioSection.class)) {
-			try {
-				OptionalRadioSection section = (OptionalRadioSection) property;
-				Method getValueOf = section.getValue().getClass().getMethod("valueOf", String.class);
-				Enum enumm = (Enum) getValueOf.invoke(null, stringValue);
-				return new OptionalRadioSection(enumm);
-			} catch (Throwable t) {
-				throw new RuntimeException(t);
-			}
-		}
-		try {
-			if (property.getClass().isEnum()) {
-				Method getValueOf = property.getClass().getMethod("valueOf", String.class);
-				Enum enumm = (Enum) getValueOf.invoke(null, stringValue);
-				return enumm;
-			}
-		} catch (Throwable t) {
-			throw new RuntimeException(t);
-		}
-		throw new RuntimeException("Unsupported property type: " + property.getClass());
-	}
 	/**
 	 * @param key The key of the property
 	 * @param clazz The class of the property's value
@@ -174,7 +115,7 @@ public class PersistableSettings {
 		
 		PersistableSettingValue setValue = settings.get(key);
 		if(setValue == null) return defaultValue;
-		else return (T) PersistableSettings.fromValue(defaultValue, setValue);
+		else return (T) setValue.toObject(defaultValue);
 	}
 
 //> GENERATED METHODS
@@ -185,7 +126,7 @@ public class PersistableSettings {
 		int result = 1;
 		result = prime
 				* result
-				+ ((serviceClassName == null) ? 0 : serviceClassName.hashCode());
+				+ serviceClass.hashCode();
 		return result;
 	}
 
@@ -199,10 +140,10 @@ public class PersistableSettings {
 		if (getClass() != obj.getClass())
 			return false;
 		PersistableSettings other = (PersistableSettings) obj;
-		if (serviceClassName == null) {
-			if (other.serviceClassName != null)
+		if (serviceClass == null) {
+			if (other.serviceClass != null)
 				return false;
-		} else if (!serviceClassName.equals(other.serviceClassName))
+		} else if (!serviceClass.equals(other.serviceClass))
 			return false;
 		return true;
 	}

@@ -311,12 +311,10 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 	/** Initialise {@link SmsInternetService}s. */
 	private void initSmsInternetServices() {
 		for (PersistableSettings settings : this.smsInternetServiceSettingsDao.getServiceAccounts()) {
-			String className = settings.getServiceClassName();
+			String className = settings.getServiceClass().getName();
 			LOG.info("Initializing SmsInternetService of class: " + className);
 			try {
-				SmsInternetService service = (SmsInternetService) Class.forName(className).newInstance();
-				service.setSettings(settings);
-				this.smsServiceManager.addSmsInternetService(service);
+				this.smsServiceManager.addSmsInternetService(settings);
 			} catch (Throwable t) {
 				LOG.warn("Unable to initialize SmsInternetService of class: " + className, t);
 			}
