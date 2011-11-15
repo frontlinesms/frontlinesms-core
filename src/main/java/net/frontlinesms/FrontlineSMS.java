@@ -34,7 +34,6 @@ import net.frontlinesms.events.EventBus;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.listener.*;
-import net.frontlinesms.messaging.FrontlineMessagingServiceEventListener;
 import net.frontlinesms.messaging.IncomingMessageProcessor;
 import net.frontlinesms.messaging.MessageFormatter;
 import net.frontlinesms.messaging.mms.MmsServiceManager;
@@ -42,7 +41,7 @@ import net.frontlinesms.messaging.mms.events.MmsReceivedNotification;
 import net.frontlinesms.messaging.sms.DummySmsService;
 import net.frontlinesms.messaging.sms.SmsService;
 import net.frontlinesms.messaging.sms.SmsServiceManager;
-import net.frontlinesms.messaging.sms.SmsServiceStatus;
+import net.frontlinesms.messaging.sms.events.SmsModemStatusNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.messaging.sms.modem.SmsModemStatus;
@@ -141,8 +140,6 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 	private EmailListener emailListener;
 	/** Listener for UI-related events */
 	private UIListener uiListener;
-	/** Listener for {@link SmsService} events. */
-	private FrontlineMessagingServiceEventListener smsDeviceEventListener;
 	/** Main {@link EventBus} through which all core events should be channelled. */
 	private EventBus eventBus;
 	
@@ -239,9 +236,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 		incomingMessageProcessor.start();
 		
 		LOG.debug("Starting Phone Manager...");
-		smsServiceManager = new SmsServiceManager();
-		smsServiceManager.setSmsListener(this);
-		smsServiceManager.setEventBus(getEventBus());
+		smsServiceManager = new SmsServiceManager(this, eventBus);
 		smsServiceManager.listComPortsAndOwners(false);
 		smsServiceManager.start();
 		
@@ -424,30 +419,6 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 		}
 	}
 
-	/** Passes a device event to the SMS Listener if one is specified. */
-	public void smsDeviceEvent(SmsService activeService, SmsServiceStatus status) {
-		// FIXME these events MUST be queued and processed on a separate thread
-		// FIXME should log this message here
-		 
-		if (this.smsDeviceEventListener != null) {
-			// check for modem connected status here
-			if (status == SmsModemStatus.TRY_TO_CONNECT) {
-				// If we're trying to connect, set the device's SMSC number
-				SmsModem modem = (SmsModem) activeService;
-				String serial = modem.getSerial();
-				SmsModemSettings settings = this.smsModemSettingsDao.getSmsModemSettings(serial);
-				if(settings != null) {
-					modem.setSmscNumber(settings.getSmscNumber());
-					// Only set the PIN number if it hasn't been set in the Manual Connection dialog
-					if(modem.getSimPin() == null) {
-						modem.setSimPin(settings.getSimPin());
-					}
-				}
-			}
-			this.smsDeviceEventListener.messagingServiceEvent(activeService, status);
-		}
-	}
-
 	/** Passes an outgoing email event to {@link #emailListener} if it is defined */
 	public synchronized void outgoingEmailEvent(EmailSender sender, Email email) {
 		// The email status will have changed, so save it here
@@ -579,11 +550,6 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 		this.incomingMessageProcessor.setUiListener(uiListener);
 	}
 	
-	/** @param serviceEventListener new value for {@link #smsDeviceEvent(SmsService, SmsServiceStatus)} */
-	public void setSmsDeviceEventListener(FrontlineMessagingServiceEventListener serviceEventListener) {
-		this.smsDeviceEventListener = serviceEventListener;
-	}
-	
 	/** @return {@link #smsServiceManager} */
 	public SmsServiceManager getSmsServiceManager() {
 		return this.smsServiceManager;
@@ -692,6 +658,22 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 					this.mmsServiceManager.addMmsEmailReceiver((EmailAccount) entity);
 				} else {
 					this.mmsServiceManager.updateMmsEmailService((EmailAccount) entity);	
+				}
+			}
+		} else if (notification instanceof SmsModemStatusNotification) {
+			SmsModemStatus status = ((SmsModemStatusNotification) notification).getStatus();
+			// check for modem connected status here
+			if (status == SmsModemStatus.TRY_TO_CONNECT) {
+				// If we're trying to connect, set the device's SMSC number
+				SmsModem modem = (SmsModem) ((SmsModemStatusNotification) notification).getService();
+				String serial = modem.getSerial();
+				SmsModemSettings settings = this.smsModemSettingsDao.getSmsModemSettings(serial);
+				if(settings != null) {
+					modem.setSmscNumber(settings.getSmscNumber());
+					// Only set the PIN number if it hasn't been set in the Manual Connection dialog
+					if(modem.getSimPin() == null) {
+						modem.setSimPin(settings.getSimPin());
+					}
 				}
 			}
 		}

@@ -20,7 +20,6 @@
 package net.frontlinesms.messaging.sms.internet;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 

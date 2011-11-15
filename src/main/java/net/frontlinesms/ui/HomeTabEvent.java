@@ -19,10 +19,8 @@
  */
 package net.frontlinesms.ui;
 
-// FIXME Should be renamed to something less generic. 
 /**
- * This represents an event instance that will appear on the latest events table.
- *
+ * This represents an event instance that will appear on the latest events table in the Home tab.
  * @author Carlos Eduardo Endler Genz
  * @date 19/02/2009
  */

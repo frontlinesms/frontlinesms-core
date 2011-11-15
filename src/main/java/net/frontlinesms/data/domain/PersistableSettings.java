@@ -56,7 +56,6 @@ public class PersistableSettings {
 	
 	/**
 	 * Sets the value of a setting.
-	 * FIXME value should not just be an OBJECT - some interface at least i would expect!
 	 * @param key The key of the property to save
 	 * @param value The value of the property to save
 	 */

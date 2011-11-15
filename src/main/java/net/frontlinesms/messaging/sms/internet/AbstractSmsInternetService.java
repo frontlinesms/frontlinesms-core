@@ -19,24 +19,21 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
-import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
+import net.frontlinesms.events.EventBus;
 import net.frontlinesms.listener.SmsListener;
+import net.frontlinesms.messaging.sms.events.SmsInternetServiceStatusNotification;
 import net.frontlinesms.serviceconfig.ConfigurableService;
-import net.frontlinesms.serviceconfig.OptionalRadioSection;
-import net.frontlinesms.serviceconfig.OptionalSection;
-import net.frontlinesms.serviceconfig.StructuredProperties;
 
 import org.apache.log4j.Logger;
 
 /**
  * Abstract class containing all default information needed by 
  * Sms Internet Services (e.g Clickatell, IntelliSMS, etc).
- * 
  * @author Carlos Eduardo Endler Genz
  * @date 26/01/2009
  */
@@ -59,6 +56,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	protected ConcurrentLinkedQueue<FrontlineMessage> outbox = new ConcurrentLinkedQueue<FrontlineMessage>();
 	/** The SmsListener to which this phone handler should report SMS Message events. */
 	protected SmsListener smsListener;
+	protected EventBus eventBus;
 	/** Settings for this service */
 	private PersistableSettings settings;
 	/** The status of this device */
@@ -83,6 +81,10 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 		this.smsListener = smsListener;
 	}
 	
+	public void setEventBus(EventBus eventBus) {
+		this.eventBus = eventBus;
+	}
+	
 	/** @return {@link #statusDetail} */
 	public String getStatusDetail() {
 		return this.statusDetail;
@@ -103,16 +105,15 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	 * @param detail detail relating to the status
 	 */
 	protected void setStatus(SmsInternetServiceStatus status, String detail) {
-		if(this.status == null || !this.status.equals(status) || this.statusDetail == null || this.statusDetail.equals(detail)) {
+		if(this.status == null || !this.status.equals(status) ||
+				this.statusDetail == null || this.statusDetail.equals(detail)) {
 			this.status = status;
 			this.statusDetail = detail;
 			LOG.debug("Status [" + status.name()
 					+ (detail == null?"":": "+detail)
 					+ "]");
 	
-			if (smsListener != null) {
-				smsListener.smsDeviceEvent(this, status);
-			}
+			eventBus.notifyObservers(new SmsInternetServiceStatusNotification(this, status));
 		}
 	}
 	
@@ -152,7 +153,6 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	 * @param <T> The class of the property's value
 	 * @return The property value, either the one stored on db (if any) or the default value.
 	 */
-	@SuppressWarnings("unchecked")
 	protected <T extends Object> T getPropertyValue(String key, Class<T> clazz) {
 		return PersistableSettings.getPropertyValue(getPropertiesStructure(), settings, key, clazz);
 	}
@@ -174,7 +174,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	}
 
 	/** Starts this service. */
-	public synchronized void startThisThing() {
+	public synchronized void startService() {
 		try {
 			setStatus(SmsInternetServiceStatus.CONNECTING, null);
 			init();
@@ -188,19 +188,19 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 			// we need to keep the old, meaningul message from before
 			SmsInternetServiceStatus status = getStatus();
 			String statusDetail = getStatusDetail();
-			this.stopThisThing();
+			this.stopService();
 			this.setStatus(status, statusDetail);
 		}
 	}
 	
 	/** Re-connects this service. */
-	public void restartThisThing() {
-		this.stopThisThing();
-		this.startThisThing();
+	public void restartService() {
+		this.stopService();
+		this.startService();
 	}
 	
 	/** Stop this service from running */
-	public void stopThisThing() {
+	public void stopService() {
 		deinit();
 		if(this.thread != null) this.thread.running = false;
 	}

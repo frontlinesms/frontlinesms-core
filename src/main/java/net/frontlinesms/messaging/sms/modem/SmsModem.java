@@ -28,9 +28,11 @@ import serial.*;
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
+import net.frontlinesms.events.EventBus;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.CatHandlerAliasMatcher;
 import net.frontlinesms.messaging.sms.SmsService;
+import net.frontlinesms.messaging.sms.events.SmsModemStatusNotification;
 
 import org.apache.log4j.Logger;
 import org.smslib.*;
@@ -80,6 +82,7 @@ public class SmsModem extends Thread implements SmsService {
 	private final ConcurrentLinkedQueue<FrontlineMessage> outbox = new ConcurrentLinkedQueue<FrontlineMessage>();
 	/** The SmsListener to which this phone handler should report SMS Message events. */
 	private final SmsListener smsListener;
+	private final EventBus eventBus;
 
 	/** The name of the COM port that this PhoneHandler controls. */
 	private final String portName;
@@ -139,7 +142,7 @@ public class SmsModem extends Thread implements SmsService {
 	 * @param smsListener the value for {@link #smsListener} 
 	 * @throws NoSuchPortException 
 	 */
-	public SmsModem(String portName, SmsListener smsListener) throws NoSuchPortException {
+	public SmsModem(String portName, SmsListener smsListener, EventBus eventBus) throws NoSuchPortException {
 		super("SmsModem :: " + portName);
 		/*
 		 * Make this into a daemon thread - we never know when it may get blocked in native code.  Indeed this can be
@@ -155,6 +158,7 @@ public class SmsModem extends Thread implements SmsService {
 
 		assert(smsListener != null);
 		this.smsListener = smsListener;
+		this.eventBus = eventBus;
 		this.portName = portName;
 
 		resetWatchdog();
@@ -194,7 +198,7 @@ public class SmsModem extends Thread implements SmsService {
 				+ (detail == null?"":": "+detail)
 				+ "]");
 		
-		smsListener.smsDeviceEvent(this, this.status);
+		eventBus.notifyObservers(new SmsModemStatusNotification(this, status));
 	}
 	
 	/** @return {@link #statusDetail} */

@@ -204,10 +204,10 @@ public class IntelliSmsInternetService extends AbstractSmsInternetService implem
 					remainingCredit = -1;
 				}
 				
-				this.stopThisThing();
+				this.stopService();
 				setStatus(SmsInternetServiceStatus.LOW_CREDIT, Integer.toString(remainingCredit));
 			} else {
-				this.stopThisThing();
+				this.stopService();
 				this.setStatus(SmsInternetServiceStatus.DISCONNECTED, e.getResultCode() + ": " + e.getMessage());
 			}
 		} finally {

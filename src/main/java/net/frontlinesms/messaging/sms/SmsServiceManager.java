@@ -30,6 +30,8 @@ import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.events.EventBus;
+import net.frontlinesms.events.EventObserver;
+import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.CommProperties;
 import net.frontlinesms.messaging.sms.events.*;
@@ -77,7 +79,7 @@ import org.smslib.util.GsmAlphabet;
  * @author Ben Whitaker ben(at)masabi(dot)com
  * @author Alex Anderson alex(at)masabi(dot)com
  */
-public class SmsServiceManager extends Thread implements SmsListener  {
+public class SmsServiceManager extends Thread implements SmsListener, EventObserver  {
 	/** List of GSM 7bit text messages queued to be sent. */
 	private final ConcurrentLinkedQueue<FrontlineMessage> gsm7bitOutbox = new ConcurrentLinkedQueue<FrontlineMessage>();
 	/** List of UCS2 text messages queued to be sent. */
@@ -90,9 +92,9 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	private Map<Long, SmsInternetService> smsInternetServices = new  ConcurrentHashMap<Long, SmsInternetService>();
 
 	/** Listener to be passed SMS Listener events from this */
-	private SmsListener smsListener;
+	private final SmsListener smsListener;
 	/** Listener for application events */
-	private EventBus eventBus;
+	private final EventBus eventBus;
 	/** Flag indicating that the thread should continue running. */
 	private boolean running;	
 	/** If set TRUE, then thread will automatically try to connect to newly-detected devices. */ 
@@ -113,26 +115,23 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 
 	private static Logger LOG = FrontlineUtils.getLogger(SmsServiceManager.class);
 
+//> CONSTRUCTORS
 	/**
 	 * Create a polling-variant SMS Handler.
 	 * To add a message listener, setSmsListener() should be called.
 	 */
-	public SmsServiceManager() {
+	public SmsServiceManager(SmsListener smsListener, EventBus eventBus) {
 		super("SmsDeviceManager");
+		this.eventBus = eventBus;
+		this.eventBus.registerObserver(this);
+		this.smsListener = smsListener;
 
 		// Load the COMM properties file, and extract the IGNORE list from
 		// it - this is a list of COM ports that should be ignored.		
 		this.portIgnoreList = CommProperties.getInstance().getIgnoreList();
 	}
 
-	public void setSmsListener(SmsListener smsListener) {
-		this.smsListener = smsListener;
-	}
-
-	public void setEventBus(EventBus eventBus) {
-		this.eventBus = eventBus;
-	}
-
+//> INTERNAL/THREAD HANDLING METHODS
 	public void run() {
 		LOG.trace("ENTER");
 		running = true;
@@ -281,10 +280,42 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 		
 		// Stop all SMS Internet Services
 		for(SmsInternetService service : this.smsInternetServices.values()) {
-			service.stopThisThing();
+			service.stopService();
 		}
+		
+		this.eventBus.unregisterObserver(this);
 	}
 
+//> EVENT HANDLING METHODS
+	public void notify(FrontlineEventNotification notification) {
+		if(notification instanceof SmsModemStatusNotification) {
+			SmsModemStatus deviceStatus = ((SmsModemStatusNotification) notification).getStatus();
+			LOG.debug("Event [" + deviceStatus + "]");
+			
+			SmsModem activeDevice = ((SmsModemStatusNotification) notification).getService();
+			if(deviceStatus.equals(SmsModemStatus.DISCONNECTED)) {
+				// A device has just disconnected.  If we aren't using the device for sending or receiving,
+				// then we should just ditch it.  However, if we *are* actively using the device, then we
+				// would probably want to attempt to reconnect.  Also, if we were previously connected to 
+				// this device then we should now remove its serial number from the list of connected serials.
+				if(!activeDevice.isDuplicate()) connectedSerials.remove(activeDevice.getSerial());
+			} else if(deviceStatus.equals(SmsModemStatus.CONNECTING)) {
+				// The max speed for this connection has been found.  If this connection
+				// is a duplicate, we should set the duplicate flag to true.  Otherwise,
+				// we may wish to reconnect.
+				if (autoConnectToNewPhones) {
+					boolean isDuplicate = !connectedSerials.add(activeDevice.getSerial());
+					activeDevice.setDuplicate(isDuplicate);
+					if(!isDuplicate) activeDevice.connect();
+				}
+			}
+			
+			if (isFailedStatus(deviceStatus)) {
+				eventBus.notifyObservers(createNoSmsDevicesConnectedNotification());
+			}
+		}
+	}
+	
 	public void incomingMessageEvent(SmsService receiver, CIncomingMessage msg) {
 		// If we've got a higher-level listener attached to this, pass the message 
 		// up to there.  Otherwise, add it to our internal list
@@ -307,66 +338,6 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 		return phoneHandler != null && phoneHandler.isConnected();
 	}
 
-	/**
-	 * called when one of the SMS devices (phones or http senders) has a change in status,
-	 * such as detection, connection, disconnecting, running out of batteries, etc.
-	 * see PhoneHandler.STATUS_CODE_MESSAGES[smsDeviceEventCode] to get the relevant messages
-	 *  
-	 * @param activeDevice
-	 * @param smsDeviceEventCode
-	 */
-	public <T extends SmsService> void smsDeviceEvent(T device, SmsServiceStatus<T> deviceStatus) {
-		LOG.trace("ENTER");
-		
-		// Special handling for modems
-		if (device instanceof SmsModem) {
-			LOG.debug("Event [" + deviceStatus + "]");
-			
-			SmsModem activeDevice = (SmsModem) device;
-			if(deviceStatus.equals(SmsModemStatus.DISCONNECTED)) {
-				// A device has just disconnected.  If we aren't using the device for sending or receiving,
-				// then we should just ditch it.  However, if we *are* actively using the device, then we
-				// would probably want to attempt to reconnect.  Also, if we were previously connected to 
-				// this device then we should now remove its serial number from the list of connected serials.
-				if(!activeDevice.isDuplicate()) connectedSerials.remove(activeDevice.getSerial());
-			} else if(deviceStatus.equals(SmsModemStatus.CONNECTING)) {
-				// The max speed for this connection has been found.  If this connection
-				// is a duplicate, we should set the duplicate flag to true.  Otherwise,
-				// we may wish to reconnect.
-				if (autoConnectToNewPhones) {
-					boolean isDuplicate = !connectedSerials.add(activeDevice.getSerial());
-					activeDevice.setDuplicate(isDuplicate);
-					if(!isDuplicate) activeDevice.connect();
-				}
-			}
-			
-			if (isFailedStatus(deviceStatus)) {
-				if(this.eventBus != null) {
-					NoSmsServicesConnectedNotification notification = createNoSmsDevicesConnectedNotification();
-					if(notification != null) {
-						this.eventBus.notifyObservers(notification);
-					}
-				}
-			}
-		}
-		if (smsListener != null) {
-			// TODO these sms listeners should be replaced by the EventBus below.
-			smsListener.smsDeviceEvent(device, deviceStatus);
-		}
-		if(eventBus != null) {
-			// Fire new events.  TODO This generalised eventBus should replace the smsListener
-			// object referenced above.  FIXME should also fire events for SmsInternetServices.
-			SmsServiceStatusNotification<?, ?> notification = null;
-			if(device instanceof SmsModem) {
-				notification = new SmsModemStatusNotification((SmsModem) device, (SmsModemStatus) deviceStatus);
-			}
-			if(notification != null) {
-				eventBus.notifyObservers(notification);
-			}
-		}
-		LOG.trace("EXIT");
-	}
-	
 	/**
 	 * Creates a {@link NoSmsServicesConnectedNotification} based on the current status of attached.  If any devices
 	 * are connected or still processing, a notification is not created.
@@ -497,7 +468,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 		if(LOG.isInfoEnabled()) LOG.info("Requested connection to port: '" + portName + "'");
 		if(!portIdentifier.isCurrentlyOwned()) {
 			LOG.info("Connecting to port...");
-			SmsModem phoneHandler = new SmsModem(portName, this);
+			SmsModem phoneHandler = new SmsModem(portName, this, eventBus);
 			phoneHandler.setSimPin(simPin);
 			phoneHandlers.put(portName, phoneHandler);
 			phoneHandler.start(baudRate, preferredCATHandler);
@@ -507,7 +478,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 			// If we don't have a handle on this port, but it's owned by someone else,
 			// then we add it to the phoneHandlers list anyway so that we can see its
 			// status.
-			phoneHandlers.putIfAbsent(portName, new SmsModem(portName, this));
+			phoneHandlers.putIfAbsent(portName, new SmsModem(portName, this, eventBus));
 			return false;
 		}
 	}
@@ -516,9 +487,10 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 		try {
 			SmsInternetService service = (SmsInternetService) settings.getServiceClass().newInstance();
 			service.setSettings(settings);
-			service.setSmsListener(smsListener);
+			service.setSmsListener(this);
+			service.setEventBus(eventBus);
 			smsInternetServices.put(settings.getId(), service);
-			service.startThisThing();
+			service.startService();
 		} catch(IllegalAccessException ex) {
 			handleServiceLoadException(settings, ex);
 		} catch (InstantiationException ex) {
@@ -529,7 +501,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	public void restartSmsInternetService(PersistableSettings settings) {
 		SmsInternetService service = smsInternetServices.get(settings.getId());
 		service.setSettings(settings);
-		service.restartThisThing();
+		service.restartService();
 	}
 	
 	private void handleServiceLoadException(PersistableSettings settings, Exception ex) {
@@ -564,7 +536,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	}
 
 	private void disconnectSmsInternetService(SmsInternetService service) {
-		service.stopThisThing();
+		service.stopService();
 	}
 
 	/**
@@ -591,7 +563,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 		if(!shouldIgnore(portName) && portIdentifier.getPortType() == CommPortIdentifier.PORT_SERIAL) {
 			LOG.debug("It is a suitable port.");
 			try {
-				SmsModem modem = new SmsModem(portName, this);
+				SmsModem modem = new SmsModem(portName, this, eventBus);
 				modem.setSimPin(simPin);
 				if(!portIdentifier.isCurrentlyOwned()) {
 					LOG.debug("Connecting to port...");
@@ -698,13 +670,13 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	 */
 	private ConcurrentLinkedQueue<FrontlineMessage> getOutboxFromType(MessageType messageType) {
 		switch (messageType) {
-		case BINARY:
-			return binOutbox;
-		case UCS2_TEXT:
-			return ucs2Outbox;
-		case GSM7BIT_TEXT:
-			return gsm7bitOutbox;
-		default: throw new IllegalStateException("Unrecognized message type: " + messageType);
+			case BINARY:
+				return binOutbox;
+			case UCS2_TEXT:
+				return ucs2Outbox;
+			case GSM7BIT_TEXT:
+				return gsm7bitOutbox;
+			default: throw new IllegalStateException("Unrecognized message type: " + messageType);
 		}
 	}
 
@@ -717,7 +689,7 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 	private void dispatchSms(List<? extends SmsService> devices, List<FrontlineMessage> messages) {
 		int deviceCount = devices.size();
 		for(FrontlineMessage m : messages) {
-			SmsService device = devices.get(++globalDispatchCounter  % deviceCount);
+			SmsService device = devices.get(++globalDispatchCounter % deviceCount);
 			// Presumably the device will complain somehow if it is no longer connected
 			// etc.  TODO we should actually check what happens!
 			device.sendSMS(m);
@@ -740,16 +712,16 @@ public class SmsServiceManager extends Thread implements SmsListener  {
 			if(service.isConnected() && service.isUseForSending()) {
 				boolean addService;
 				switch(messageType) {
-				case BINARY:
-					addService = service.isBinarySendingSupported();
-					break;
-				case UCS2_TEXT:
-					addService = service.isUcs2SendingSupported();
-					break;
-				case GSM7BIT_TEXT:
-					addService = true;
-					break;
-				default: throw new IllegalStateException();
+					case BINARY:
+						addService = service.isBinarySendingSupported();
+						break;
+					case UCS2_TEXT:
+						addService = service.isUcs2SendingSupported();
+						break;
+					case GSM7BIT_TEXT:
+						addService = true;
+						break;
+					default: throw new IllegalStateException();
 				}
 				if(addService) senders.add(service);
 			}

@@ -335,7 +335,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			
 			frontlineController.setEmailListener(this);
 			frontlineController.setUiListener(this);
-			frontlineController.setSmsDeviceEventListener(this.phoneTabController);
 			
 			setStatus(InternationalisationUtils.getI18nString(MESSAGE_PHONE_MANAGER_INITIALISED));
 			

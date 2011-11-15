@@ -148,7 +148,7 @@ public class ClickatellInternetService extends AbstractSmsInternetService {
 	 * Stops the service showing the remaining credits
 	 */
 	public void creditLow() {
-		stopThisThing();
+		stopService();
 	}
 
 	/**
