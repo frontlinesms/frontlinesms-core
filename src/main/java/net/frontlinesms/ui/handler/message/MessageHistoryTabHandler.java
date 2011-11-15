@@ -58,7 +58,7 @@ import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.UiProperties;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.BaseTabHandler;
 import net.frontlinesms.ui.handler.ComponentPagingHandler;
@@ -638,7 +638,7 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 			FrontlineMessage e = ui.getMessage(ui.getItem(messageListComponent, i));
 			if (e.equals(message)) {
 				final int index = i;
-				new FrontlineUiUpateJob() {
+				new FrontlineUiUpdateJob() {
 					public void run() {
 						ui.remove(ui.getItem(messageListComponent, index));
 						ui.add(messageListComponent, getRow(message), index);
@@ -891,7 +891,7 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 			}
 			if (toAdd) {
 				LOG.debug("Time to try to add this message to list...");
-				new FrontlineUiUpateJob() {
+				new FrontlineUiUpdateJob() {
 					public void run() {
 						addMessage(message);
 					}

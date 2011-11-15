@@ -52,7 +52,7 @@ import net.frontlinesms.messaging.sms.events.NoSmsServicesConnectedNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.plugins.*;
 import net.frontlinesms.resources.ResourceUtils;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.*;
 import net.frontlinesms.ui.handler.contacts.*;
@@ -472,7 +472,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	public void showStatsDialog() {
 		final StatisticsDialogHandler statisticsDialogHandler = new StatisticsDialogHandler(this);
 		
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				add(statisticsDialogHandler.getDialog());
 			}
@@ -798,7 +798,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * @param status the new status to display
 	 */
 	public void setStatus(final String status) {
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				setString(statusBarComponent, TEXT, status);		
 			}
@@ -1697,7 +1697,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 					// If the dialog is not already created AND not already displayed, create a new one and show it now
 					if (deviceConnectionDialogHandler == null) {
 						deviceConnectionDialogHandler = new NoPhonesDetectedDialogHandler(this);
-						new FrontlineUiUpateJob() {
+						new FrontlineUiUpdateJob() {
 							public void run() {
 								deviceConnectionDialogHandler.initDialog((NoSmsServicesConnectedNotification) notification);
 								add(deviceConnectionDialogHandler.getDialog());

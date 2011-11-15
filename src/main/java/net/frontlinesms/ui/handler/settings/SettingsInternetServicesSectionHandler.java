@@ -12,7 +12,7 @@ import net.frontlinesms.settings.FrontlineValidationMessage;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.settings.UiSettingsSectionHandler;
 
@@ -41,7 +41,7 @@ public class SettingsInternetServicesSectionHandler extends BaseSectionHandler i
 	}
 
 	private void refresh() {
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				Object accountList = find(UI_COMPONENT_LS_ACCOUNTS);
 				if (accountList != null) {

@@ -15,7 +15,7 @@ import net.frontlinesms.settings.BaseSectionHandler;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.handler.email.EmailAccountSettingsDialogHandler;
 import net.frontlinesms.ui.settings.UiSettingsSectionHandler;
 
@@ -79,7 +79,7 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 				this.ui.add(table, this.ui.getRow(acc));
 			}
 			
-			new FrontlineUiUpateJob() {
+			new FrontlineUiUpdateJob() {
 				public void run() {
 					enableBottomButtons(null);	
 				}
@@ -173,7 +173,7 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	public void notify(FrontlineEventNotification event) {
 		if(event instanceof DatabaseEntityNotification<?>) {
 			if(((DatabaseEntityNotification<?>)event).getDatabaseEntity() instanceof EmailAccount) {
-				new FrontlineUiUpateJob() {
+				new FrontlineUiUpdateJob() {
 					public void run() {
 						refresh();
 					}

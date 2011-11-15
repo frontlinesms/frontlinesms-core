@@ -37,7 +37,7 @@ import net.frontlinesms.messaging.sms.modem.SmsModemStatus;
 import net.frontlinesms.ui.HomeTabEventNotification;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.UiGeneratorController;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.BaseTabHandler;
 import net.frontlinesms.ui.handler.email.EmailAccountSettingsDialogHandler;
@@ -160,7 +160,7 @@ public class PhoneTabHandler extends BaseTabHandler {
 	public void showPhoneSettingsDialog(SmsModem device, boolean isNewPhone) {
 		final DeviceSettingsDialogHandler deviceSettingsDialog = new DeviceSettingsDialogHandler(ui, device, isNewPhone);
 		
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				deviceSettingsDialog.initDialog();
 				ui.add(deviceSettingsDialog.getDialog());
@@ -278,7 +278,7 @@ public class PhoneTabHandler extends BaseTabHandler {
 		// We create the manual config dialog and put the display job in the AWT event queue
 		final DeviceManualConfigDialogHandler configDialog = new DeviceManualConfigDialogHandler(ui, selectedModem);
 		
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				ui.add(configDialog.getDialog());
 			}
@@ -295,7 +295,7 @@ public class PhoneTabHandler extends BaseTabHandler {
 	 * Refreshes the list of PhoneHandlers displayed on the PhoneManager tab.
 	 */
 	public void refresh() {
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				Object modemListError = ui.find(COMPONENT_PHONE_MANAGER_MODEM_LIST_ERROR);
 				// cache the selected item so we can reselect it when we've finished!
@@ -434,7 +434,7 @@ public class PhoneTabHandler extends BaseTabHandler {
 				ui.setStatus(InternationalisationUtils.getI18nString(MESSAGE_MODEM_LIST_UPDATED));
 			}
 		} else if (notification instanceof SmsModemStatusNotification) {
-			new FrontlineUiUpateJob() {
+			new FrontlineUiUpdateJob() {
 				public void run() {
 					SmsModem activeService = ((SmsModemStatusNotification) notification).getService();
 					SmsModemStatus serviceStatus = ((SmsModemStatusNotification) notification).getStatus();

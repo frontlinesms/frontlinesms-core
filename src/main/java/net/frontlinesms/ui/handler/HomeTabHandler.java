@@ -21,7 +21,7 @@ import net.frontlinesms.ui.FrontlineUiUtils;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.UiGeneratorControllerConstants;
 import net.frontlinesms.ui.UiProperties;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.handler.message.MessagePanelHandler;
 import net.frontlinesms.ui.i18n.FileLanguageBundle;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
@@ -276,13 +276,13 @@ public class HomeTabHandler extends BaseTabHandler {
 	public void notify(final FrontlineEventNotification notification) {
 		super.notify(notification);
 		if (notification instanceof HomeTabLogoChangedNotification) {
-			new FrontlineUiUpateJob() {
+			new FrontlineUiUpdateJob() {
 				public void run() {
 					refreshLogoVisibility(getTab());					
 				}
 			}.execute();
 		} else if (notification instanceof AppPropertiesEventNotification) {
-			new FrontlineUiUpateJob() {
+			new FrontlineUiUpdateJob() {
 				public void run() {
 					String property = ((AppPropertiesEventNotification) notification).getProperty();
 					if (property.equals(AppProperties.KEY_SMS_COST_SENT_MESSAGES)
@@ -293,7 +293,7 @@ public class HomeTabHandler extends BaseTabHandler {
 				}
 			}.execute();
 		} else if (notification instanceof HomeTabEventNotification) {
-			new FrontlineUiUpateJob() {
+			new FrontlineUiUpdateJob() {
 				public void run() {
 					Object eventListComponent = find(COMPONENT_EVENTS_LIST);
 					if(eventListComponent != null) {

@@ -39,7 +39,7 @@ import net.frontlinesms.data.repository.KeywordActionDao;
 import net.frontlinesms.data.repository.KeywordDao;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.ui.UiGeneratorController;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.BaseTabHandler;
 import net.frontlinesms.ui.handler.ComponentPagingHandler;
@@ -628,7 +628,7 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 	 * <br>Has no effect in classic mode.
 	 */
 	private void updateKeywordList() {
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				keywordListPagingHandler.refresh();
 				showSelectedKeyword();

@@ -12,7 +12,7 @@ import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 
 /**
  * @author Alex Anderson
@@ -44,7 +44,7 @@ public abstract class BaseTabHandler implements ThinletUiEventHandler, EventObse
 	public abstract void refresh();
 	
 	protected void threadSafeRefresh() {
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				refresh();
 			}
