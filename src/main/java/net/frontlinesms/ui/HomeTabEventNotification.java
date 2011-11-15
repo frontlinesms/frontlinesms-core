@@ -19,12 +19,15 @@
  */
 package net.frontlinesms.ui;
 
+import net.frontlinesms.events.FrontlineEventNotification;
+
 /**
  * This represents an event instance that will appear on the latest events table in the Home tab.
  * @author Carlos Eduardo Endler Genz
+ * @author Alex Anderson
  * @date 19/02/2009
  */
-public class HomeTabEvent {
+public class HomeTabEventNotification implements FrontlineEventNotification {
 	public enum Type {
 		INCOMING_MESSAGE(Icon.SMS_RECEIVE),
 		OUTGOING_MESSAGE(Icon.SMS_SEND),
@@ -55,7 +58,7 @@ public class HomeTabEvent {
 	private long time;
 	
 	
-	public HomeTabEvent(Type type, String description) {
+	public HomeTabEventNotification(Type type, String description) {
 		this.type = type;
 		this.description = description;
 		this.time = System.currentTimeMillis();

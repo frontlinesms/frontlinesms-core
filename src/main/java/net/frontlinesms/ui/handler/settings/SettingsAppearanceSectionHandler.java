@@ -12,7 +12,7 @@ import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.UiProperties;
 import net.frontlinesms.ui.i18n.FileLanguageBundle;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
-import net.frontlinesms.ui.settings.HomeTabLogoChangedEventNotification;
+import net.frontlinesms.ui.settings.HomeTabLogoChangedNotification;
 import net.frontlinesms.ui.settings.UiSettingsSectionHandler;
 
 import org.apache.log4j.Logger;
@@ -140,7 +140,7 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 		uiProperties.saveToDisk();
 
 		// Update visibility of logo
-		this.eventBus.notifyObservers(new HomeTabLogoChangedEventNotification());
+		this.eventBus.notifyObservers(new HomeTabLogoChangedNotification());
 		
 		
 		/**** LANGUAGE ****/

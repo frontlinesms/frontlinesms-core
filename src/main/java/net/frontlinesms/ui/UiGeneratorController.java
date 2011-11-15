@@ -121,6 +121,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	/** The INTERNAL NAME of the tab (a thinlet UI component) currently active */
 	private String currentTab;
 	
+	/** The bus for handling {@link FrontlineEventNotification}s. */
+	private final EventBus eventBus;
+	
 	/** The manager of {@link SmsService}s */
 	private final SmsServiceManager phoneManager;
 	/** Manager of {@link PluginController}s */
@@ -180,8 +183,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 */
 	public UiGeneratorController(FrontlineSMS frontlineController, boolean detectPhones) throws Throwable {
 		this.frontlineController = frontlineController;
+		this.eventBus = this.frontlineController.getEventBus();
 		// We prepare listening events for device connection
-		this.frontlineController.getEventBus().registerObserver(this);
+		eventBus.registerObserver(this);
 
 		this.iconMap = new IconMap("META-INF/frontlinesms/icons.properties");
 		
@@ -889,14 +893,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		}
 		LOG.trace("EXIT");
 	}
-
-	/**
-	 * Method called when an event is fired and should be added to the event list on the home tab.
-	 * @param newEvent New instance of {@link HomeTabEvent} to be added to the list.
-	 */
-	public void newEvent(HomeTabEvent newEvent) {
-		this.homeTabController.newEvent(newEvent);
-	}
 	
 	/**
 	 * Method invoked when the status for actions changes.
@@ -1273,7 +1269,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.trace("ENTER");
 		Object newTab = getSelectedItem(tabbedPane);
 		currentTab = getString(newTab, NAME);
-		this.frontlineController.getEventBus().notifyObservers(new TabChangedNotification(currentTab));
+		eventBus.notifyObservers(new TabChangedNotification(currentTab));
 		
 		LOG.debug("Current tab [" + currentTab + "]");
 		if (currentTab == null) return;
@@ -1290,7 +1286,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			String[] recipients = email.getEmailRecipients().split(";");
 			String strRecipients = recipients[0] + (recipients.length > 1 ? InternationalisationUtils.getI18nString(EVENT_DESCRIPTION_MULTI_RECIPIENTS, recipients.length) : ""); 
 			
-			newEvent(new HomeTabEvent(HomeTabEvent.Type.OUTGOING_EMAIL, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipients, email.getEmailContent())));
+			eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.OUTGOING_EMAIL, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipients, email.getEmailContent())));
 		}
 		LOG.trace("EXIT");
 	}
@@ -1365,8 +1361,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		Contact sender = contactDao.getFromMsisdn(message.getSenderMsisdn());
 		String strSender = (sender == null ? message.getSenderMsisdn() : sender.getName());
 		
-		HomeTabEvent.Type eventType = (message instanceof FrontlineMultimediaMessage ? HomeTabEvent.Type.INCOMING_MMS : HomeTabEvent.Type.INCOMING_MESSAGE);
-		newEvent(new HomeTabEvent(eventType, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strSender, message.getTextContent())));
+		HomeTabEventNotification.Type eventType = (message instanceof FrontlineMultimediaMessage ? HomeTabEventNotification.Type.INCOMING_MMS : HomeTabEventNotification.Type.INCOMING_MESSAGE);
+		eventBus.notifyObservers(new HomeTabEventNotification(eventType, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strSender, message.getTextContent())));
 		setStatus(InternationalisationUtils.getI18nString(MESSAGE_MESSAGE_RECEIVED));
 		LOG.trace("EXIT");
 	}
@@ -1382,9 +1378,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		String strRecipient = (recipient == null ? message.getRecipientMsisdn() : recipient.getName());
 		
 		if (message.getStatus() == Status.SENT) {
-			newEvent(new HomeTabEvent(HomeTabEvent.Type.OUTGOING_MESSAGE, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
+			eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.OUTGOING_MESSAGE, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
 		} else if (message.getStatus() == Status.FAILED) {
-			newEvent(new HomeTabEvent(HomeTabEvent.Type.OUTGOING_MESSAGE_FAILED, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
+			eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.OUTGOING_MESSAGE_FAILED, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
 		}
 		LOG.trace("ENTER");
 	}
@@ -1623,9 +1619,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	public boolean destroy() {
 		final boolean destroy = super.destroy();
 		if(destroy) {
-			EventBus bus = this.frontlineController.getEventBus();
-			bus.unregisterObserver(this);
-			bus.notifyObservers(new UiDestroyEvent(this));
+			eventBus.unregisterObserver(this);
+			eventBus.notifyObservers(new UiDestroyEvent(this));
 		}
 		return destroy;
 	}
@@ -1715,7 +1710,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			// An MMS Service has changed status
 			MmsServiceStatusNotification mmsServiceStatusNotification = ((MmsServiceStatusNotification) notification);
 			if (mmsServiceStatusNotification.getStatus().equals(MmsEmailServiceStatus.FAILED_TO_CONNECT)) {
-				this.newEvent(new HomeTabEvent(HomeTabEvent.Type.SMS_INTERNET_SERVICE_RECEIVING_FAILED, 
+				eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.SMS_INTERNET_SERVICE_RECEIVING_FAILED, 
 											mmsServiceStatusNotification.getMmsService().getServiceName() + " - " + InternationalisationUtils.getI18nString(FrontlineSMSConstants.COMMON_SMS_INTERNET_SERVICE_RECEIVING_FAILED)));
 			}
 		} else if (notification instanceof EntitySavedNotification<?>) {

@@ -18,6 +18,7 @@ import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.domain.SmsModemSettings;
 import net.frontlinesms.data.events.DatabaseEntityNotification;
 import net.frontlinesms.data.repository.SmsModemSettingsDao;
+import net.frontlinesms.events.EventBus;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.messaging.FrontlineMessagingService;
@@ -35,7 +36,7 @@ import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.internet.SmsInternetServiceStatus;
 import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.messaging.sms.modem.SmsModemStatus;
-import net.frontlinesms.ui.HomeTabEvent;
+import net.frontlinesms.ui.HomeTabEventNotification;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -97,11 +98,12 @@ public class PhoneTabHandler extends BaseTabHandler implements EventObserver {
 	private static final String COMPONENT_PHONE_MANAGER_MODEM_LIST_ERROR = "phoneManager_modemListError";
 
 //> INSTANCE PROPERTIES
+	private final EventBus eventBus;
 	/** The manager of {@link FrontlineMessagingService}s */
 	private final SmsServiceManager phoneManager;
 	/** Data Access Object for {@link SmsModemSettings}s */
 	private final SmsModemSettingsDao smsModelSettingsDao;
-	private MmsServiceManager mmsServiceManager;
+	private final MmsServiceManager mmsServiceManager;
 //> CONSTRUCTORS
 	/**
 	 * Create a new instance of this class.
@@ -109,6 +111,7 @@ public class PhoneTabHandler extends BaseTabHandler implements EventObserver {
 	 */
 	public PhoneTabHandler(UiGeneratorController ui) {
 		super(ui);
+		this.eventBus = ui.getFrontlineController().getEventBus();
 		this.phoneManager = ui.getPhoneManager();
 		this.mmsServiceManager = ui.getFrontlineController().getMmsServiceManager();
 		this.smsModelSettingsDao = ui.getPhoneDetailsManager();
@@ -476,7 +479,7 @@ public class PhoneTabHandler extends BaseTabHandler implements EventObserver {
 					}
 				}
 
-				ui.newEvent(new HomeTabEvent(HomeTabEvent.Type.PHONE_CONNECTED, InternationalisationUtils.getI18nString(COMMON_PHONE_CONNECTED) + ": " + activeService.getModel()));
+				eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.PHONE_CONNECTED, InternationalisationUtils.getI18nString(COMMON_PHONE_CONNECTED) + ": " + activeService.getModel()));
 			}
 			refresh();
 		} else if(notification instanceof SmsInternetServiceStatusNotification) {
@@ -484,13 +487,13 @@ public class PhoneTabHandler extends BaseTabHandler implements EventObserver {
 			SmsInternetServiceStatus serviceStatus = ((SmsInternetServiceStatusNotification) notification).getStatus();
 			// TODO document why newEvent is called here, and why it is only called for certain statuses.
 			if (serviceStatus.equals(SmsInternetServiceStatus.CONNECTED)) {
-				ui.newEvent(new HomeTabEvent(
-						HomeTabEvent.Type.SMS_INTERNET_SERVICE_CONNECTED,
+				eventBus.notifyObservers(new HomeTabEventNotification(
+						HomeTabEventNotification.Type.SMS_INTERNET_SERVICE_CONNECTED,
 						InternationalisationUtils.getI18nString(COMMON_SMS_INTERNET_SERVICE_CONNECTED) 
 						+ ": " + SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()));
 			} else if (serviceStatus.equals(SmsInternetServiceStatus.RECEIVING_FAILED)) {
-				ui.newEvent(new HomeTabEvent(
-						HomeTabEvent.Type.SMS_INTERNET_SERVICE_RECEIVING_FAILED,
+				eventBus.notifyObservers(new HomeTabEventNotification(
+						HomeTabEventNotification.Type.SMS_INTERNET_SERVICE_RECEIVING_FAILED,
 						SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()
 						+ ": " + InternationalisationUtils.getI18nString(FrontlineSMSConstants.COMMON_SMS_INTERNET_SERVICE_RECEIVING_FAILED)));
 			}

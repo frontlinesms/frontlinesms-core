@@ -17,7 +17,7 @@ import net.frontlinesms.events.AppPropertiesEventNotification;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
-import net.frontlinesms.ui.HomeTabEvent;
+import net.frontlinesms.ui.HomeTabEventNotification;
 import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.FrontlineUiUtils;
 import net.frontlinesms.ui.UiDestroyEvent;
@@ -28,7 +28,7 @@ import net.frontlinesms.ui.events.FrontlineUiUpateJob;
 import net.frontlinesms.ui.handler.message.MessagePanelHandler;
 import net.frontlinesms.ui.i18n.FileLanguageBundle;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
-import net.frontlinesms.ui.settings.HomeTabLogoChangedEventNotification;
+import net.frontlinesms.ui.settings.HomeTabLogoChangedNotification;
 
 /**
  * Event handler for the Home tab and associated dialogs
@@ -270,7 +270,7 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	}
 
 //> UI HELPER METHODS
-	private Object getRow(HomeTabEvent newEvent) {
+	private Object getRow(HomeTabEventNotification newEvent) {
 		Object row = ui.createTableRow(newEvent);
 		Object cell = ui.createTableCell("");
 		ui.setIcon(cell, newEvent.getIcon());
@@ -281,22 +281,8 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	}
 
 //> LISTENER EVENT METHODS
-	public void newEvent(final HomeTabEvent newEvent) {
-		new FrontlineUiUpateJob() {
-			public void run() {
-				Object eventListComponent = find(COMPONENT_EVENTS_LIST);
-				if(eventListComponent != null) {
-					while(ui.getItems(eventListComponent).length >= EVENTS_LIMIT) {
-						ui.remove(ui.getItem(eventListComponent, EVENTS_LIMIT-1));
-					}
-					ui.add(eventListComponent, getRow(newEvent), 0);
-				}		
-			}
-		}.execute();
-	}
-
-	public void notify(FrontlineEventNotification notification) {
-		if (notification instanceof HomeTabLogoChangedEventNotification) {
+	public void notify(final FrontlineEventNotification notification) {
+		if (notification instanceof HomeTabLogoChangedNotification) {
 			this.refreshLogoVisibility(getTab());
 		} else if (notification instanceof AppPropertiesEventNotification) {
 			String property = ((AppPropertiesEventNotification) notification).getProperty();
@@ -305,6 +291,18 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 					|| property.equals(UiProperties.CURRENCY_FORMAT_IS_CUSTOM)) {
 				this.messagePanel.updateCost();
 			}
+		} else if (notification instanceof HomeTabEventNotification) {
+			new FrontlineUiUpateJob() {
+				public void run() {
+					Object eventListComponent = find(COMPONENT_EVENTS_LIST);
+					if(eventListComponent != null) {
+						while(ui.getItems(eventListComponent).length >= EVENTS_LIMIT) {
+							ui.remove(ui.getItem(eventListComponent, EVENTS_LIMIT-1));
+						}
+						ui.add(eventListComponent, getRow((HomeTabEventNotification) notification), 0);
+					}		
+				}
+			}.execute();
 		} else if (notification instanceof UiDestroyEvent) {
 			if(((UiDestroyEvent) notification).isFor(this.ui)) {
 				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
