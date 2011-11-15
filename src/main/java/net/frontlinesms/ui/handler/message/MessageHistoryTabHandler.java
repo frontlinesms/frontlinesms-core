@@ -54,10 +54,8 @@ import net.frontlinesms.data.repository.GroupMembershipDao;
 import net.frontlinesms.data.repository.KeywordDao;
 import net.frontlinesms.data.repository.MessageDao;
 import net.frontlinesms.events.AppPropertiesEventNotification;
-import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.ui.Icon;
-import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.UiProperties;
 import net.frontlinesms.ui.events.FrontlineUiUpateJob;
@@ -77,7 +75,7 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
  * @author Carlos Eduardo Genz kadu(at)masabi(dot)com
  * @author Morgan Belkadi morgan@frontlinesms.com
  */
-public class MessageHistoryTabHandler extends BaseTabHandler implements PagedComponentItemProvider, SingleGroupSelecterPanelOwner, EventObserver {
+public class MessageHistoryTabHandler extends BaseTabHandler implements PagedComponentItemProvider, SingleGroupSelecterPanelOwner {
 	
 //> CONSTANTS
 	/** Path to the Thinlet XML layout file for the message history tab */
@@ -150,7 +148,7 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 	 * @param ui value for {@link #ui}
 	 */
 	public MessageHistoryTabHandler(UiGeneratorController ui) {
-		super(ui);
+		super(ui, true);
 		this.contactDao = ui.getFrontlineController().getContactDao();
 		this.keywordDao = ui.getFrontlineController().getKeywordDao();
 		this.messageDao = ui.getFrontlineController().getMessageDao();
@@ -167,19 +165,17 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 	 * UI event called when the user changes tab
 	 */
 	public void notify(FrontlineEventNotification notification) {
+		super.notify(notification);
 		if (notification instanceof EntitySavedNotification<?>) {
 			Object entity = ((EntitySavedNotification<?>) notification).getDatabaseEntity();
-			if(entity instanceof FrontlineMessage) {
-				if(entity instanceof FrontlineMultimediaMessage) {
-					// TODO check if the list is visible before refreshing
-					refresh();
-				}
+			if(entity instanceof FrontlineMultimediaMessage) {
+				threadSafeRefresh();
 			}
 		} else if (notification instanceof TabChangedNotification) {
 			// This object is registered to the UIGeneratorController and get notified when the users changes tab
 			String newTabName = ((TabChangedNotification) notification).getNewTabName();
 			if (newTabName.equals(TAB_MESSAGE_HISTORY)) {
-				this.refresh();
+				threadSafeRefresh();
 				this.ui.setStatus(InternationalisationUtils.getI18nString(MESSAGE_MESSAGES_LOADED));
 			}
 		} else if (notification instanceof AppPropertiesEventNotification) {
@@ -187,10 +183,6 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 			if (property.equals(AppProperties.KEY_SMS_COST_RECEIVED_MESSAGES) || property.equals(AppProperties.KEY_SMS_COST_SENT_MESSAGES)
 					|| property.equals(UiProperties.CURRENCY_FORMAT) || property.equals(UiProperties.CURRENCY_FORMAT_IS_CUSTOM)) {
 				this.updateMessageHistoryCost();
-			}
-		} else if (notification instanceof UiDestroyEvent) {
-			if(((UiDestroyEvent) notification).isFor(this.ui)) {
-				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
 			}
 		}
 	}
@@ -235,9 +227,6 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 		LOG.trace("ENTRY");
 
 		Object tabComponent = ui.loadComponentFromFile(UI_FILE_MESSAGES_TAB, this);
-		
-		// We register the observer to the UIGeneratorController, which notifies when tabs have changed
-		this.ui.getFrontlineController().getEventBus().registerObserver(this);
 		
 		messageListComponent = ui.find(tabComponent, COMPONENT_MESSAGE_LIST);
 		messagePagingHandler = new ComponentPagingHandler(this.ui, this, this.messageListComponent);

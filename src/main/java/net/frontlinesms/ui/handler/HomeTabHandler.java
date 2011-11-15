@@ -14,13 +14,10 @@ import javax.imageio.ImageIO;
 
 import net.frontlinesms.AppProperties;
 import net.frontlinesms.events.AppPropertiesEventNotification;
-import net.frontlinesms.events.EventBus;
-import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.ui.HomeTabEventNotification;
 import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.FrontlineUiUtils;
-import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.UiGeneratorControllerConstants;
 import net.frontlinesms.ui.UiProperties;
@@ -35,7 +32,7 @@ import net.frontlinesms.ui.settings.HomeTabLogoChangedNotification;
  * @author Alex Anderson <alex@frontlinesms.com>
  * @author Morgan Belkadi <morgan@frontlinesms.com>
  */
-public class HomeTabHandler extends BaseTabHandler implements EventObserver {
+public class HomeTabHandler extends BaseTabHandler {
 //> STATIC CONSTANTS
 	/** Limit of the number of events to be displayed on the home screen */
 	final int EVENTS_LIMIT = UiProperties.getInstance().getHomeTabEventLimit();
@@ -68,8 +65,6 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	/** Max FrontlineSMS home logo height */
 	private static final double FRONTLINE_LOGO_MAX_HEIGHT = 300.0;
 
-	private EventBus eventBus;
-
 	private MessagePanelHandler messagePanel;
 
 
@@ -81,10 +76,7 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	 * @param ui value for {@link #ui}
 	 */
 	public HomeTabHandler(UiGeneratorController ui) {
-		super(ui);
-		this.eventBus = ui.getFrontlineController().getEventBus();
-		
-		this.eventBus.registerObserver(this);
+		super(ui, true);
 	}
 
 //> UI METHODS
@@ -282,15 +274,24 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 
 //> LISTENER EVENT METHODS
 	public void notify(final FrontlineEventNotification notification) {
+		super.notify(notification);
 		if (notification instanceof HomeTabLogoChangedNotification) {
-			this.refreshLogoVisibility(getTab());
+			new FrontlineUiUpateJob() {
+				public void run() {
+					refreshLogoVisibility(getTab());					
+				}
+			}.execute();
 		} else if (notification instanceof AppPropertiesEventNotification) {
-			String property = ((AppPropertiesEventNotification) notification).getProperty();
-			if (property.equals(AppProperties.KEY_SMS_COST_SENT_MESSAGES)
-					|| property.equals(UiProperties.CURRENCY_FORMAT)
-					|| property.equals(UiProperties.CURRENCY_FORMAT_IS_CUSTOM)) {
-				this.messagePanel.updateCost();
-			}
+			new FrontlineUiUpateJob() {
+				public void run() {
+					String property = ((AppPropertiesEventNotification) notification).getProperty();
+					if (property.equals(AppProperties.KEY_SMS_COST_SENT_MESSAGES)
+							|| property.equals(UiProperties.CURRENCY_FORMAT)
+							|| property.equals(UiProperties.CURRENCY_FORMAT_IS_CUSTOM)) {
+						messagePanel.updateCost();
+					}
+				}
+			}.execute();
 		} else if (notification instanceof HomeTabEventNotification) {
 			new FrontlineUiUpateJob() {
 				public void run() {
@@ -303,10 +304,6 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 					}		
 				}
 			}.execute();
-		} else if (notification instanceof UiDestroyEvent) {
-			if(((UiDestroyEvent) notification).isFor(this.ui)) {
-				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
-			}
 		}
 	}
 
