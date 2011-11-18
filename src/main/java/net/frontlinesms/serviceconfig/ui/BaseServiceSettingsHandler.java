@@ -17,7 +17,10 @@ import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.PersistableSettingValue;
 import net.frontlinesms.data.domain.PersistableSettings;
+import net.frontlinesms.data.events.DatabaseEntityNotification;
 import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
+import net.frontlinesms.events.EventObserver;
+import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.serviceconfig.ConfigurableService;
 import net.frontlinesms.serviceconfig.OptionalRadioSection;
 import net.frontlinesms.serviceconfig.OptionalSection;
@@ -25,36 +28,45 @@ import net.frontlinesms.serviceconfig.PasswordString;
 import net.frontlinesms.serviceconfig.PhoneSection;
 import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
 import net.frontlinesms.serviceconfig.StructuredProperties;
+import net.frontlinesms.settings.BaseSectionHandler;
+import net.frontlinesms.settings.FrontlineValidationMessage;
 import net.frontlinesms.ui.IconMap;
 import net.frontlinesms.ui.ThinletUiEventHandler;
+import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.handler.contacts.ContactSelecter;
-import net.frontlinesms.ui.handler.settings.SmsInternetServiceSettingsHandler;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
+import net.frontlinesms.ui.settings.UiSettingsSectionHandler;
 
 /**
  * Ui Handler for service settings.
  * @author Alex Anderson, Carlos Eduardo Genz
  */
-public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> implements ThinletUiEventHandler {
+public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
+		extends BaseSectionHandler
+		implements ThinletUiEventHandler, UiSettingsSectionHandler, EventObserver {
 //> CONSTANTS
+	private static final String UI_SECTION_INTERNET_SERVICES = "/ui/core/settings/services/pnServiceList.xml";
 	/** Path to XML for UI layout for settings screen, {@link #settingsDialog} */
-	private static final String UI_SETTINGS = "/ui/core/settings/services/internet/settings.xml";
+	private static final String UI_SETTINGS = "/ui/core/settings/services/dgSettings.xml";
 	/** Path to XML for UI layout for provider choosing screen, {@link #newServiceWizard} */
-	private static final String UI_CHOOSE_PROVIDER = "/ui/core/settings/services/internet/chooseProvider.xml";
+	private static final String UI_CHOOSE_PROVIDER = "/ui/core/settings/services/dgChooseProvider.xml";
 	/** Path to XML for UI layout for configuration screen, {@link #configurator} */
-	private static final String UI_CONFIGURE = "/ui/core/settings/services/internet/configure.xml";
-	
-	private static final String UI_COMPONENT_LS_ACCOUNTS = "lsSmsInternetServices";
+	private static final String UI_CONFIGURE = "/ui/core/settings/services/dgConfigure.xml";
+
+	private static final String UI_COMPONENT_LS_ACCOUNTS = "lsServices";
+	private static final String UI_COMPONENT_LS_PROVIDERS = "lsProviders";
 	private static final String UI_COMPONENT_PN_BUTTONS = "pnButtons";
-	
+
 	/** Logging object */
-	private static final Logger LOG = FrontlineUtils.getLogger(SmsInternetServiceSettingsHandler.class);
+	private final Logger log = FrontlineUtils.getLogger(getClass());
 	
 
 //> INSTANCE PROPERTIES
-	/** Thinlet instance that owns this handler */
-	protected final UiGeneratorController controller;
+	private final String title;
+	private final String icon;
+	
 	/** dialog for editing {@link PersistableSettings} instances */
 	private Object settingsDialog;
 	/** dialog for choosing the class of a new {@link ConfigurableService} */
@@ -72,15 +84,30 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 //> CONSTRUCTORS
 	/**
 	 * Creates a new instance of this UI.
-	 * @param controller thinlet controller that owns this {@link SmsInternetServiceSettingsHandler}.
+	 * @param ui thinlet controller that owns this {@link SmsInternetServiceSettingsHandler}.
 	 */
-	public BaseServiceSettingsHandler(UiGeneratorController controller, Collection<Class<? extends T>> serviceProviders,
-			ConfigurableServiceSettingsDao<T> settingsDao) {
-		this.controller = controller;
-		this.iconProperties = controller.getIconMap();
+	public BaseServiceSettingsHandler(UiGeneratorController ui,
+			ConfigurableServiceSettingsDao<T> settingsDao,
+			Collection<Class<? extends T>> serviceProviders,
+			String title, String icon) {
+		super(ui);
+		this.ui = ui;
+		this.iconProperties = ui.getIconMap();
+		this.title = title;
+		this.icon = icon;
 
 		this.serviceProviders = serviceProviders;
 		this.settingsDao = settingsDao;
+	}
+	
+	@Override
+	protected void init() {
+		this.panel = ui.loadComponentFromFile(UI_SECTION_INTERNET_SERVICES, this);
+
+		// Update the list of accounts from the list provided
+		refresh();
+		
+		eventBus.registerObserver(this);
 	}
 	
 	public abstract Class<T> getServiceSupertype();
@@ -91,49 +118,89 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		if(newServiceWizard != null) removeDialog(newServiceWizard);
 	}
 	
+//> INTERNAL HELPER METHODS
+	private final void refresh() {
+		new FrontlineUiUpdateJob() {
+			public void run() {
+				Object accountList = find(UI_COMPONENT_LS_ACCOUNTS);
+				if (accountList != null) {
+					refreshAccounts(accountList);
+				}
+				
+				selectionChanged(accountList, find(UI_COMPONENT_PN_BUTTONS));
+			}
+		}.execute();
+	}
+
+	public void refreshAccounts(Object accountList) {
+		ui.removeAll(accountList);
+		for(PersistableSettings s : settingsDao.getServiceAccounts()) {
+			String description = getProviderName(s.getServiceClass()) + " - " +
+					s.getId(); // TODO should use something more user friendly than database ID here
+			Object listItem = ui.createListItem(description, s);
+			ui.setIcon(listItem, getProviderIcon(s.getServiceClass()));
+			ui.add(accountList, listItem);
+		}
+	}
+
+//> UI EVENT METHODS
+	/**
+	 * Enables/Disables fields from panel, according to list selection.
+	 * @param list
+	 * @param panel
+	 */
+	public final void selectionChanged(Object list, Object panel) {
+		boolean enableButtons = this.ui.getSelectedItem(list) != null;
+		for (Object item : this.ui.getItems(panel)) {
+			String name = this.ui.getName(item); 
+			if (!"btNew".equals(name) && !"btCancel".equals(name)) {
+				this.ui.setEnabled(item, enableButtons);
+			}
+		}
+	}
+	
+	
 	/**
 	 * Shows the general confirmation dialog (for removal). 
 	 * @param methodToBeCalled the method to be called if the confirmation is affirmative
 	 */
 	public void showConfirmationDialog(String methodToBeCalled){
-		controller.showConfirmationDialog(methodToBeCalled, this);
+		ui.showConfirmationDialog(methodToBeCalled, this);
 	}
 
 	/** Show this dialog to the user. */
 	public void showSettingsDialog() {
 		clearDesktop();
 
-		settingsDialog = controller.loadComponentFromFile(UI_SETTINGS, this);
+		settingsDialog = ui.loadComponentFromFile(UI_SETTINGS, this);
 
 		// Update the list of accounts from the list provided
-		Object accountList = controller.find(settingsDialog, UI_COMPONENT_LS_ACCOUNTS);
-		this.refreshAccounts(accountList);
+		Object accountList = ui.find(settingsDialog, UI_COMPONENT_LS_ACCOUNTS);
+		refreshAccounts(accountList);
 		
-		selectionChanged(accountList, controller.find(settingsDialog, UI_COMPONENT_PN_BUTTONS));
-		controller.add(settingsDialog);
+		selectionChanged(accountList, ui.find(settingsDialog, UI_COMPONENT_PN_BUTTONS));
+		ui.add(settingsDialog);
 	}
-
-	public abstract void refreshAccounts(Object accountList);
 
 	/** Show the wizard for creating a new service. */
 	public void showNewServiceWizard() {
 		clearDesktop();
 
-		newServiceWizard = controller.loadComponentFromFile(UI_CHOOSE_PROVIDER, this);
-		Object providerList = controller.find(newServiceWizard, "lsProviders");
+		newServiceWizard = ui.loadComponentFromFile(UI_CHOOSE_PROVIDER, this);
+		Object providerList = ui.find(newServiceWizard, UI_COMPONENT_LS_PROVIDERS);
 		if (providerList != null) {
 			for (Class<? extends T> provider : serviceProviders) {
-				Object item = controller.createListItem(getProviderName(provider), provider);
+				Object item = ui.createListItem(getProviderName(provider), provider);
 				String icon = getProviderIcon(provider);
 				if (icon != null) {
-					controller.setIcon(item, controller.getIcon(icon));
+					ui.setIcon(item, ui.getIcon(icon));
 				}
-				controller.add(providerList, item);
+				ui.add(providerList, item);
 			}
 		}
 
-		selectionChanged(providerList, controller.find(newServiceWizard, "pnButtons"));
-		controller.add(newServiceWizard);
+		selectionChanged(providerList, ui.find(newServiceWizard, UI_COMPONENT_PN_BUTTONS));
+		ui.add(newServiceWizard);
 	}
 
 	/**
@@ -141,8 +208,8 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 * @param lsProviders
 	 */
 	public void configureService(Object lsProviders) {
-		Object serviceComponent = this.controller.getSelectedItem(lsProviders);
-		showConfigureService((PersistableSettings) controller.getAttachedObject(serviceComponent), settingsDialog);
+		Object serviceComponent = this.ui.getSelectedItem(lsProviders);
+		showConfigureService((PersistableSettings) ui.getAttachedObject(serviceComponent), settingsDialog);
 	}
 
 	/**
@@ -150,7 +217,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 * @param component
 	 */
 	public void removeDialog(Object component) {
-		controller.remove(component);
+		ui.remove(component);
 	}
 
 	/**
@@ -160,33 +227,18 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 */
 	@SuppressWarnings("unchecked")
 	public void configureNewService(Object lsProviders) {
-		Object selectedItem = controller.getSelectedItem(lsProviders);
+		Object selectedItem = ui.getSelectedItem(lsProviders);
 		clearDesktop();
-		Class<? extends T> providerClass = controller.getAttachedObject(selectedItem, Class.class);
-		LOG.info("Attempting to init SmsInternetService class: " + providerClass.getName());
+		Class<? extends T> providerClass = ui.getAttachedObject(selectedItem, Class.class);
+		log.info("Attempting to init SmsInternetService class: " + providerClass.getName());
 		showConfigureService(new PersistableSettings(getServiceSupertype(), providerClass), newServiceWizard);
 	}
 	
 	public void cancelAction(Object btCancel, Object dialog) {
-		Object attached = controller.getAttachedObject(btCancel);
+		Object attached = ui.getAttachedObject(btCancel);
 		removeDialog(dialog);
 		if (attached != null) {
-			controller.add(attached);
-		}
-	}
-	
-	/**
-	 * Enables/Disables fields from panel, according to list selection.
-	 * @param list
-	 * @param panel
-	 */
-	public void selectionChanged(Object list, Object panel) {
-		for (Object item : controller.getItems(panel)) {
-			String name = controller.getName(item); 
-			if (!"btNew".equals(name)
-					&& !"btCancel".equals(name)) {
-				controller.setEnabled(item, controller.getSelectedItem(list) != null);
-			}
+			ui.add(attached);
 		}
 	}
 	
@@ -199,38 +251,38 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 * @param service
 	 */
 	public void showConfigureService(PersistableSettings settings, Object fromDialog) {
-		configurator = controller.loadComponentFromFile(UI_CONFIGURE, this);
+		configurator = ui.loadComponentFromFile(UI_CONFIGURE, this);
 		String icon = getProviderIcon(settings.getServiceClass());
 		if (icon != null) {
-			controller.setIcon(configurator, controller.getIcon(icon));
+			ui.setIcon(configurator, ui.getIcon(icon));
 		}
-		controller.setAttachedObject(configurator, settings);
-		controller.setText(configurator, getProviderName(settings.getServiceClass()) + " " + controller.getText(configurator));
-		Object configPanel = controller.find(configurator, "pnConfigFields");
+		ui.setAttachedObject(configurator, settings);
+		ui.setText(configurator, getProviderName(settings.getServiceClass()) + " " + ui.getText(configurator));
+		Object configPanel = ui.find(configurator, "pnConfigFields");
 		StructuredProperties properties = settings.getStructuredProperties();
 		for (String key : properties.keySet()) {
 			Object value = properties.getShallow(key);
 			for (Object comp : getPropertyComponents(key, value))
-				controller.add(configPanel, comp);
+				ui.add(configPanel, comp);
 		}
 		
 		if (fromDialog != null) {
-			controller.setAttachedObject(controller.find(configurator, "btCancel"), fromDialog);
+			ui.setAttachedObject(ui.find(configurator, "btCancel"), fromDialog);
 			if (fromDialog.equals(newServiceWizard)) {
-				controller.setAttachedObject(controller.find(configurator, "btSave"), settingsDialog);
+				ui.setAttachedObject(ui.find(configurator, "btSave"), settingsDialog);
 			} else {
-				controller.setAttachedObject(controller.find(configurator, "btSave"), fromDialog);
+				ui.setAttachedObject(ui.find(configurator, "btSave"), fromDialog);
 			}
 		}
 		
 		clearDesktop();
-		controller.add(configurator);
+		ui.add(configurator);
 	}
 
 	/** Confirms deletes of {@link SmsInternetService}(s) from the system and removes them from the list of services */
 	public void removeServices() {
-		controller.removeConfirmationDialog();
-		removeServices(controller.find(settingsDialog, "lsSmsInternetServices"));
+		ui.removeConfirmationDialog();
+		removeServices(ui.find(settingsDialog, "lsSmsInternetServices"));
 	}
 
 	/**
@@ -238,13 +290,11 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 * @param lsProviders
 	 */
 	private void removeServices(Object lsProviders) {
-		Object[] obj = controller.getSelectedItems(lsProviders);
+		Object[] obj = ui.getSelectedItems(lsProviders);
 		for (Object object : obj) {
-			T service = controller.getAttachedObject(object, getServiceSupertype());
+			T service = ui.getAttachedObject(object, getServiceSupertype());
 			settingsDao.deleteServiceSettings(service.getSettings());
-			controller.remove(object);
 		}
-		selectionChanged(lsProviders, controller.find(settingsDialog, "pnButtons"));
 	}
 	
 	/**
@@ -272,88 +322,88 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 			// only one extra thing: thinlet.setBoolean(tf, "hidden", true) ?
 			// If we have a db value, use that cos it's the right one
 			components = new Object[2];
-			components[0] = controller.createLabel(label);
+			components[0] = ui.createLabel(label);
 			if (iconProperties.hasIcon(key)) {
-				controller.setIcon(components[0], controller.getIcon(iconProperties.getIcon(key)));
+				ui.setIcon(components[0], ui.getIcon(iconProperties.getIcon(key)));
 			}
 			Object tf;
 			if (valueObj instanceof PasswordString) {
-				tf = controller.createPasswordfield(key, ((PasswordString)valueObj).getValue());
+				tf = ui.createPasswordfield(key, ((PasswordString)valueObj).getValue());
 			} else {
-				tf = controller.createTextfield(key, valueString);
+				tf = ui.createTextfield(key, valueString);
 			}
-			controller.setColumns(tf, 25);
-			controller.setInteger(tf, "weightx", 1);
+			ui.setColumns(tf, 25);
+			ui.setInteger(tf, "weightx", 1);
 			components[1] = tf;
 		} else if(valueObj instanceof Boolean) {
 			//If we have a db value, use that cos it's the right one
-			Object checkbox = controller.createCheckbox(key, label, (Boolean) valueObj);
+			Object checkbox = ui.createCheckbox(key, label, (Boolean) valueObj);
 			if (iconProperties.hasIcon(key)) {
-				controller.setIcon(checkbox, controller.getIcon(iconProperties.getIcon(key)));
+				ui.setIcon(checkbox, ui.getIcon(iconProperties.getIcon(key)));
 			}
-			controller.setColspan(checkbox, 2);
+			ui.setColspan(checkbox, 2);
 			components = new Object[] {checkbox};
 		} else if (valueObj instanceof PhoneSection) {
-			Object panel = controller.createPanel("pn" + key.replace(".", "_"));
-			controller.setInteger(panel, "gap", 5);
-			controller.setInteger(panel, "weightx", 1);
-			Object lb = controller.createLabel(label);
+			Object panel = ui.createPanel("pn" + key.replace(".", "_"));
+			ui.setInteger(panel, "gap", 5);
+			ui.setInteger(panel, "weightx", 1);
+			Object lb = ui.createLabel(label);
 			if (iconProperties.hasIcon(key)) {
-				controller.setIcon(lb, controller.getIcon(iconProperties.getIcon(key)));
+				ui.setIcon(lb, ui.getIcon(iconProperties.getIcon(key)));
 			}
 			//If we have a db value, use that cos it's the right one
-			Object tf = controller.createTextfield(key, valueString);
-			controller.setInteger(tf, "weightx", 1);
+			Object tf = ui.createTextfield(key, valueString);
+			ui.setInteger(tf, "weightx", 1);
 			//controller.setInteger(tf, Thinlet.ATTRIBUTE_COLUMNS, 20);
-			Object bt = controller.createButton("");
-			controller.setIcon(bt, controller.getIcon(PhoneSection.BUTTON_ICON));
-			controller.setAttachedObject(bt, tf);
-			controller.add(panel, tf);
-			controller.add(panel, bt);
-			controller.setAction(bt, "showContacts(this)", panel, this);
+			Object bt = ui.createButton("");
+			ui.setIcon(bt, ui.getIcon(PhoneSection.BUTTON_ICON));
+			ui.setAttachedObject(bt, tf);
+			ui.add(panel, tf);
+			ui.add(panel, bt);
+			ui.setAction(bt, "showContacts(this)", panel, this);
 			components = new Object[] {lb, panel};
 		} else if (valueObj instanceof OptionalSection) {
 			OptionalSection section = (OptionalSection) valueObj;
-			Object checkbox = controller.createCheckbox(key, label, section.getValue());
+			Object checkbox = ui.createCheckbox(key, label, section.getValue());
 			if (iconProperties.hasIcon(key)) {
-				controller.setIcon(checkbox, controller.getIcon(iconProperties.getIcon(key)));
+				ui.setIcon(checkbox, ui.getIcon(iconProperties.getIcon(key)));
 			}
-			controller.setColspan(checkbox, 2);
-			Object panel = controller.createPanel("pn" + key.replace(".", "_"));
-			controller.setColspan(panel, 2);
-			controller.setColumns(panel, 2);
-			controller.setGap(panel, 8);
-			controller.setInteger(panel, "top", 10); // TODO these should call methods in ExtendedThinlet
-			controller.setInteger(panel, "right", 10);
-			controller.setInteger(panel, "left", 10);
-			controller.setInteger(panel, "bottom", 10);
-			controller.setBorder(panel, true);
+			ui.setColspan(checkbox, 2);
+			Object panel = ui.createPanel("pn" + key.replace(".", "_"));
+			ui.setColspan(panel, 2);
+			ui.setColumns(panel, 2);
+			ui.setGap(panel, 8);
+			ui.setInteger(panel, "top", 10); // TODO these should call methods in ExtendedThinlet
+			ui.setInteger(panel, "right", 10);
+			ui.setInteger(panel, "left", 10);
+			ui.setInteger(panel, "bottom", 10);
+			ui.setBorder(panel, true);
 			List<Object> objects = new LinkedList<Object>();
 			objects.add(checkbox);
 			for (String child : section.getDependencies().keySet()) {
 				for (Object comp : getPropertyComponents(child, section.getDependencies().getShallow(child))) {
-					controller.add(panel, comp);
+					ui.add(panel, comp);
 				}
 			}
 			objects.add(panel);
 			components = objects.toArray();
-			controller.setAction(checkbox, "enableFields(this.selected, " + controller.getName(panel) + ")", panel, this);
-			enableFields(controller.isSelected(checkbox), panel);
+			ui.setAction(checkbox, "enableFields(this.selected, " + ui.getName(panel) + ")", panel, this);
+			enableFields(ui.isSelected(checkbox), panel);
 		} else if (valueObj instanceof OptionalRadioSection) {
 			OptionalRadioSection section = (OptionalRadioSection) valueObj;
-			Object panel = controller.createPanel(key);
-			controller.setColspan(panel, 2);
-			controller.setColumns(panel, 1);
-			controller.setGap(panel, 8);
-			controller.setInteger(panel, "top", 10); // TODO these should call methods in ExtendedThinlet
-			controller.setInteger(panel, "right", 10);
-			controller.setInteger(panel, "left", 10);
-			controller.setInteger(panel, "bottom", 10);
-			controller.setInteger(panel, "weightx", 1);
-			controller.setBorder(panel, true);
-			controller.setText(panel, label);
+			Object panel = ui.createPanel(key);
+			ui.setColspan(panel, 2);
+			ui.setColumns(panel, 1);
+			ui.setGap(panel, 8);
+			ui.setInteger(panel, "top", 10); // TODO these should call methods in ExtendedThinlet
+			ui.setInteger(panel, "right", 10);
+			ui.setInteger(panel, "left", 10);
+			ui.setInteger(panel, "bottom", 10);
+			ui.setInteger(panel, "weightx", 1);
+			ui.setBorder(panel, true);
+			ui.setText(panel, label);
 			if (iconProperties.hasIcon(key)) {
-				controller.setIcon(panel, controller.getIcon(iconProperties.getIcon(key)));
+				ui.setIcon(panel, ui.getIcon(iconProperties.getIcon(key)));
 			}
 
 			valueString = valueString.substring(valueString.lastIndexOf(".") + 1);
@@ -361,55 +411,55 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 				Method getValues = section.getValue().getClass().getMethod("values");
 				Enum[] vals = (Enum[]) getValues.invoke(null);
 				for (Enum val : vals) {
-					Object rb = controller.createRadioButton(key + val.name(), val.name(), key, val.name().equals(valueString));
-					controller.add(panel, rb);
+					Object rb = ui.createRadioButton(key + val.name(), val.name(), key, val.name().equals(valueString));
+					ui.add(panel, rb);
 					StructuredProperties child = section.getDependencies(val);
-					Object panelChild = controller.createPanel(key + val.ordinal());
-					controller.setColspan(panelChild, 2);
-					controller.setColumns(panelChild, 2);
-					controller.setGap(panelChild, 8);
-					controller.setInteger(panelChild, "top", 10);
-					controller.setInteger(panelChild, "right", 10);
-					controller.setInteger(panelChild, "left", 10);
-					controller.setInteger(panelChild, "bottom", 10);
-					controller.setInteger(panelChild, "weightx", 1);
+					Object panelChild = ui.createPanel(key + val.ordinal());
+					ui.setColspan(panelChild, 2);
+					ui.setColumns(panelChild, 2);
+					ui.setGap(panelChild, 8);
+					ui.setInteger(panelChild, "top", 10);
+					ui.setInteger(panelChild, "right", 10);
+					ui.setInteger(panelChild, "left", 10);
+					ui.setInteger(panelChild, "bottom", 10);
+					ui.setInteger(panelChild, "weightx", 1);
 					for (String childKey : child.keySet()) {
 						for (Object comp : getPropertyComponents(childKey, child.getShallow(childKey))) {
-							controller.add(panelChild, comp);
+							ui.add(panelChild, comp);
 						}
 					}
-					controller.add(panel, panelChild);
-					controller.setAttachedObject(rb, panelChild);
-					controller.setAction(rb, "enableFields(" + controller.getName(panel) + ")", panel, this);
+					ui.add(panel, panelChild);
+					ui.setAttachedObject(rb, panelChild);
+					ui.setAction(rb, "enableFields(" + ui.getName(panel) + ")", panel, this);
 				}
 				enableFields(panel);
 			} catch (Throwable t) {
-				LOG.error("Could not get values from enum [" + valueObj.getClass() + "]", t);
+				log.error("Could not get values from enum [" + valueObj.getClass() + "]", t);
 			}
 			components = new Object[] {panel};
 		} else if (valueObj instanceof Enum<?>) {
 			components = new Object[1];
-			Object panel = controller.createPanel(key);
-			controller.setColspan(panel, 2);
-			controller.setColumns(panel, 1);
-			controller.setInteger(panel, "gap", 8);
-			controller.setInteger(panel, "top", 10);
-			controller.setInteger(panel, "right", 10);
-			controller.setInteger(panel, "left", 10);
-			controller.setInteger(panel, "bottom", 10);
-			controller.setBorder(panel, true);
-			controller.setText(panel, label);
+			Object panel = ui.createPanel(key);
+			ui.setColspan(panel, 2);
+			ui.setColumns(panel, 1);
+			ui.setInteger(panel, "gap", 8);
+			ui.setInteger(panel, "top", 10);
+			ui.setInteger(panel, "right", 10);
+			ui.setInteger(panel, "left", 10);
+			ui.setInteger(panel, "bottom", 10);
+			ui.setBorder(panel, true);
+			ui.setText(panel, label);
 			if (iconProperties.hasIcon(key)) {
-				controller.setIcon(panel, controller.getIcon(iconProperties.getIcon(key)));
+				ui.setIcon(panel, ui.getIcon(iconProperties.getIcon(key)));
 			}
 			try {
 				Method getValues = valueObj.getClass().getMethod("values");
 				Enum[] vals = (Enum[]) getValues.invoke(null);
 				for (Enum val : vals) {
-					controller.add(panel, controller.createRadioButton(key + val.name(), val.name(), key, val.name().equals(valueString)));
+					ui.add(panel, ui.createRadioButton(key + val.name(), val.name(), key, val.name().equals(valueString)));
 				}
 			} catch (Throwable t) {
-				LOG.error("Could not get values from enum [" + valueObj.getClass() + "]", t);
+				log.error("Could not get values from enum [" + valueObj.getClass() + "]", t);
 			}
 			components[0] = panel;
 		} else throw new RuntimeException("Unsupported property type for property '"+key+"': " + valueObj.getClass());
@@ -418,36 +468,36 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	}
 
 	public void showContacts(Object button) {
-		Object textField = controller.getAttachedObject(button);
-		ContactSelecter contactSelecter = new ContactSelecter(controller);
+		Object textField = ui.getAttachedObject(button);
+		ContactSelecter contactSelecter = new ContactSelecter(ui);
 		final boolean shouldHaveEmail = false;
 		contactSelecter.show(InternationalisationUtils.getI18nString(FrontlineSMSConstants.COMMON_SENDER_NUMBER), "setContactNumber(contactSelecter_contactList, contactSelecter)", textField, this, shouldHaveEmail);
 	}
 
 	public void setContactNumber(Object list, Object dialog) {
-		Object textField = controller.getAttachedObject(dialog);
-		Object selectedItem = controller.getSelectedItem(list);
+		Object textField = ui.getAttachedObject(dialog);
+		Object selectedItem = ui.getSelectedItem(list);
 		if (selectedItem == null) {
-			controller.alert(InternationalisationUtils.getI18nString(FrontlineSMSConstants.MESSAGE_NO_CONTACT_SELECTED));
+			ui.alert(InternationalisationUtils.getI18nString(FrontlineSMSConstants.MESSAGE_NO_CONTACT_SELECTED));
 			return;
 		}
-		Contact selectedContact = controller.getContact(selectedItem);
-		controller.setText(textField, selectedContact.getPhoneNumber());
+		Contact selectedContact = ui.getContact(selectedItem);
+		ui.setText(textField, selectedContact.getPhoneNumber());
 		removeDialog(dialog);
 	}
 
 	public void enableFields(boolean checked, Object panel) {
-		controller.setEnabled(panel, checked);
-		for (Object obj : controller.getItems(panel)) {
+		ui.setEnabled(panel, checked);
+		for (Object obj : ui.getItems(panel)) {
 			enableFields(checked, obj);
 		}
 	}
 
 	public void enableFields(Object panel) {
-		for (Object child : controller.getItems(panel)) {
+		for (Object child : ui.getItems(panel)) {
 			if (Thinlet.getClass(child).equals(Thinlet.WIDGET_CHECKBOX)) {
-				Object childPanel = controller.getAttachedObject(child);
-				enableFields(controller.isSelected(child), childPanel);
+				Object childPanel = ui.getAttachedObject(child);
+				enableFields(ui.isSelected(child), childPanel);
 			}
 		}
 	}
@@ -461,32 +511,32 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 */
 	private Object getPropertyValue(Object comp, Class<?> clazz) {
 		if(clazz.equals(String.class))
-			return controller.getText(comp);
+			return ui.getText(comp);
 		if(clazz.equals(Integer.class))
-			return Integer.parseInt(controller.getText(comp));
+			return Integer.parseInt(ui.getText(comp));
 		if(clazz.equals(Long.class))
-			return Long.parseLong(controller.getText(comp));
+			return Long.parseLong(ui.getText(comp));
 		if(clazz.equals(BigDecimal.class))
-			return new BigDecimal(controller.getText(comp));
+			return new BigDecimal(ui.getText(comp));
 		if(clazz.equals(Boolean.class))
-			return new Boolean(controller.isSelected(comp));
+			return new Boolean(ui.isSelected(comp));
 		if(clazz.equals(PasswordString.class))
-			return new PasswordString(controller.getText(comp));
+			return new PasswordString(ui.getText(comp));
 		if (clazz.equals(OptionalSection.class))
-			return new Boolean(controller.isSelected(comp));
+			return new Boolean(ui.isSelected(comp));
 		if(clazz.equals(PhoneSection.class))
-			return new PhoneSection(controller.getText(comp));
+			return new PhoneSection(ui.getText(comp));
 		if (clazz.equals(OptionalRadioSection.class)) {
-			for (Object child : controller.getItems(comp)) {
-				if (Thinlet.getClass(child).equals(Thinlet.WIDGET_CHECKBOX) && controller.isSelected(child)) {
-					return controller.getText(child);
+			for (Object child : ui.getItems(comp)) {
+				if (Thinlet.getClass(child).equals(Thinlet.WIDGET_CHECKBOX) && ui.isSelected(child)) {
+					return ui.getText(child);
 				}
 			}
 		}
 		if (clazz.isEnum()) {
-			for (Object child : controller.getItems(comp)) {
-				if (Thinlet.getClass(child).equals(Thinlet.WIDGET_CHECKBOX) && controller.isSelected(child)) {
-					return controller.getText(child);
+			for (Object child : ui.getItems(comp)) {
+				if (Thinlet.getClass(child).equals(Thinlet.WIDGET_CHECKBOX) && ui.isSelected(child)) {
+					return ui.getText(child);
 				}
 			}
 		}
@@ -499,7 +549,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	 * @throws DuplicateKeyException 
 	 */
 	public void saveSettings(Object pnSmsInternetServiceConfigure, Object btSave) throws DuplicateKeyException {
-		PersistableSettings settings = controller.getAttachedObject(pnSmsInternetServiceConfigure, PersistableSettings.class); 
+		PersistableSettings settings = ui.getAttachedObject(pnSmsInternetServiceConfigure, PersistableSettings.class); 
 		StructuredProperties properties = settings.getStructuredProperties();
 		saveSettings(pnSmsInternetServiceConfigure, settings, properties);
 		
@@ -515,7 +565,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void saveSettings(Object pnSmsInternetServiceConfigure, PersistableSettings serviceSettings, StructuredProperties properties) {
 		for(String key : properties.keySet()) {
-			Object propertyUiComponent = controller.find(pnSmsInternetServiceConfigure, key);
+			Object propertyUiComponent = ui.find(pnSmsInternetServiceConfigure, key);
 			Object newValue = getPropertyValue(propertyUiComponent, properties.getShallow(key).getClass());
 			if (properties.getShallow(key) instanceof OptionalSection) {
 				OptionalSection section = (OptionalSection) properties.getShallow(key);
@@ -535,7 +585,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 						saveSettings(pnSmsInternetServiceConfigure, serviceSettings, section.getDependencies(val));
 					}
 				} catch (Throwable t) {
-					LOG.error("Could not get values from enum.", t);
+					log.error("Could not get values from enum.", t);
 				}
 
 			} else {
@@ -575,4 +625,30 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService> 
 		}
 		return ret;
 	}
+	
+	@Override
+	public Object getSectionNode() {
+		return createSectionNode(title, this, icon);
+	}
+	
+	public String getTitle() {
+		return this.title;
+	}
+	
+	public void save() {}
+	
+	public List<FrontlineValidationMessage> validateFields() {
+		return null;
+	}
+	
+	public void notify(FrontlineEventNotification notification) {
+	if (notification instanceof DatabaseEntityNotification<?>
+			&& ((DatabaseEntityNotification<?>) notification).getDatabaseEntity() instanceof PersistableSettings) {
+		this.refresh();
+	} else if (notification instanceof UiDestroyEvent) {
+		if(((UiDestroyEvent) notification).isFor(this.ui)) {
+			this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
+		}
+	}
+}
 }

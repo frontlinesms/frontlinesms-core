@@ -152,6 +152,7 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	 * @param clazz The class of the property's value
 	 * @param <T> The class of the property's value
 	 * @return The property value, either the one stored on db (if any) or the default value.
+	 * FIXME must be a cleaner way to implement than this...!  e.g. settings.get(KEY, String.class)
 	 */
 	protected <T extends Object> T getPropertyValue(String key, Class<T> clazz) {
 		return PersistableSettings.getPropertyValue(getPropertiesStructure(), settings, key, clazz);

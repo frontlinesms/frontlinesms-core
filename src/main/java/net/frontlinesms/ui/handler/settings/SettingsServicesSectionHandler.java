@@ -16,7 +16,7 @@ public class SettingsServicesSectionHandler extends SettingsEmptySectionHandler 
 		SettingsDevicesSectionHandler devicesHandler = new SettingsDevicesSectionHandler(ui);
 		ui.add(servicesRootNode, devicesHandler.getSectionNode());
 		
-		SettingsInternetServicesSectionHandler internetServicesHandler = new SettingsInternetServicesSectionHandler(ui);
+		SmsInternetServiceSettingsHandler internetServicesHandler = new SmsInternetServiceSettingsHandler(ui);
 		ui.add(servicesRootNode, internetServicesHandler.getSectionNode());
 		
 		SettingsMmsSectionHandler mmsHandler = new SettingsMmsSectionHandler(ui);

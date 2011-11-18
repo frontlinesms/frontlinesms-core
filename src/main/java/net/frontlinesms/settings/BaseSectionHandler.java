@@ -14,10 +14,10 @@ public abstract class BaseSectionHandler {
 	protected Object panel;
 	protected Map<String, Object> originalValues;
 
-	protected BaseSectionHandler (UiGeneratorController uiController) {
-		this.ui = uiController;
+	protected BaseSectionHandler (UiGeneratorController ui) {
+		this.ui = ui;
 		if (this.ui instanceof UiGeneratorController) {
-			this.eventBus = ((UiGeneratorController) uiController).getFrontlineController().getEventBus();
+			this.eventBus = ((UiGeneratorController) ui).getFrontlineController().getEventBus();
 		}
 		
 		this.originalValues = new HashMap<String, Object>();
