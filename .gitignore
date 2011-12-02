@@ -37,3 +37,6 @@ frontlinesms.ini
 
 # OSX files
 .DS_Store
+
+# JNI libraries
+librxtxSerial.jnilib

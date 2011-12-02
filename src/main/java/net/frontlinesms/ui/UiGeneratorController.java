@@ -50,6 +50,7 @@ import net.frontlinesms.messaging.sms.SmsService;
 import net.frontlinesms.messaging.sms.SmsServiceManager;
 import net.frontlinesms.messaging.sms.events.NoSmsServicesConnectedNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
+import net.frontlinesms.messaging.sms.modem.MissedCallNotification;
 import net.frontlinesms.plugins.*;
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
@@ -73,6 +74,7 @@ import net.frontlinesms.ui.i18n.*;
 import net.frontlinesms.ui.settings.FrontlineSettingsHandler;
 
 import org.apache.log4j.Logger;
+import org.smslib.CIncomingCall;
 import org.smslib.CIncomingMessage;
 
 import thinlet.FrameLauncher;
@@ -1690,7 +1692,11 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	
 	/** Handle notifications from the {@link EventBus} */
 	public void notify(final FrontlineEventNotification notification) {
-		if(notification instanceof NoSmsServicesConnectedNotification) {
+		if(notification instanceof MissedCallNotification) {
+			CIncomingCall missedCall = ((MissedCallNotification) notification).getCall();
+			// TODO i18n
+			eventBus.notifyObservers(new HomeTabEventNotification(net.frontlinesms.ui.HomeTabEventNotification.Type.INCOMING_MMS, "Missed call from: " + missedCall.getPhoneNumber() + " at " + InternationalisationUtils.getDatetimeFormat().format(missedCall.getTimeOfCall())));
+		} else if(notification instanceof NoSmsServicesConnectedNotification) {
 			// Unable to connect to SMS devices.  If configured so, prompt the help dialog
 			if (AppProperties.getInstance().shouldPromptDeviceConnectionDialog()) {
 				synchronized (deviceConnectionDialogHandlerLock) {

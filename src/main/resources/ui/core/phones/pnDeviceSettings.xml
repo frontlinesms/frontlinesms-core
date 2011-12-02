@@ -10,6 +10,9 @@
 	    <label name="lbReceiveNotSupported" text="i18n.error.phone.receive.not.supported"/>
 	    <checkbox colspan="2" icon="/icons/sms_receive.png" name="cbReceiving" selected="true" text="i18n.common.use.for.receiving" action="phoneManagerDetailsCheckboxChanged(this)"/>
 	    <checkbox colspan="2" icon="/icons/sms_delete.png" name="cbDeleteMsgs" selected="true" text="i18n.common.delete.from.phone"/>
+	    <checkbox colspan="2" icon="/icons/sms_delete.png" name="cbReadOnlyUnread" selected="false" text="i18n.modem.settings.readonlyunread"/>
+	    <separator colspan="2"/>
+	    <checkbox colspan="2" icon="/icons/phone_call.png" name="cbMonitorCalls" selected="false" text="i18n.modem.settings.calls.monitor"/>
 	</panel>
 	
 	<separator colspan="2"/>

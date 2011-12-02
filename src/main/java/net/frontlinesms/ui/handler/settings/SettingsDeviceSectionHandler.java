@@ -21,9 +21,11 @@ public class SettingsDeviceSectionHandler extends BaseSectionHandler implements 
 	private static final String UI_COMPONENT_PHONE_RECEIVING = "cbReceiving";
 	private static final String UI_COMPONENT_PHONE_DELETE = "cbDeleteMsgs";
 	private static final String UI_COMPONENT_PHONE_DELIVERY_REPORTS = "cbUseDeliveryReports";
+	private static final String UI_COMPONENT_PHONE_READ_ONLY_UNREAD = "cbReadOnlyUnread";
 	private static final String UI_COMPONENT_PN_DEVICE_SETTINGS_CONTAINER = "pnDeviceSettingsContainer";
 	private static final String UI_COMPONENT_PN_PHONE_SETTINGS = "pnPhoneSettings";
 	private static final String UI_COMPONENT_RB_PHONE_DETAILS_ENABLE = "rbPhoneDetailsEnable";
+	private static final String UI_COMPONENT_PHONE_MONITOR_CALLS = "cbMonitorCalls";
 	
 	private static final String SECTION_ITEM_DEVICE_SMSC_NUMBER = "SERVICES_DEVICES_SMSC_NUMBER";
 	private static final String SECTION_ITEM_DEVICE_SIM_PIN = "SERVICES_DEVICES_PIN";
@@ -33,6 +35,8 @@ public class SettingsDeviceSectionHandler extends BaseSectionHandler implements 
 	private static final String SECTION_ITEM_DEVICE_USE_FOR_RECEIVING = "SERVICES_DEVICES_USE_FOR_RECEIVING";
 	private static final String SECTION_ITEM_DEVICE_USE_DELIVERY_REPORTS = "SERVICES_DEVICES_USE_DELIVERY_REPORTS";
 	private static final String SECTION_ITEM_DEVICE_DELETE_MESSAGES = "SERVICES_DEVICES_DELETE_MESSAGES";
+	private static final String SECTION_ITEM_DEVICE_READ_ONLY_UNREAD = "SERVICES_DEVICES_READ_ONLY_UNREAD";
+	private static final String SECTION_ITEM_DEVICE_MONITOR_CALLS = "SERVICES_DEVICES_MONITOR_CALLS";
 	
 	private static final String I18N_SETTINGS_MENU_DEVICES = "settings.menu.devices";
 
@@ -68,6 +72,8 @@ public class SettingsDeviceSectionHandler extends BaseSectionHandler implements 
 		boolean useForReceiving = this.getDeviceSettings().useForReceiving();
 		boolean useDeliveryReports = this.getDeviceSettings().useDeliveryReports();
 		boolean deleteMessages = this.getDeviceSettings().deleteMessagesAfterReceiving();
+		boolean readOnlyUnread = this.getDeviceSettings().readOnlyUnreadMessages();
+		boolean monitorCalls = this.getDeviceSettings().monitorCalls();
 		
 		String smscNumber = this.getDeviceSettings().getSmscNumber();
 		String simPin = this.getDeviceSettings().getSimPin();
@@ -81,11 +87,15 @@ public class SettingsDeviceSectionHandler extends BaseSectionHandler implements 
 			Object cbDeleteMessages = this.find(UI_COMPONENT_PHONE_DELETE);
 			this.ui.setEnabled(cbDeleteMessages, useForReceiving);
 			this.ui.setSelected(cbDeleteMessages, deleteMessages);
+			Object cbReadOnlyUnread = this.find(UI_COMPONENT_PHONE_READ_ONLY_UNREAD);
+			this.ui.setEnabled(cbReadOnlyUnread, useForReceiving);
+			this.ui.setSelected(cbReadOnlyUnread, readOnlyUnread);
 		} else {
 			this.ui.setSelected(find("rbPhoneDetailsDisable"), true);
 			this.ui.setSelected(find(UI_COMPONENT_RB_PHONE_DETAILS_ENABLE), false);
 			this.ui.deactivate(find(UI_COMPONENT_PN_PHONE_SETTINGS));
 		}
+		this.ui.setSelected(this.find(UI_COMPONENT_PHONE_MONITOR_CALLS), monitorCalls);
 		
 		if(!supportsReceive) {
 			// If the configured device does not support SMS receiving, we need to pass this info onto
@@ -104,11 +114,13 @@ public class SettingsDeviceSectionHandler extends BaseSectionHandler implements 
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_SMSC_NUMBER, smscNumber);
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_SIM_PIN, simPin);
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_SETTINGS, this.getDeviceSettings());
-		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_USE, useForReceiving || useForSending);
+		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_USE, useForReceiving || useForSending || monitorCalls);
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_USE_FOR_SENDING, useForSending);
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_USE_FOR_RECEIVING, useForReceiving);
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_USE_DELIVERY_REPORTS, useDeliveryReports);
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_DELETE_MESSAGES, deleteMessages);
+		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_READ_ONLY_UNREAD, readOnlyUnread);
+		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_MONITOR_CALLS, monitorCalls);
 	}
 	
 	private void saveAndMarkUnchanged(String sectionItem, Object value) {

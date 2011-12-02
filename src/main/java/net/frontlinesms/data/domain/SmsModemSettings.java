@@ -34,8 +34,12 @@ public class SmsModemSettings {
 	private boolean useForReceiving;
 	/** whether messages should be deleted from the device after being read by FrontlineSMS */
 	private boolean deleteMessagesAfterReceiving;
+	/** whether the device should supply all incoming messages, or only those not previously read. */
+	private boolean readOnlyUnreadMessages;
 	/** whether delivery reports should be used with this device */
 	private boolean useDeliveryReports;
+	/** whether phone calls should be monitored on this device */
+	private boolean monitorCalls;
 	
 //> CONSTRUCTORS
 	/** Empty constructor for hibernate */
@@ -97,6 +101,12 @@ public class SmsModemSettings {
 	public void setDeleteMessagesAfterReceiving(boolean deleteMessagesAfterReceiving) {
 		this.deleteMessagesAfterReceiving = deleteMessagesAfterReceiving;
 	}
+	public boolean readOnlyUnreadMessages() {
+		return readOnlyUnreadMessages;
+	}
+	public void setReadOnlyUnreadMessages(boolean readOnlyUnreadMessages) {
+		this.readOnlyUnreadMessages = readOnlyUnreadMessages;
+	}
 	public boolean useDeliveryReports() {
 		return useDeliveryReports;
 	}
@@ -118,6 +128,14 @@ public class SmsModemSettings {
 	/** @param simPin the PIN for the device's SIM */
 	public void setSimPin(String simPin) {
 		this.simPin = simPin;
+	}
+	/** @return <code>true</code> if calls should be monitored on this device; <code>false</code> otherwise */
+	public boolean monitorCalls() {
+		return monitorCalls;
+	}
+	/** @param monitorCalls new value for {@link #monitorCalls} */
+	public void setMonitorCalls(boolean monitorCalls) {
+		this.monitorCalls = monitorCalls;
 	}
 
 //> GENERATED METHODS

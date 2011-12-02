@@ -22,7 +22,7 @@ import net.frontlinesms.serviceconfig.PhoneSection;
  * Wraps a {@link String} value for a property in a persistable {@link Entity}.
  * @author Alex
  */
-@Entity(name="SmsInternetServiceSettingValue")
+@Entity
 public class PersistableSettingValue {
 //> STATIC CONSTANTS
 

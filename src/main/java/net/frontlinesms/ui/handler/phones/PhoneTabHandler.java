@@ -472,7 +472,10 @@ public class PhoneTabHandler extends BaseTabHandler {
 							if(activeService.supportsReceive()) {
 								activeService.setUseForReceiving(settings.useForReceiving());
 								activeService.setDeleteMessagesAfterReceiving(settings.deleteMessagesAfterReceiving());
+								activeService.setReadOnlyUnreadMessages(settings.readOnlyUnreadMessages());
 							}
+							
+							activeService.setMonitorCalls(settings.monitorCalls());
 						}
 		
 						eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.PHONE_CONNECTED, InternationalisationUtils.getI18nString(COMMON_PHONE_CONNECTED) + ": " + activeService.getModel()));
