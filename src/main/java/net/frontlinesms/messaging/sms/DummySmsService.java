@@ -30,7 +30,7 @@ public class DummySmsService implements SmsService {
 	}
 
 	/** @see net.frontlinesms.messaging.sms.SmsService#getStatus() */
-	public SmsServiceStatus getStatus() {
+	public SmsServiceStatus<?> getStatus() {
 		/* do nothing */
 		return null;
 	}

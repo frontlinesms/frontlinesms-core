@@ -37,7 +37,7 @@ import net.frontlinesms.messaging.sms.events.SmsModemStatusNotification;
 
 import org.apache.log4j.Logger;
 import org.smslib.*;
-import org.smslib.CService.MessageClass;
+import org.smslib.service.MessageClass;
 
 /**
  * Class for handling the serial connection to an individual SMS device.
