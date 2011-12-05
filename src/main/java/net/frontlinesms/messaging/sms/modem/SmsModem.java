@@ -706,6 +706,7 @@ public class SmsModem extends Thread implements SmsService, ICallListener {
 				cService.serialDriver.open();
 				// wait for port to open and AT handler to awake
 				FrontlineUtils.sleep_ignoreInterrupts(500);
+				cService.serialDriver.clearBuffer();
 					
 				setManufacturer(cService.getManufacturer());
 				setModel(cService.getModel());
