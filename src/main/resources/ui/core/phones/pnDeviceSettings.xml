@@ -24,4 +24,11 @@
 			<label text="i18n.phone.settings.pin" icon="/icons/key.png" tooltip="i18n.phone.settings.pin.tooltip"/>
 			<passwordfield action="pinChanged(this.text)" name="tfPin" weightx="1" tooltip="i18n.phone.settings.pin.tooltip"/>
 	</panel>
+	
+	<panel name="pnDebug" colspan="2" columns="2" gap="7">
+		<separator colspan="2" name="final-separator"/>
+		
+		<label text="CATHandler" icon="/icons/phone.png"/>
+		<textfield name="tfCatHandler" weightx="1" enabled="false"/>
+	</panel>
 </panel>

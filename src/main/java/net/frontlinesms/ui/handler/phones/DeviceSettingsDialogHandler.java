@@ -1,5 +1,6 @@
 package net.frontlinesms.ui.handler.phones;
 
+import net.frontlinesms.BuildProperties;
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.SmsModemSettings;
 import net.frontlinesms.data.repository.SmsModemSettingsDao;
@@ -115,6 +116,12 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 		} else {
 			// No error, so remove the error message.
 			ui.remove(find("lbReceiveNotSupported"));
+		}
+		
+		if(BuildProperties.getInstance().isSnapshot()) {
+			ui.setText(find("tfCatHandler"), device.getCService().getAtHandlerName());
+		} else {
+			ui.remove(find("pnDebug"));
 		}
 		
 		ui.setAttachedObject(dialogComponent, device);
