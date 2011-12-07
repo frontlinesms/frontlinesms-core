@@ -1,7 +1,5 @@
 package net.frontlinesms.ui.handler.phones;
 
-import java.io.IOException;
-
 import net.frontlinesms.BuildProperties;
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.SmsModemSettings;
@@ -15,8 +13,6 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.i18n.TextResourceKeyOwner;
 
 import org.apache.log4j.Logger;
-import org.mockito.internal.stubbing.answers.ThrowsException;
-import org.smslib.SMSLibDeviceException;
 import org.smslib.handler.ATHandler;
 import org.smslib.stk.StkMenu;
 import org.smslib.stk.StkRequest;
