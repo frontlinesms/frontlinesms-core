@@ -1,5 +1,7 @@
 package net.frontlinesms.ui.handler.phones;
 
+import java.io.IOException;
+
 import net.frontlinesms.BuildProperties;
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.SmsModemSettings;
@@ -7,11 +9,18 @@ import net.frontlinesms.data.repository.SmsModemSettingsDao;
 import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
+import net.frontlinesms.ui.handler.phones.debug.StkMenuNavigator;
 import net.frontlinesms.ui.handler.settings.SettingsDeviceSectionHandler;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.i18n.TextResourceKeyOwner;
 
 import org.apache.log4j.Logger;
+import org.mockito.internal.stubbing.answers.ThrowsException;
+import org.smslib.SMSLibDeviceException;
+import org.smslib.handler.ATHandler;
+import org.smslib.stk.StkMenu;
+import org.smslib.stk.StkRequest;
+import org.smslib.stk.StkResponse;
 
 /**
  * @author Morgan Belkadi <morgan@frontlinesms.com>
@@ -252,5 +261,21 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 	/** @return UI component with the supplied name, or <code>null</code> if none could be found */
 	private Object find(String componentName) {
 		return ui.find(this.dialogComponent, componentName);
+	}
+	
+//> DEBUG METHODS
+	public void debug_mpesa() {
+		try {
+			ATHandler h = this.device.getCService().getAtHandler();
+			h.stkInit();
+			StkResponse response = h.stkRequest(StkRequest.GET_ROOT_MENU);
+			if(response instanceof StkMenu) {
+				new StkMenuNavigator(h, ui, (StkMenu) response).show();
+			} else {
+				ui.alert("Got response: " + response);
+			}
+		} catch(Throwable t) {
+			t.printStackTrace();
+		}
 	}
 }
