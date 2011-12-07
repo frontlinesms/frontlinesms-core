@@ -264,7 +264,7 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 	}
 	
 //> DEBUG METHODS
-	public void debug_mpesa() {
+	public void debug_stk() {
 		try {
 			ATHandler h = this.device.getCService().getAtHandler();
 			h.stkInit();

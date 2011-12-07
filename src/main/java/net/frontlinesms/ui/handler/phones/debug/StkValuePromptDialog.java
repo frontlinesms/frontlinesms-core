@@ -12,10 +12,10 @@ public class StkValuePromptDialog extends StkDialog {
 	private final StkValuePrompt prompt;
 
 	public StkValuePromptDialog(ATHandler atHandler, UiGeneratorController ui, StkValuePrompt prompt) {
-		super(atHandler, ui, "Enter value: " + prompt.getPromptText());
+		super(atHandler, ui, "Enter value: " + prompt.getText());
 		this.prompt = prompt;
 
-		ui.add(dialog, ui.createLabel(prompt.getPromptText()));
+		ui.add(dialog, ui.createLabel(prompt.getText()));
 		ui.add(dialog, ui.createTextfield(TF_PROMPTED_VALUE, ""));
 		ui.add(dialog, ui.createButton("Submit", "submit", dialog, this));
 	}

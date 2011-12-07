@@ -31,6 +31,6 @@
 		<label text="CATHandler" icon="/icons/phone.png"/>
 		<textfield name="tfCatHandler" weightx="1" enabled="false"/>
 		
-	    <button action="debug_mpesa" icon="/icons/tick.png" text="MPESA debug"/>
+	    <button action="debug_stk" icon="/icons/tick.png" text="STK debug"/>
 	</panel>
 </panel>

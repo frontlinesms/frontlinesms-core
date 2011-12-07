@@ -17,15 +17,10 @@ public class StkMenuNavigator extends StkDialog {
 		super(atHandler, ui, "STK Menu: " + menu.getTitle());
 		this.menu = menu;
 
-		if(menu.getItemCount() == 0) {
-			ui.add(dialog, ui.createLabel(menu.getTitle()));
-			ui.add(dialog, ui.createButton("OK", "remove", dialog, this));
-		} else {
-			List<StkMenuItem> items = menu.getItems();
-			for(int i=0; i<items.size(); ++i) {
-				StkMenuItem item = items.get(i);
-				ui.add(dialog, ui.createButton(item.getText(), "triggerMenuItem(" + i + ")", dialog, this));
-			}
+		List<StkMenuItem> items = menu.getItems();
+		for(int i=0; i<items.size(); ++i) {
+			StkMenuItem item = items.get(i);
+			ui.add(dialog, ui.createButton(item.getText(), "triggerMenuItem(" + i + ")", dialog, this));
 		}
 	}
 	

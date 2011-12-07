@@ -2,6 +2,7 @@ package net.frontlinesms.ui.handler.phones.debug;
 
 import org.smslib.handler.ATHandler;
 import org.smslib.stk.StkMenu;
+import org.smslib.stk.StkNotification;
 import org.smslib.stk.StkResponse;
 import org.smslib.stk.StkValuePrompt;
 
@@ -40,6 +41,8 @@ public abstract class StkDialog implements ThinletUiEventHandler {
 			new StkMenuNavigator(atHandler, ui, (StkMenu) response).show();
 		} else if(response instanceof StkValuePrompt) {
 			new StkValuePromptDialog(atHandler, ui, (StkValuePrompt) response).show();
+		} else if(response instanceof StkNotification) {
+			ui.alert(((StkNotification) response).getText());
 		} else {
 			ui.alert("Don't know how to handle response: " + response);
 		}
