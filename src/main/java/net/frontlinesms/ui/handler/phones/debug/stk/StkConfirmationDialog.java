@@ -1,4 +1,4 @@
-package net.frontlinesms.ui.handler.phones.debug;
+package net.frontlinesms.ui.handler.phones.debug.stk;
 
 import net.frontlinesms.ui.UiGeneratorController;
 

@@ -32,5 +32,7 @@
 		<textfield name="tfCatHandler" weightx="1" enabled="false"/>
 		
 	    <button action="debug_stk" icon="/icons/tick.png" text="STK debug"/>
+		
+	    <button action="debug_ussd" icon="/icons/tick.png" text="USSD debug"/>
 	</panel>
 </panel>

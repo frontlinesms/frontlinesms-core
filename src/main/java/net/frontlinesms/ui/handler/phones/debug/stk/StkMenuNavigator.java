@@ -1,4 +1,4 @@
-package net.frontlinesms.ui.handler.phones.debug;
+package net.frontlinesms.ui.handler.phones.debug.stk;
 
 import java.util.List;
 
@@ -8,7 +8,6 @@ import org.smslib.handler.ATHandler;
 import org.smslib.stk.StkMenu;
 import org.smslib.stk.StkMenuItem;
 import org.smslib.stk.StkResponse;
-import org.smslib.stk.StkValuePrompt;
 
 public class StkMenuNavigator extends StkDialog {
 	private final StkMenu menu;

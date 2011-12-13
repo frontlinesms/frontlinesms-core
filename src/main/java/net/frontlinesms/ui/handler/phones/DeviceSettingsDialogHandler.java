@@ -7,7 +7,8 @@ import net.frontlinesms.data.repository.SmsModemSettingsDao;
 import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
-import net.frontlinesms.ui.handler.phones.debug.StkMenuNavigator;
+import net.frontlinesms.ui.handler.phones.debug.stk.StkMenuNavigator;
+import net.frontlinesms.ui.handler.phones.debug.ussd.UssdInitialRequestDialog;
 import net.frontlinesms.ui.handler.settings.SettingsDeviceSectionHandler;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.i18n.TextResourceKeyOwner;
@@ -260,6 +261,15 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 	}
 	
 //> DEBUG METHODS
+	public void debug_ussd() {
+		try {
+			ATHandler h = this.device.getCService().getAtHandler();
+			new UssdInitialRequestDialog(h, ui).show();
+		} catch(Throwable t) {
+			t.printStackTrace();
+		}
+	}
+	
 	public void debug_stk() {
 		try {
 			ATHandler h = this.device.getCService().getAtHandler();
