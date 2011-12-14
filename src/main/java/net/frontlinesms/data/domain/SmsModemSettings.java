@@ -137,6 +137,12 @@ public class SmsModemSettings {
 	public void setMonitorCalls(boolean monitorCalls) {
 		this.monitorCalls = monitorCalls;
 	}
+	public void setSupportsReceive(Boolean supportsReceive) {
+		this.supportingReceive = (supportsReceive == null ? true : supportsReceive);
+	}
+	public boolean supportsReceive() {
+		return supportingReceive == null ? true : supportingReceive;
+	}
 
 //> GENERATED METHODS
 	/** @see java.lang.Object#hashCode() */
@@ -164,13 +170,5 @@ public class SmsModemSettings {
 		} else if (!serial.equals(other.serial))
 			return false;
 		return true;
-	}
-
-	public void setSupportsReceive(Boolean supportsReceive) {
-		this.supportingReceive = (supportsReceive == null ? true : supportsReceive);
-	}
-
-	public boolean supportsReceive() {
-		return supportingReceive == null ? true : supportingReceive;
 	}
 }
