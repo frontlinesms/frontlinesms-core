@@ -53,6 +53,7 @@ import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.modem.MissedCallNotification;
 import net.frontlinesms.plugins.*;
 import net.frontlinesms.resources.ResourceUtils;
+import net.frontlinesms.ui.debug.SystemPropertyDebugDialog;
 import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.*;
@@ -1682,6 +1683,10 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	
 	public void dbgGenerateError() {
 		throw new RuntimeException("Exception generated from debug menu.");
+	}
+	
+	public void dbgSystemProperties() {
+		new SystemPropertyDebugDialog(this).show();
 	}
 	
 	public void dbgGenerateOutgoingSms() {

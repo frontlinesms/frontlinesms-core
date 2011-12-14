@@ -18,7 +18,7 @@ public class UssdInitialRequestDialog extends UssdDialog {
 	
 	public void send() throws Exception {
 		String toSend = ui.getText(find("tfWhatever"));
-		toSend = ensureFrame(toSend);
+//		toSend = ensureFrame(toSend);
 		System.out.println("TO SEND: " + toSend);
 		doRequest(toSend);
 	}
