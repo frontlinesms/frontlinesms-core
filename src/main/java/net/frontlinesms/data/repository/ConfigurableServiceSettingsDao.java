@@ -14,6 +14,15 @@ import net.frontlinesms.serviceconfig.ConfigurableService;
  * @author Alex
  */
 public interface ConfigurableServiceSettingsDao<T extends ConfigurableService> {
+	/** Gets an instance of {@link PersistableSettings} by its database ID. */
+	public PersistableSettings getById(long id);
+
+	/** Gets an instance of {@link PersistableSettings} by its database ID. */
+	public PersistableSettings getByProperty(String key, String value);
+
+	/** Gets an instance of {@link PersistableSettings} by its database ID. */
+	public Collection<PersistableSettings> getAllByProperty(String key, String value);
+	
 	/**
 	 * Saves {@link PersistableSettings} to the data source 
 	 * @param settings settings to save

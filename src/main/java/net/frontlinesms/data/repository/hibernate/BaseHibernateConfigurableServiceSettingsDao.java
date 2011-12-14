@@ -22,6 +22,29 @@ public abstract class BaseHibernateConfigurableServiceSettingsDao extends BaseHi
 		super(PersistableSettings.class);
 	}
 
+	public PersistableSettings getById(long id) {
+		DetachedCriteria c = super.getCriterion();
+		c.add(Restrictions.eq("id", id));
+		return super.getUnique(c);
+	}
+	
+	public PersistableSettings getByProperty(String key, String value) {
+		return super.getUnique(getByPropertyCriteria(key, value));
+	}
+	
+	public Collection<PersistableSettings> getAllByProperty(String key, String value) {
+		return super.getList(getByPropertyCriteria(key, value));
+	}
+
+	private DetachedCriteria getByPropertyCriteria(String key, String value) {
+		DetachedCriteria c = super.getCriterion();
+		c.createAlias("properties", "p");
+		c.add(Restrictions.and(
+				Restrictions.eq("p.property", key),
+				Restrictions.eq("p.value", value)));
+		return c;
+	}
+
 	/** @see SmsInternetServiceSettingsDao#deleteSmsInternetServiceSettings(PersistableSettings) */
 	public void deleteServiceSettings(PersistableSettings settings) {
 		super.delete(settings);
