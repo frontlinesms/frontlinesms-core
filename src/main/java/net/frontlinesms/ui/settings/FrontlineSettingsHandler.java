@@ -153,10 +153,16 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 	 * @param tree
 	 */
 	public void selectionChanged(Object tree) {
+		uiController.setSelectedItem(getOtherTree(tree), null);
 		Object selected = this.uiController.getSelectedItem(tree);
 		
 		Object attachedObject = this.uiController.getAttachedObject(selected);
 		this.displayPanel((UiSettingsSectionHandler) attachedObject);
+	}
+
+	private Object getOtherTree(Object tree) {
+		String otherName = uiController.getName(tree).equals(UI_COMPONENT_CORE_TREE)? UI_COMPONENT_PLUGIN_TREE: UI_COMPONENT_CORE_TREE;
+		return uiController.find(settingsDialog, otherName);
 	}
 
 	/**

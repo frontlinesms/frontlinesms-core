@@ -121,7 +121,7 @@ public class SettingsGeneralSectionHandler extends BaseSectionHandler implements
 	/**
 	 * Called when the "Prompt the statistics dialog" checkbox has changed state.
 	 */
-	public void promptStatsChanged () {
+	public void promptStatsChanged() {
 		boolean shouldPromptStatsDialog = this.ui.isSelected(find(UI_COMPONENT_CB_PROMPT_STATS));
 		settingChanged(SECTION_ITEM_PROMPT_STATS, shouldPromptStatsDialog);
 		
@@ -131,7 +131,7 @@ public class SettingsGeneralSectionHandler extends BaseSectionHandler implements
 	/**
 	 * Called when the "Authorize statistics" checkbox has changed state.
 	 */
-	public void authorizeStatsChanged () {
+	public void authorizeStatsChanged() {
 		boolean authorizeStats = this.ui.isSelected(find(UI_COMPONENT_CB_AUTHORIZE_STATS));
 		settingChanged(SECTION_ITEM_AUTHORIZE_STATS, authorizeStats);
 	}
@@ -139,7 +139,7 @@ public class SettingsGeneralSectionHandler extends BaseSectionHandler implements
 	/**
 	 * Called when the "country" combobox has changed
 	 */
-	public void countryChanged (Object combobox) {
+	public void countryChanged(Object combobox) {
 		Object selectedItem = this.ui.getSelectedItem(combobox);
 		
 		if (selectedItem != null) {
