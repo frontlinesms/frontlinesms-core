@@ -47,7 +47,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 		extends BaseSectionHandler
 		implements ThinletUiEventHandler, UiSettingsSectionHandler, EventObserver {
 //> CONSTANTS
-	private static final String UI_SECTION_INTERNET_SERVICES = "/ui/core/settings/services/pnServiceList.xml";
+	private static final String UI_SECTION_SERVICE_LIST = "/ui/core/settings/services/pnServiceList.xml";
 	/** Path to XML for UI layout for settings screen, {@link #settingsDialog} */
 	private static final String UI_SETTINGS = "/ui/core/settings/services/dgSettings.xml";
 	/** Path to XML for UI layout for provider choosing screen, {@link #newServiceWizard} */
@@ -102,7 +102,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 	
 	@Override
 	protected void init() {
-		this.panel = ui.loadComponentFromFile(UI_SECTION_INTERNET_SERVICES, this);
+		this.panel = ui.loadComponentFromFile(UI_SECTION_SERVICE_LIST, this);
 
 		// Update the list of accounts from the list provided
 		refresh();
@@ -281,8 +281,8 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 
 	/** Confirms deletes of {@link SmsInternetService}(s) from the system and removes them from the list of services */
 	public void removeServices() {
+		removeServices(find("lsServices"));
 		ui.removeConfirmationDialog();
-		removeServices(ui.find(settingsDialog, "lsSmsInternetServices"));
 	}
 
 	/**
@@ -292,8 +292,8 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 	private void removeServices(Object lsProviders) {
 		Object[] obj = ui.getSelectedItems(lsProviders);
 		for (Object object : obj) {
-			T service = ui.getAttachedObject(object, getServiceSupertype());
-			settingsDao.deleteServiceSettings(service.getSettings());
+			PersistableSettings settings = (PersistableSettings) ui.getAttachedObject(object, getServiceSupertype());
+			settingsDao.deleteServiceSettings(settings);
 		}
 	}
 	
