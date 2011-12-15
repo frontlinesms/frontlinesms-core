@@ -14,7 +14,7 @@ public abstract class BaseSectionHandler {
 	protected Object panel;
 	protected Map<String, Object> originalValues;
 
-	protected BaseSectionHandler (UiGeneratorController ui) {
+	protected BaseSectionHandler(UiGeneratorController ui) {
 		this.ui = ui;
 		if (this.ui instanceof UiGeneratorController) {
 			this.eventBus = ((UiGeneratorController) ui).getFrontlineController().getEventBus();

@@ -25,9 +25,10 @@ public class SettingsEmailSectionHandler extends SettingsAbstractEmailsSectionHa
 
 		this.ui.add(find(UI_COMPONENT_PN_EMAIL_ACCOUNTS), super.getAccountsListPanel());
 	}
+	
+	public void deinit() {}
 
-	public void save() {
-	}
+	public void save() {	}
 
 	public List<FrontlineValidationMessage> validateFields() {
 		return null;

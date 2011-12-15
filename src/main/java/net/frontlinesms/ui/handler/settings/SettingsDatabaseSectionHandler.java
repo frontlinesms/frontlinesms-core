@@ -67,6 +67,8 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 		refreshSettingsPanel();
 	}
 	
+	public void deinit() {}
+	
 	private Object createComboBoxChoice(DatabaseSettings settings) {
 		Object cb = this.ui.createComboboxChoice(settings.getName(), settings);
 		// TODO perhaps we could set a settings-specific icon here

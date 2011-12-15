@@ -36,6 +36,8 @@ public class SettingsMmsSectionHandler extends SettingsAbstractEmailsSectionHand
 		this.populateMmsSettings();
 	}
 	
+	public void deinit() {}
+	
 	private void populateMmsSettings() {
 		AppProperties appProperties = AppProperties.getInstance();
 		

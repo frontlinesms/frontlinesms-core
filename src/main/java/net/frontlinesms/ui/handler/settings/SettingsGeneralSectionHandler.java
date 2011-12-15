@@ -53,7 +53,9 @@ public class SettingsGeneralSectionHandler extends BaseSectionHandler implements
 		this.initStatisticsSettings();
 		this.initCostEstimatorSettings();
 		this.initCountrySettings();
-	}	
+	}
+	
+	public void deinit() {}
 	
 	private void initStatisticsSettings() {
 		AppProperties appProperties = AppProperties.getInstance();

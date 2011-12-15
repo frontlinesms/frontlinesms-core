@@ -61,6 +61,8 @@ public class SettingsDeviceSectionHandler extends BaseSectionHandler implements 
 		
 		this.populateDeviceSettingsPanel();
 	}
+	
+	public void deinit() {}
 
 	/**
 	 * Populates the device settings in the panel.

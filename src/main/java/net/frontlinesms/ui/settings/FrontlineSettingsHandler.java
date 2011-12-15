@@ -197,6 +197,10 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 	 * Removes the provided component from the view.
 	 */
 	public void removeDialog() {
+		for(UiSettingsSectionHandler h : this.handlersList) {
+			h.deinit();
+		}
+		this.eventBus.unregisterObserver(this);
 		this.uiController.remove(this.settingsDialog);
 		this.uiController.removeConfirmationDialog();
 	}
@@ -243,7 +247,7 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 			settingsSectionHandler.save();
 		}
 		
-		this.uiController.removeDialog(settingsDialog);
+		removeDialog();
 		this.uiController.infoMessage(InternationalisationUtils.getI18nString(I18N_SETTINGS_SAVED));
 	}
 

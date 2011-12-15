@@ -115,6 +115,10 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 		eventBus.registerObserver(this);
 	}
 	
+	public void deinit() {
+		eventBus.unregisterObserver(this);
+	}
+	
 	public abstract Class<T> getServiceSupertype();
 	public abstract String getIconMapLocation();
 
@@ -675,17 +679,18 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 	}
 	
 	public void notify(FrontlineEventNotification notification) {
-	if (notification instanceof DatabaseEntityNotification<?>
-			&& !(notification instanceof EntityDeleteWarning<?>)) {
-		Object entity = ((DatabaseEntityNotification<?>) notification).getDatabaseEntity();
-		if(entity instanceof PersistableSettings
-				&& ((PersistableSettings) entity).getServiceTypeSuperclass().equals(getServiceSupertype())) {
-			this.refresh();
-		}
-	} else if (notification instanceof UiDestroyEvent) {
-		if(((UiDestroyEvent) notification).isFor(this.ui)) {
-			this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
+		System.out.println("BaseServiceSettingsHandler.notify() : " + this.getClass() + " : " + notification.getClass());
+		if (notification instanceof DatabaseEntityNotification<?>
+				&& !(notification instanceof EntityDeleteWarning<?>)) {
+			Object entity = ((DatabaseEntityNotification<?>) notification).getDatabaseEntity();
+			if(entity instanceof PersistableSettings
+					&& ((PersistableSettings) entity).getServiceTypeSuperclass().equals(getServiceSupertype())) {
+				this.refresh();
+			}
+		} else if (notification instanceof UiDestroyEvent) {
+			if(((UiDestroyEvent) notification).isFor(this.ui)) {
+				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
+			}
 		}
 	}
-}
 }

@@ -62,6 +62,8 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 		initLanguageSettings();
 		initLogoSettings();
 	}
+	
+	public void deinit() {}
 
 	private void initLanguageSettings() {
 		Object fastLanguageSwitch = find(COMPONENT_PN_LANGUAGES);

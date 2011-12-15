@@ -16,7 +16,6 @@ public class SettingsDevicesSectionHandler extends BaseSectionHandler implements
 	
 	private static final String UI_COMPONENT_CB_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG = "cbPromptConnectionProblemDialog";
 	private static final String UI_COMPONENT_CB_START_DETECTING = "cbDetectAtStartup";
-	//private static final String UI_COMPONENT_CB_DISABLE_ALL = "cbDisableAllDevices";
 	private static final String SECTION_ITEM_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG = "SERVICES_DEVICES_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG";
 	private static final String SECTION_ITEM_START_DETECTING = "SERVICES_DEVICES_START_DETECTING";
 	
@@ -32,23 +31,17 @@ public class SettingsDevicesSectionHandler extends BaseSectionHandler implements
 		// Populating
 		AppProperties appProperties = AppProperties.getInstance();
 		boolean shouldPromptDeviceConnectionProblemDialog = appProperties.shouldPromptDeviceConnectionDialog();
-		//boolean disableAllDevices = appProperties.disableAllDevices();
 		boolean startDetectingAtStartup = appProperties.startDetectingAtStartup();
 		
 		this.ui.setSelected(find(UI_COMPONENT_CB_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG), shouldPromptDeviceConnectionProblemDialog);
 		this.ui.setSelected(find(UI_COMPONENT_CB_START_DETECTING), startDetectingAtStartup);
-		//this.uiController.setSelected(find(UI_COMPONENT_CB_DISABLE_ALL), disableAllDevices);
 
 		this.originalValues.put(SECTION_ITEM_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG, shouldPromptDeviceConnectionProblemDialog);
 		this.originalValues.put(SECTION_ITEM_START_DETECTING, startDetectingAtStartup);
 	}
 	
-//	public void disableAllDevicesChanged (boolean disableAllDevices) {
-//		super.settingChanged(SECTION_ITEM_DISABLE_ALL_DEVICES, disableAllDevices);
-//		
-//		this.enableDevicesPanels(!disableAllDevices);
-//	}
-
+	public void deinit() {}
+	
 	/**
 	 * Called when the "startDetectingDevicesAtStartup" Checkbox has changed state.
 	 * @param startDetectingDevicesAtStartup
@@ -63,7 +56,6 @@ public class SettingsDevicesSectionHandler extends BaseSectionHandler implements
 		
 		appProperties.setShouldPromptDeviceConnectionDialog(this.ui.isSelected(find(UI_COMPONENT_CB_PROMPT_DEVICE_CONNECTION_PROBLEM_DIALOG)));
 		appProperties.shouldStartDetectingAtStartup(this.ui.isSelected(find(UI_COMPONENT_CB_START_DETECTING)));
-		//appProperties.shouldDisableAllDevices(this.uiController.isSelected(find(UI_COMPONENT_CB_DISABLE_ALL)));
 
 		appProperties.saveToDisk();
 	}
