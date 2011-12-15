@@ -18,6 +18,7 @@ import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.PersistableSettingValue;
 import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.events.DatabaseEntityNotification;
+import net.frontlinesms.data.events.EntityDeleteWarning;
 import net.frontlinesms.data.repository.ConfigurableServiceSettingsDao;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
@@ -281,7 +282,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 
 	/** Confirms deletes of {@link SmsInternetService}(s) from the system and removes them from the list of services */
 	public void removeServices() {
-		removeServices(find("lsServices"));
+		removeServices(find(UI_COMPONENT_LS_ACCOUNTS));
 		ui.removeConfirmationDialog();
 	}
 
@@ -643,8 +644,12 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 	
 	public void notify(FrontlineEventNotification notification) {
 	if (notification instanceof DatabaseEntityNotification<?>
-			&& ((DatabaseEntityNotification<?>) notification).getDatabaseEntity() instanceof PersistableSettings) {
-		this.refresh();
+			&& !(notification instanceof EntityDeleteWarning<?>)) {
+		Object entity = ((DatabaseEntityNotification<?>) notification).getDatabaseEntity();
+		if(entity instanceof PersistableSettings
+				&& ((PersistableSettings) entity).getServiceTypeSuperclass().equals(getServiceSupertype())) {
+			this.refresh();
+		}
 	} else if (notification instanceof UiDestroyEvent) {
 		if(((UiDestroyEvent) notification).isFor(this.ui)) {
 			this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
