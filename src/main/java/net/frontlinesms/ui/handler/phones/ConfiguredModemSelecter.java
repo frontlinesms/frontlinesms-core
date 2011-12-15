@@ -23,7 +23,7 @@ public class ConfiguredModemSelecter implements ThinletUiEventHandler {
 		
 		Object list = Thinlet.create("list");
 		ui.setName(list, "lsConnections");
-		ui.setAction(list, "done", dialog, this);
+		ui.setPerform(list, "done", dialog, this);
 		ui.setColspan(list, 2);
 		ui.setWeight(list, 1, 1);
 		
