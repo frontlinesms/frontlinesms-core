@@ -106,6 +106,8 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 	@Override
 	protected void init() {
 		this.panel = ui.loadComponentFromFile(UI_SECTION_SERVICE_LIST, this);
+		ui.setText(panel, title);
+		ui.setIcon(panel, icon);
 
 		// Update the list of accounts from the list provided
 		refresh();

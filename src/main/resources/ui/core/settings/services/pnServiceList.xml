@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<panel name="pnDevices" gap="10" weightx="2" columns="1">
-	<panel icon="/icons/sms_http_edit.png" text="i18n.smsdevice.internet.settings" border="true" weightx="1" columns="1" gap="7" top="5" left="5" bottom="5" right="5">
-       	<list action="selectionChanged(this, pnButtons)" perform="configureService(lsServices)" weightx="1" weighty="1" name="lsServices" selection="multiple" width="400" height="283"/>
-		<panel name="pnButtons" gap="8" weightx="1">
-			<button name="btNew" weightx="1" text="i18n.action.new" icon="/icons/smsdevice/internet/new.png" action="showNewServiceWizard"/>
-			<button name="btEdit" weightx="1" text="i18n.action.edit" icon="/icons/smsdevice/internet/edit.png" action="configureService(lsServices)"/>
-			<button name="btDelete" weightx="1" text="i18n.action.delete" icon="/icons/smsdevice/internet/delete.png"  action="showConfirmationDialog('removeServices')"/>
-		</panel>
-    </panel>
+<panel icon="/icons/sms_http_edit.png" text="i18n.smsdevice.internet.settings" border="true" weightx="1" columns="1" gap="7" top="5" left="5" bottom="5" right="5">
+      	<list action="selectionChanged(this, pnButtons)" perform="configureService(lsServices)" weightx="1" weighty="1" name="lsServices" selection="multiple" width="400" height="283"/>
+	<panel name="pnButtons" gap="8" weightx="1">
+		<button name="btNew" weightx="1" text="i18n.action.new" icon="/icons/smsdevice/internet/new.png" action="showNewServiceWizard"/>
+		<button name="btEdit" weightx="1" text="i18n.action.edit" icon="/icons/smsdevice/internet/edit.png" action="configureService(lsServices)"/>
+		<button name="btDelete" weightx="1" text="i18n.action.delete" icon="/icons/smsdevice/internet/delete.png"  action="showConfirmationDialog('removeServices')"/>
+	</panel>
 </panel>
