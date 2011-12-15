@@ -68,6 +68,9 @@ public class SmsModemSettings {
 	}
 	
 //> ACCESSOR METHODS
+	public long getId() {
+		return id;
+	}
 	public String getSerial() {
 		return serial;
 	}

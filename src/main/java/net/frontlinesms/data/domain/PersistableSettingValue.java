@@ -16,7 +16,7 @@ import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.serviceconfig.OptionalRadioSection;
 import net.frontlinesms.serviceconfig.OptionalSection;
 import net.frontlinesms.serviceconfig.PasswordString;
-import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.PhoneNumber;
 
 /**
  * Wraps a {@link String} value for a property in a persistable {@link Entity}.
@@ -78,8 +78,8 @@ public class PersistableSettingValue {
 		if (exampleValue.getClass().equals(OptionalSection.class)) {
 			return Boolean.parseBoolean(stringValue);
 		}
-		if (exampleValue.getClass().equals(PhoneSection.class))
-			return new PhoneSection(stringValue);
+		if (exampleValue.getClass().equals(PhoneNumber.class))
+			return new PhoneNumber(stringValue);
 		if (exampleValue.getClass().equals(OptionalRadioSection.class)) {
 			try {
 				OptionalRadioSection section = (OptionalRadioSection) exampleValue;
@@ -120,7 +120,7 @@ public class PersistableSettingValue {
 		else if (value instanceof PasswordString) stringValue = FrontlineUtils.encodeBase64(((PasswordString)value).getValue());
 		else if (value instanceof OptionalSection) stringValue = Boolean.toString(((OptionalSection)value).getValue());
 		else if (value instanceof Enum<?>) stringValue = ((Enum<?>)value).name();
-		else if (value instanceof PhoneSection) stringValue = ((PhoneSection)value).getValue();
+		else if (value instanceof PhoneNumber) stringValue = ((PhoneNumber)value).getValue();
 		else if (value instanceof OptionalRadioSection<?>) {
 			OptionalRadioSection<?> ors = (OptionalRadioSection<?>) value;
 			stringValue = ors.getValue().name();

@@ -911,6 +911,11 @@ public class SmsModem extends Thread implements SmsService, ICallListener {
 		return disconnecting;
 	}
 	
+	public CService getCService() {
+		// FIXME there may be a better solution that this long term... have a good think about whether this should be accessible.
+		return this.cService;
+	}
+	
 //> OTHER METHODS
 	
 	protected void disconnecting() {
@@ -1059,11 +1064,5 @@ public class SmsModem extends Thread implements SmsService, ICallListener {
 	}
 	
 //> STATIC HELPER METHODS
-
-	public CService getCService() {
-		// FIXME there may be a better solution that this long term... have a good think about whether this should be accessible.
-		return this.cService;
-	}
-	
 
 }

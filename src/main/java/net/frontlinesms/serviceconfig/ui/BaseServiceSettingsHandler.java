@@ -26,7 +26,7 @@ import net.frontlinesms.serviceconfig.ConfigurableService;
 import net.frontlinesms.serviceconfig.OptionalRadioSection;
 import net.frontlinesms.serviceconfig.OptionalSection;
 import net.frontlinesms.serviceconfig.PasswordString;
-import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.PhoneNumber;
 import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
 import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.settings.BaseSectionHandler;
@@ -344,7 +344,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 			}
 			ui.setColspan(checkbox, 2);
 			components = new Object[] {checkbox};
-		} else if (valueObj instanceof PhoneSection) {
+		} else if (valueObj instanceof PhoneNumber) {
 			Object panel = ui.createPanel("pn" + key.replace(".", "_"));
 			ui.setInteger(panel, "gap", 5);
 			ui.setInteger(panel, "weightx", 1);
@@ -357,7 +357,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 			ui.setInteger(tf, "weightx", 1);
 			//controller.setInteger(tf, Thinlet.ATTRIBUTE_COLUMNS, 20);
 			Object bt = ui.createButton("");
-			ui.setIcon(bt, ui.getIcon(PhoneSection.BUTTON_ICON));
+			ui.setIcon(bt, ui.getIcon(PhoneNumber.BUTTON_ICON));
 			ui.setAttachedObject(bt, tf);
 			ui.add(panel, tf);
 			ui.add(panel, bt);
@@ -525,8 +525,8 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 			return new PasswordString(ui.getText(comp));
 		if (clazz.equals(OptionalSection.class))
 			return new Boolean(ui.isSelected(comp));
-		if(clazz.equals(PhoneSection.class))
-			return new PhoneSection(ui.getText(comp));
+		if(clazz.equals(PhoneNumber.class))
+			return new PhoneNumber(ui.getText(comp));
 		if (clazz.equals(OptionalRadioSection.class)) {
 			for (Object child : ui.getItems(comp)) {
 				if (Thinlet.getClass(child).equals(Thinlet.WIDGET_CHECKBOX) && ui.isSelected(child)) {

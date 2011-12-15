@@ -27,7 +27,7 @@ import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.email.receive.*;
 import net.frontlinesms.serviceconfig.OptionalSection;
 import net.frontlinesms.serviceconfig.PasswordString;
-import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.PhoneNumber;
 import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
 import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.ui.handler.settings.SmsInternetServiceSettingsHandler;
@@ -273,7 +273,7 @@ public class IntelliSmsInternetService extends AbstractSmsInternetService implem
 		StructuredProperties defaultSettings = new StructuredProperties();
 		defaultSettings.put(PROPERTY_USERNAME, "");
 		defaultSettings.put(PROPERTY_PASSWORD, new PasswordString(""));
-		defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneSection(""));
+		defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneNumber(""));
 		defaultSettings.put(PROPERTY_SSL, Boolean.FALSE);
 		defaultSettings.put(PROPERTY_USE_FOR_SENDING, Boolean.TRUE);
 		// Proxy properties
@@ -301,7 +301,7 @@ public class IntelliSmsInternetService extends AbstractSmsInternetService implem
 	 * Gets the MSISDN that numbers sent from this service will appear to be from. 
 	 */
 	public String getMsisdn() {
-		return getPropertyValue(PROPERTY_FROM_MSISDN, PhoneSection.class).getValue();
+		return getPropertyValue(PROPERTY_FROM_MSISDN, PhoneNumber.class).getValue();
 	}
 
 	/**

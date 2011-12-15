@@ -9,7 +9,7 @@ import net.frontlinesms.messaging.sms.internet.AbstractSmsInternetService;
 import net.frontlinesms.serviceconfig.OptionalRadioSection;
 import net.frontlinesms.serviceconfig.OptionalSection;
 import net.frontlinesms.serviceconfig.PasswordString;
-import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.PhoneNumber;
 import net.frontlinesms.serviceconfig.StructuredProperties;
 
 /**
@@ -35,7 +35,7 @@ public class StructuredPropertiesTest extends BaseTestCase {
 		defaultSettings.put(key = "b", new PasswordString(""));
 		expectedValues.put(key, defaultSettings.getShallow(key));
 		
-		defaultSettings.put(key = "c", new PhoneSection(""));
+		defaultSettings.put(key = "c", new PhoneNumber(""));
 		expectedValues.put(key, defaultSettings.getShallow(key));
 		
 		defaultSettings.put(key = "d", Boolean.FALSE);
@@ -53,7 +53,7 @@ public class StructuredPropertiesTest extends BaseTestCase {
 		a.addDependency(Test.A, key = "g", obj);
 		expectedValues.put(key, obj);
 		
-		PhoneSection obj2 = new PhoneSection("");
+		PhoneNumber obj2 = new PhoneNumber("");
 		a.addDependency(Test.B, key = "h", obj2);
 		expectedValues.put(key, obj2);
 		

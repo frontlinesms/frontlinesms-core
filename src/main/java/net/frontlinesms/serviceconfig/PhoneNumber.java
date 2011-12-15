@@ -26,11 +26,11 @@ package net.frontlinesms.serviceconfig;
  * @author Carlos Eduardo Endler Genz
  * @date 09/02/2009
  */
-public final class PhoneSection {
+public final class PhoneNumber {
 	public static final String BUTTON_ICON = "/icons/user_sender.png";
 	private String value;
 
-	public PhoneSection(String value) {
+	public PhoneNumber(String value) {
 		this.value = value;
 	}
 

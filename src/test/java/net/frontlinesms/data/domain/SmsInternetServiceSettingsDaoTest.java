@@ -11,7 +11,7 @@ import net.frontlinesms.junit.BaseTestCase;
 import net.frontlinesms.serviceconfig.OptionalRadioSection;
 import net.frontlinesms.serviceconfig.OptionalSection;
 import net.frontlinesms.serviceconfig.PasswordString;
-import net.frontlinesms.serviceconfig.PhoneSection;
+import net.frontlinesms.serviceconfig.PhoneNumber;
 
 /**
  * Unit tests for {@link SmsInternetServiceSettingsDao}.
@@ -50,8 +50,8 @@ public class SmsInternetServiceSettingsDaoTest extends BaseTestCase {
 		expectedTypes.put(o, Boolean.class);
 		values.put(o, String.valueOf(o.getValue()));
 
-		obj = new PhoneSection("phone");
-		expectedTypes.put(obj, PhoneSection.class);
+		obj = new PhoneNumber("phone");
+		expectedTypes.put(obj, PhoneNumber.class);
 		values.put(obj, "phone");
 
 		obj = new OptionalRadioSection<Test>(Test.A);
