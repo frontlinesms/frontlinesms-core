@@ -12,6 +12,7 @@ import net.frontlinesms.serviceconfig.OptionalRadioSection;
 import net.frontlinesms.serviceconfig.OptionalSection;
 import net.frontlinesms.serviceconfig.PasswordString;
 import net.frontlinesms.serviceconfig.PhoneNumber;
+import net.frontlinesms.serviceconfig.SmsModemReference;
 
 /**
  * Unit tests for {@link SmsInternetServiceSettingsDao}.
@@ -64,6 +65,10 @@ public class SmsInternetServiceSettingsDaoTest extends BaseTestCase {
 		obj = Test.A;
 		expectedTypes.put(obj, Test.class);
 		values.put(obj, String.valueOf(obj));
+		
+		obj = new SmsModemReference("XYZ789");
+		expectedTypes.put(obj, SmsModemReference.class);
+		values.put(obj, "XYZ789");
 	}
 
 	/**

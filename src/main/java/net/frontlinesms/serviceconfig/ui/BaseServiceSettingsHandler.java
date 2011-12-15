@@ -28,6 +28,7 @@ import net.frontlinesms.serviceconfig.OptionalSection;
 import net.frontlinesms.serviceconfig.PasswordString;
 import net.frontlinesms.serviceconfig.PhoneNumber;
 import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
+import net.frontlinesms.serviceconfig.SmsModemReference;
 import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.settings.BaseSectionHandler;
 import net.frontlinesms.settings.FrontlineValidationMessage;
@@ -37,6 +38,7 @@ import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.handler.contacts.ContactSelecter;
+import net.frontlinesms.ui.handler.phones.ConfiguredModemSelecter;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.settings.UiSettingsSectionHandler;
 
@@ -363,6 +365,25 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 			ui.add(panel, bt);
 			ui.setAction(bt, "showContacts(this)", panel, this);
 			components = new Object[] {lb, panel};
+		} else if (valueObj instanceof SmsModemReference) {
+			Object panel = ui.createPanel("pn" + key.replace(".", "_"));
+			ui.setInteger(panel, "gap", 5);
+			ui.setInteger(panel, "weightx", 1);
+			Object lb = ui.createLabel(label);
+			if (iconProperties.hasIcon(key)) {
+				ui.setIcon(lb, ui.getIcon(iconProperties.getIcon(key)));
+			}
+			
+			Object tf = ui.createTextfield(key, valueString);
+			ui.setEnabled(tf, false);
+			ui.setInteger(tf, "weightx", 1);
+			Object bt = ui.createButton("");
+			ui.setIcon(bt, ui.getIcon(SmsModemReference.BUTTON_ICON));
+			ui.setAttachedObject(bt, tf);
+			ui.add(panel, tf);
+			ui.add(panel, bt);
+			ui.setAction(bt, "showConfiguredModems(this)", panel, this);
+			components = new Object[] {lb, panel};
 		} else if (valueObj instanceof OptionalSection) {
 			OptionalSection section = (OptionalSection) valueObj;
 			Object checkbox = ui.createCheckbox(key, label, section.getValue());
@@ -486,6 +507,12 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 		ui.setText(textField, selectedContact.getPhoneNumber());
 		removeDialog(dialog);
 	}
+	
+	public void showConfiguredModems(Object button) {
+		Object textfield = ui.getAttachedObject(button);
+		ConfiguredModemSelecter selecter = new ConfiguredModemSelecter(ui, textfield);
+		selecter.show();
+	}
 
 	public void enableFields(boolean checked, Object panel) {
 		ui.setEnabled(panel, checked);
@@ -540,6 +567,9 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 					return ui.getText(child);
 				}
 			}
+		}
+		if(clazz.equals(SmsModemReference.class)) {
+			return new SmsModemReference(ui.getText(comp));
 		}
 		throw new RuntimeException("Unsupported property type: " + clazz);
 	}

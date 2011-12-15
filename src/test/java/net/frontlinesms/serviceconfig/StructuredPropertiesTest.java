@@ -15,7 +15,6 @@ import net.frontlinesms.serviceconfig.StructuredProperties;
 /**
  * Tests the various methods dealing with {@link AbstractSmsInternetService}'s properties classes.
  * 
- * 
  * @author Alex
  * @author Carlos Eduardo Genz
  */
@@ -69,6 +68,9 @@ public class StructuredPropertiesTest extends BaseTestCase {
 		expectedValues.put(key, obj);
 		
 		defaultSettings.put(key = "l", section);
+		expectedValues.put(key, defaultSettings.getShallow(key));
+		
+		defaultSettings.put(key = "m", new SmsModemReference("ABC123"));
 		expectedValues.put(key, defaultSettings.getShallow(key));
 	}
 	

@@ -1,13 +1,14 @@
 package net.frontlinesms.serviceconfig;
 
 public class SmsModemReference {
-	private final Long id;
+	public static final String BUTTON_ICON = "/icons/phone.png";
+	private final String serial;
 	
-	public SmsModemReference(Long id) {
-		this.id = id;
+	public SmsModemReference(String serial) {
+		this.serial = serial;
 	}
 	
-	public long getId() {
-		return id;
+	public String getSerial() {
+		return serial;
 	}
 }

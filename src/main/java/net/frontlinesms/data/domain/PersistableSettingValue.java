@@ -17,6 +17,7 @@ import net.frontlinesms.serviceconfig.OptionalRadioSection;
 import net.frontlinesms.serviceconfig.OptionalSection;
 import net.frontlinesms.serviceconfig.PasswordString;
 import net.frontlinesms.serviceconfig.PhoneNumber;
+import net.frontlinesms.serviceconfig.SmsModemReference;
 
 /**
  * Wraps a {@link String} value for a property in a persistable {@link Entity}.
@@ -99,6 +100,8 @@ public class PersistableSettingValue {
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
 		}
+		if(exampleValue.getClass().equals(SmsModemReference.class))
+			return new SmsModemReference(stringValue);
 		throw new RuntimeException("Unsupported property type: " + exampleValue.getClass());
 	}
 
@@ -125,6 +128,7 @@ public class PersistableSettingValue {
 			OptionalRadioSection<?> ors = (OptionalRadioSection<?>) value;
 			stringValue = ors.getValue().name();
 		}
+		else if (value instanceof SmsModemReference) stringValue = ((SmsModemReference) value).getSerial();
 		else throw new RuntimeException("Unsupported property type: " + value.getClass());
 		
 		return new PersistableSettingValue(stringValue);
