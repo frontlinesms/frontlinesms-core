@@ -25,7 +25,7 @@ public abstract class BaseTabHandler implements ThinletUiEventHandler, EventObse
 	protected final EventBus eventBus;
 	private final boolean isEventObserver;
 	/** The tab component this handler is based around */
-	private Object tabComponent;;
+	private Object tabComponent;
 	
 	/**
 	 * @param ui
@@ -109,7 +109,7 @@ public abstract class BaseTabHandler implements ThinletUiEventHandler, EventObse
 	 * Shows a general dialog asking the user to confirm his action. 
 	 * @param methodToBeCalled The name and optionally the signature of the method to be called 
 	 * @see UiGeneratorController#showConfirmationDialog(String) */
-	public final void showConfirmationDialog(String methodToBeCalled){
+	public final void showConfirmationDialog(String methodToBeCalled) {
 		this.ui.showConfirmationDialog(methodToBeCalled, this);
 	}
 	/**
