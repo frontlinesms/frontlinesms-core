@@ -112,6 +112,18 @@ public class PersistableSettings {
 		T defaultValue = (T) defaults.getDeep(key);
 		if (defaultValue == null) throw new IllegalArgumentException("No default value could be found for key: " + key);
 		
+		return getPropertyValue(settings, key, defaultValue);
+	}
+	
+	/**
+	 * @param key The key of the property
+	 * @param clazz The class of the property's value
+	 * @param <T> The class of the property's value
+	 * @return The property value, either the one stored on db (if any) or the default value.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends Object> T getPropertyValue(PersistableSettings settings, 
+			String key, T defaultValue) {
 		PersistableSettingValue setValue = settings.get(key);
 		if(setValue == null) return defaultValue;
 		else return (T) setValue.toObject(defaultValue);

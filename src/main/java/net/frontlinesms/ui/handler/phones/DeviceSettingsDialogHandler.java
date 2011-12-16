@@ -126,6 +126,7 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 		
 		if(BuildProperties.getInstance().isSnapshot()) {
 			ui.setText(find("tfCatHandler"), device.getCService().getAtHandlerName());
+			ui.setText(find("tfSerial"), device.getSerial());
 		} else {
 			ui.remove(find("pnDebug"));
 		}
