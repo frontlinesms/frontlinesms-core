@@ -138,7 +138,7 @@ public abstract class FrontlineUI extends ExtendedThinlet implements ThinletUiEv
 	 * Popup an alert to the user with the supplied messages.
 	 * @param alertMessages
 	 */
-	public void alert(String[] alertMessages) {
+	public void alert(String... alertMessages) {
 		Object alertDialog = loadComponentFromFile(UI_FILE_ALERT);
 		Object pnAlerts = find(alertDialog, COMPONENT_PN_ALERTS);
 
@@ -165,18 +165,10 @@ public abstract class FrontlineUI extends ExtendedThinlet implements ThinletUiEv
 	}
 	
 	/**
-	 * Popup an alert to the user with the supplied message.
-	 * @param alertMessage
-	 */
-	public void alert(String alertMessage) {
-		alert(new String[] { alertMessage });
-	}
-	
-	/**
 	 * Popup an info message to the user with the supplied messages.
 	 * @param infoMessages
 	 */
-	public void infoMessage(String[] infoMessages) {
+	public void infoMessage(String... infoMessages) {
 		Object infoDialog = loadComponentFromFile(UI_FILE_INFO);
 		Object pnInfo = find(infoDialog, COMPONENT_PN_INFO);
 		
@@ -184,21 +176,11 @@ public abstract class FrontlineUI extends ExtendedThinlet implements ThinletUiEv
 			add(pnInfo, createLabel(infoMessage));
 		}
 		
-		//setText(find(infoDialog, COMPONENT_INFO_MESSAGE), infoMessage);
 		add(infoDialog);
 	}
 	
 	/**
-	 * Popup an info message to the user with the supplied message.
-	 * @param infoMessage
-	 */
-	public void infoMessage(String infoMessage) {
-		infoMessage(new String[] { infoMessage });
-	}
-	
-	/**
 	 * Removes the supplied dialog from the application.
-	 * 
 	 * @param dialog
 	 */
 	public void removeDialog(Object dialog) {
