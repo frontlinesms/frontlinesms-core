@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -276,7 +277,6 @@ public class InternationalisationUtils {
 
 	/**
 	 * Returns a formatted value according to the defined currency format
-	 * 
 	 * @param value
 	 * @return formatted value
 	 */
@@ -287,8 +287,20 @@ public class InternationalisationUtils {
 		} else {
 			return NumberFormat.getCurrencyInstance(getCurrentLocale()).format(value);
 		}
-		
-		
+	}
+
+	/**
+	 * Returns a formatted value according to the defined currency format
+	 * @param value
+	 * @return formatted value
+	 */
+	public static final String formatCurrency(BigDecimal value) {
+		if (UiProperties.getInstance().isCurrencyFormatCustom()) {
+			String currencyFormat = UiProperties.getInstance().getCustomCurrencyFormat();
+			return new CurrencyFormatter(currencyFormat).format(value);
+		} else {
+			return NumberFormat.getCurrencyInstance(getCurrentLocale()).format(value);
+		}
 	}
 
 	// > LANGUAGE BUNDLE LOADING METHODS
