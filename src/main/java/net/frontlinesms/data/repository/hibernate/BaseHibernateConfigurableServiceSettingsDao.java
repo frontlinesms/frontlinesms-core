@@ -4,6 +4,8 @@
 package net.frontlinesms.data.repository.hibernate;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
@@ -23,35 +25,48 @@ public abstract class BaseHibernateConfigurableServiceSettingsDao extends BaseHi
 	}
 
 	public PersistableSettings getById(long id) {
-		DetachedCriteria c = super.getCriterion();
+		DetachedCriteria c = getCriterion();
 		c.add(Restrictions.eq("id", id));
-		return super.getUnique(c);
+		return getUnique(c);
 	}
 	
 	public PersistableSettings getByProperty(String key, String value) {
-		return super.getUnique(getByPropertyCriteria(key, value));
+		return (PersistableSettings) getAllByProperty(key, value).toArray()[0];
 	}
 	
 	public Collection<PersistableSettings> getAllByProperty(String key, String value) {
-		return super.getList(getByPropertyCriteria(key, value));
-	}
-
-	private DetachedCriteria getByPropertyCriteria(String key, String value) {
-		DetachedCriteria c = super.getCriterion();
-		c.createAlias("properties", "p");
-		c.add(Restrictions.and(
-				Restrictions.eq("p.property", key),
-				Restrictions.eq("p.value", value)));
-		return c;
+		// FIXME should do something clever here with criteria/HQL instead of manual match, e.g.:
+//		return getList("PersistableSettings_PersistableSettingValue as pv, " +
+//				"PersistableSettingValue as v " +
+//				"WHERE pv.key=? " +
+//				"AND pv.PersistableSettings_id=v.id " +
+//				"AND v.value=? " +
+//				"AND pv IN properties", key, value);
+//		return getList(getByPropertyCriteria(key, value));
+		List<PersistableSettings> all = getAll();
+		List<PersistableSettings> matching = new LinkedList<PersistableSettings>();
+		for(PersistableSettings s : all) {
+			boolean keep = false;
+			if(s.getProperties().containsKey(key)) {
+				if(value == null) keep = s.get(key).getValue()==null;
+				else keep = value.equals(s.get(key).getValue());
+			}
+			if(keep) matching.add(s);
+		}
+		return matching;
 	}
 
 	/** @see SmsInternetServiceSettingsDao#deleteSmsInternetServiceSettings(PersistableSettings) */
 	public void deleteServiceSettings(PersistableSettings settings) {
-		super.delete(settings);
+		delete(settings);
 	}
-
-	/** @see ServiceSettingsDao#getServiceAccounts() */
-	public Collection<PersistableSettings> getServiceAccounts() {
+	
+	public List<PersistableSettings> getServiceAccounts() {
+		return getAll();
+	}
+	
+	@Override
+	protected DetachedCriteria getCriterion() {
 		DetachedCriteria c = super.getCriterion();
 		if(getServiceClass().equals(SmsInternetService.class)) {
 			c.add(Restrictions.or(
@@ -60,18 +75,18 @@ public abstract class BaseHibernateConfigurableServiceSettingsDao extends BaseHi
 		} else {
 			c.add(Restrictions.eq("serviceTypeSuperclass", getServiceClass()));
 		}
-		return super.getList(c);
+		return c;
 	}
 	
 	public abstract Class<? extends ConfigurableService> getServiceClass();
 
 	/** @see ServiceSettingsDao#saveServiceSettings(PersistableSettings) */
 	public void saveServiceSettings(PersistableSettings settings) throws DuplicateKeyException {
-		super.save(settings);
+		save(settings);
 	}
 
 	/** @see ServiceSettingsDao#updateServiceSettings(PersistableSettings) */
 	public void updateServiceSettings(PersistableSettings settings) {
-		super.updateWithoutDuplicateHandling(settings);
+		updateWithoutDuplicateHandling(settings);
 	}
 }
