@@ -31,7 +31,9 @@ public abstract class BaseHibernateConfigurableServiceSettingsDao extends BaseHi
 	}
 	
 	public PersistableSettings getByProperty(String key, String value) {
-		return (PersistableSettings) getAllByProperty(key, value).toArray()[0];
+		Collection<PersistableSettings> allByProperty = getAllByProperty(key, value);
+		if(allByProperty.size() == 0) return null;
+		else return (PersistableSettings) allByProperty.toArray()[0];
 	}
 	
 	public Collection<PersistableSettings> getAllByProperty(String key, String value) {
