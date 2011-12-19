@@ -461,12 +461,15 @@ public class SmsModem extends Thread implements SmsService, ICallListener {
 			LOG.debug("Connection successful!");
 			LOG.trace("EXIT");
 			return true;
-		} catch (GsmNetworkRegistrationException e) {
+		} catch (GsmNetworkRegistrationException ex) {
 			this.setStatus(SmsModemStatus.GSM_REG_FAILED, null);
+			LOG.warn("Modem connection failed.", ex);
 		} catch (PortInUseException ex) {
 			this.setStatus(SmsModemStatus.OWNED_BY_SOMEONE_ELSE, ex.getClass().getSimpleName() + " : " + ex.getMessage());
+			LOG.warn("Modem connection failed.", ex);
 		} catch (Exception ex) {
 			this.setStatus(SmsModemStatus.FAILED_TO_CONNECT, ex.getClass().getSimpleName() + " : " + ex.getMessage());
+			LOG.warn("Modem connection failed.", ex);
 		}
 		LOG.debug("Connection failed!");
 		LOG.trace("EXIT");
