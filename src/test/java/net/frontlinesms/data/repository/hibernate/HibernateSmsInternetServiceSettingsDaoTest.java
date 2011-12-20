@@ -48,7 +48,15 @@ public class HibernateSmsInternetServiceSettingsDaoTest extends HibernateTestCas
 		assertEquals(0, dao.getServiceAccounts().size());
 	}
 	
-	public void testGetByProperty() throws Exception {
+	public void testGetByProperty_noMatches() {
+		// when
+		PersistableSettings s = dao.getByProperty("whatever", "???");
+		
+		// then
+		assertNull(s);
+	}
+	
+	public void testGetByProperty_matches() throws Exception {
 		// given
 		createWithProperties(
 				"test-property-1", "abc",

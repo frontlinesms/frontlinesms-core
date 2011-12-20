@@ -7,6 +7,7 @@ import java.util.*;
 
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.repository.SmsInternetServiceSettingsDao;
+import net.frontlinesms.data.repository.hibernate.HibernateSmsInternetServiceSettingsDao;
 import net.frontlinesms.junit.BaseTestCase;
 import net.frontlinesms.serviceconfig.OptionalRadioSection;
 import net.frontlinesms.serviceconfig.OptionalSection;
@@ -15,9 +16,9 @@ import net.frontlinesms.serviceconfig.PhoneNumber;
 import net.frontlinesms.serviceconfig.SmsModemReference;
 
 /**
- * Unit tests for {@link SmsInternetServiceSettingsDao}.
- * 
+ * Unit tests for {@link HibernateSmsInternetServiceSettingsDao}.
  * @author Kadu
+ * @author Alex
  */
 public class SmsInternetServiceSettingsDaoTest extends BaseTestCase {
 	private Map<Object, Class<?>> expectedTypes = new HashMap<Object, Class<?>>();
