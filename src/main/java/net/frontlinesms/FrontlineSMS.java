@@ -270,7 +270,11 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 		// de-initialise plugin controllers
 		if(this.pluginManager != null) {
 			for(PluginController pluginController : this.pluginManager.getPluginControllers()) {
-				pluginController.deinit();
+				try {
+					pluginController.deinit();
+				} catch(Throwable t) {
+					LOG.error("There was a problem stopping one of the plugin controller.", t);
+				}
 			}
 		}
 		
