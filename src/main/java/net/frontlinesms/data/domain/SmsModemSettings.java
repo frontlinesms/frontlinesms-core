@@ -15,7 +15,7 @@ public class SmsModemSettings {
 	
 //> INSTANCE PROPERTIES
 	/** Unique id for this entity.  This is for hibernate usage. */
-	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false) @SuppressWarnings("unused")
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(unique=true,nullable=false,updatable=false)
 	private long id;
 	@Column(name=FIELD_SERIAL)
 	/** the serial number of the device */
@@ -34,12 +34,16 @@ public class SmsModemSettings {
 	private boolean useForReceiving;
 	/** whether messages should be deleted from the device after being read by FrontlineSMS */
 	private boolean deleteMessagesAfterReceiving;
-	/** whether the device should supply all incoming messages, or only those not previously read. */
-	private boolean readOnlyUnreadMessages;
+	/** whether the device should supply all incoming messages, or only those not previously read.
+	 * Has to be {@link Boolean} as was not present in previous versions so hibernate will attempt
+	 * to set it to null. */
+	private Boolean readOnlyUnreadMessages;
 	/** whether delivery reports should be used with this device */
 	private boolean useDeliveryReports;
-	/** whether phone calls should be monitored on this device */
-	private boolean monitorCalls;
+	/** whether phone calls should be monitored on this device
+	 * Has to be {@link Boolean} as was not present in previous versions so hibernate will attempt
+	 * to set it to null. */
+	private Boolean monitorCalls;
 	
 //> CONSTRUCTORS
 	/** Empty constructor for hibernate */
@@ -105,7 +109,7 @@ public class SmsModemSettings {
 		this.deleteMessagesAfterReceiving = deleteMessagesAfterReceiving;
 	}
 	public boolean readOnlyUnreadMessages() {
-		return readOnlyUnreadMessages;
+		return readOnlyUnreadMessages!=null && readOnlyUnreadMessages;
 	}
 	public void setReadOnlyUnreadMessages(boolean readOnlyUnreadMessages) {
 		this.readOnlyUnreadMessages = readOnlyUnreadMessages;
@@ -134,7 +138,7 @@ public class SmsModemSettings {
 	}
 	/** @return <code>true</code> if calls should be monitored on this device; <code>false</code> otherwise */
 	public boolean monitorCalls() {
-		return monitorCalls;
+		return monitorCalls!=null && monitorCalls;
 	}
 	/** @param monitorCalls new value for {@link #monitorCalls} */
 	public void setMonitorCalls(boolean monitorCalls) {
