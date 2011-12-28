@@ -6,20 +6,21 @@ package net.frontlinesms.data.domain;
 import java.util.*;
 
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
 import net.frontlinesms.data.repository.SmsInternetServiceSettingsDao;
+import net.frontlinesms.data.repository.hibernate.HibernateSmsInternetServiceSettingsDao;
 import net.frontlinesms.junit.BaseTestCase;
-import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.OptionalRadioSection;
+import net.frontlinesms.serviceconfig.OptionalSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneNumber;
+import net.frontlinesms.serviceconfig.SmsModemReference;
 
 /**
- * Unit tests for {@link SmsInternetServiceSettingsDao}.
- * 
+ * Unit tests for {@link HibernateSmsInternetServiceSettingsDao}.
  * @author Kadu
+ * @author Alex
  */
-public class SmsInternetServiceSettingsTest extends BaseTestCase {
+public class SmsInternetServiceSettingsDaoTest extends BaseTestCase {
 	private Map<Object, Class<?>> expectedTypes = new HashMap<Object, Class<?>>();
 	private Map<Object, String> values = new HashMap<Object, String>();
 
@@ -51,8 +52,8 @@ public class SmsInternetServiceSettingsTest extends BaseTestCase {
 		expectedTypes.put(o, Boolean.class);
 		values.put(o, String.valueOf(o.getValue()));
 
-		obj = new PhoneSection("phone");
-		expectedTypes.put(obj, PhoneSection.class);
+		obj = new PhoneNumber("phone");
+		expectedTypes.put(obj, PhoneNumber.class);
 		values.put(obj, "phone");
 
 		obj = new OptionalRadioSection<Test>(Test.A);
@@ -65,6 +66,10 @@ public class SmsInternetServiceSettingsTest extends BaseTestCase {
 		obj = Test.A;
 		expectedTypes.put(obj, Test.class);
 		values.put(obj, String.valueOf(obj));
+		
+		obj = new SmsModemReference("XYZ789");
+		expectedTypes.put(obj, SmsModemReference.class);
+		values.put(obj, "XYZ789");
 	}
 
 	/**
@@ -72,8 +77,10 @@ public class SmsInternetServiceSettingsTest extends BaseTestCase {
 	 */
 	public void testGetValueFromString() {
 		for (Object obj : expectedTypes.keySet()) {
-			Object value = SmsInternetServiceSettings.fromValue(obj, new SmsInternetServiceSettingValue(values.get(obj)));
-			assertEquals("Checking get value from string for class [" + obj.getClass() + "] and value [" + values.get(obj) + "]", value.getClass(), expectedTypes.get(obj));
+			PersistableSettingValue psValue = new PersistableSettingValue(values.get(obj));
+			Object value = psValue.toObject(obj);
+			assertEquals("Checking get value from string for class [" + obj.getClass() + "] and value [" + values.get(obj) + "]",
+					value.getClass(), expectedTypes.get(obj));
 		}
 	}
 
@@ -82,7 +89,7 @@ public class SmsInternetServiceSettingsTest extends BaseTestCase {
 	 */
 	public void testGetValueAsString() {
 		for (Object obj : expectedTypes.keySet()) {
-			String ret = SmsInternetServiceSettings.toValue(obj).getValue();
+			String ret = PersistableSettingValue.create(obj).getValue();
 			assertEquals("Checking get value as string for obj [" + obj + "], class [" + obj.getClass() + "]", ret, values.get(obj));
 		}
 	}

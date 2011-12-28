@@ -2,8 +2,8 @@ package net.frontlinesms.messaging.sms.internet;
 
 import java.util.Comparator;
 
-import net.frontlinesms.messaging.Provider;
 import net.frontlinesms.resources.ImplementationLoader;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
 
 public class SmsInternetServiceLoader extends ImplementationLoader<SmsInternetService> {
 	@Override
@@ -23,8 +23,8 @@ class InternetServiceSorter implements Comparator<Class<? extends SmsInternetSer
 		if(o1 == null) return -1;
 		else if(o2 == null) return 1;
 		else {
-			Provider a1 = o1.getAnnotation(Provider.class);
-			Provider a2 = o2.getAnnotation(Provider.class);
+			ConfigurableServiceProperties a1 = o1.getAnnotation(ConfigurableServiceProperties.class);
+			ConfigurableServiceProperties a2 = o2.getAnnotation(ConfigurableServiceProperties.class);
 			if(a1 == null) return -1;
 			else if(a2 == null) return 1;
 			else return a1.name().compareTo(a2.name());

@@ -45,12 +45,12 @@ public class KeywordExportDialogHandler extends ExportDialogHandler<Keyword> {
 	}
 	
 	@Override
-	String getWizardTitleI18nKey() {
+	protected String getWizardTitleI18nKey() {
 		return MESSAGE_EXPORTING_SELECTED_KEYWORDS;
 	}
 
 	@Override
-	String getOptionsFilePath() {
+	protected String getOptionsFilePath() {
 		return UI_FILE_OPTIONS_PANEL_KEYWORD;
 	}
 	

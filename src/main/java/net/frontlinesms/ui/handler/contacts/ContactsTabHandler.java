@@ -36,10 +36,8 @@ import net.frontlinesms.data.domain.Group;
 import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.data.repository.GroupDao;
 import net.frontlinesms.data.repository.GroupMembershipDao;
-import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.ui.Icon;
-import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.BaseTabHandler;
@@ -55,8 +53,8 @@ import thinlet.Thinlet;
  * @author Alex Anderson <alex@frontlinesms.com>
  * @author Morgan Belkadi <morgan@frontlinesms.com>
  */
-public class ContactsTabHandler extends BaseTabHandler implements PagedComponentItemProvider, SingleGroupSelecterPanelOwner, ContactEditorOwner, EventObserver {
-	//> STATIC CONSTANTS
+public class ContactsTabHandler extends BaseTabHandler implements PagedComponentItemProvider, SingleGroupSelecterPanelOwner, ContactEditorOwner {
+//> STATIC CONSTANTS
 	/** UI XML File Path: the Home Tab itself */
 	private static final String UI_FILE_CONTACTS_TAB = "/ui/core/contacts/contactsTab.xml";
 	private static final String UI_FILE_NEW_GROUP_FORM = "/ui/dialog/newGroupForm.xml"; // TODO move this to the correct path
@@ -101,7 +99,7 @@ public class ContactsTabHandler extends BaseTabHandler implements PagedComponent
 	 * @param groupDao {@link #groupDao}
 	 */
 	public ContactsTabHandler(UiGeneratorController ui) {
-		super(ui);
+		super(ui, true);
 		this.contactDao = ui.getFrontlineController().getContactDao();
 		this.groupDao = ui.getFrontlineController().getGroupDao();
 		this.groupMembershipDao = ui.getFrontlineController().getGroupMembershipDao();
@@ -114,9 +112,6 @@ public class ContactsTabHandler extends BaseTabHandler implements PagedComponent
 		this.groupSelecter.init(ui.getRootGroup());
 		
 		this.ui.setDeleteAction(this.groupSelecter.getGroupTreeComponent(), "showDeleteOptionDialog", null, this);
-		
-		// We register the observer to the UIGeneratorController, which notifies when tabs have changed
-		this.ui.getFrontlineController().getEventBus().registerObserver(this);
 		
 		ui.add(find(COMPONENT_GROUP_SELECTER_CONTAINER), this.groupSelecter.getPanelComponent(), 0);
 	}
@@ -613,35 +608,17 @@ public class ContactsTabHandler extends BaseTabHandler implements PagedComponent
 		return tabComponent;
 	}
 	
-//	/** Initialise the message table's HEADER component for sorting the table. */
-//	private void initContactTableForSorting() {
-//		Object header = Thinlet.get(contactListComponent, ThinletText.HEADER);
-//		for (Object o : ui.getItems(header)) {
-//			String text = ui.getString(o, Thinlet.TEXT);
-//			// Here, the FIELD property is set on each column of the message table.  These field objects are
-//			// then used for easy sorting of the message table.
-//			if(text != null) {
-//				if (text.equalsIgnoreCase(InternationalisationUtils.getI18NString(COMMON_NAME))) ui.putProperty(o, PROPERTY_FIELD, FrontlineMessage.Field.STATUS);
-//				else if(text.equalsIgnoreCase(InternationalisationUtils.getI18NString(COMMON_PHONE_NUMBER))) ui.putProperty(o, PROPERTY_FIELD, FrontlineMessage.Field.DATE);
-//				else if(text.equalsIgnoreCase(InternationalisationUtils.getI18NString(COMMON_E_MAIL_ADDRESS))) ui.putProperty(o, PROPERTY_FIELD, FrontlineMessage.Field.SENDER_MSISDN);
-//			}
-//		}
-//	}
-	
 	/**
 	 * UI event called when the user changes tab
 	 */
 	public void notify(FrontlineEventNotification notification) {
+		super.notify(notification);
 		// This object is registered to the UIGeneratorController and get notified when the users changes tab
 		if(notification instanceof TabChangedNotification) {
 			String newTabName = ((TabChangedNotification) notification).getNewTabName();
 			if (newTabName.equals(TAB_CONTACT_MANAGER)) {
-				this.refresh();
+				threadSafeRefresh();
 				this.ui.setStatus(InternationalisationUtils.getI18nString(MESSAGE_CONTACT_MANAGER_LOADED));
-			}
-		} else if (notification instanceof UiDestroyEvent) {
-			if(((UiDestroyEvent) notification).isFor(this.ui)) {
-				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
 			}
 		}
 	}

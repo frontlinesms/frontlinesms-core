@@ -32,15 +32,16 @@ import net.frontlinesms.ui.i18n.TextResourceKeyOwner;
  * UI Methods for Importing and Exporting data from FrontlineSMS.
  * @author Alex Anderson <alex@frontlinesms.com>
  * @author Morgan Belkadi <morgan@frontlinesms.com>
+ * @author Ian Onesmus Mukewa <ian@credit.frontlinesms.com>
  */
 @TextResourceKeyOwner(prefix="MESSAGE_")
 public abstract class ImportExportDialogHandler implements ThinletUiEventHandler {
 //> STATIC CONSTANTS
-	
+
 //> I18N KEYS
 	/** I18n Text Key: TODO document */
 	protected static final String MESSAGE_NO_FILENAME = "message.filename.blank";
-	
+
 //> THINLET LAYOUT DEFINITION FILES
 	/** UI XML File Path: TODO document */
 	protected static final String UI_FILE_OPTIONS_PANEL_CONTACT = "/ui/core/importexport/pnContactDetails.xml";
@@ -48,7 +49,7 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 	protected static final String UI_FILE_OPTIONS_PANEL_MESSAGE = "/ui/core/importexport/pnMessageDetails.xml";
 	/** UI XML File Path: TODO document */
 	protected static final String UI_FILE_OPTIONS_PANEL_KEYWORD = "/ui/core/importexport/pnKeywordDetails.xml";
-	
+
 //> THINLET COMPONENT NAMES
 	/** Thinlet Component Name: Checkbox to indicate whether a contact's "notes" field should be exported. */
 	private static final String COMPONENT_CB_NOTES = "cbContactNotes";
@@ -94,9 +95,15 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 	protected final KeywordDao keywordDao;
 	/** The {@link UiGeneratorController} that shows the tab. */
 	protected final UiGeneratorController uiController;
-	
+
 	/** Dialog for gathering details of the export or import */
 	protected Object wizardDialog;
+
+	/** Main panel for the Details */
+	protected Object pnDetails;
+
+	/** Main panel holding The Options */
+	protected Object optionsPanel;
 
 //> CONSTRUCTORS
 	/**
@@ -110,8 +117,32 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 		this.messageDao = uiController.getFrontlineController().getMessageDao();
 		this.keywordDao = uiController.getFrontlineController().getKeywordDao();
 		this.groupDao = uiController.getFrontlineController().getGroupDao();
+		
+		init();
 	}
-	
+
+	private void init() {
+		// Load the import/export wizard, and save it to the class reference
+		this.wizardDialog = uiController.loadComponentFromFile(getDialogFile(),
+				this);
+
+		String titleI18nKey = getWizardTitleI18nKey();
+		uiController.setText(this.wizardDialog,
+				InternationalisationUtils.getI18nString(titleI18nKey));
+
+		this.pnDetails = this.uiController.find(this.wizardDialog,
+				COMPONENT_PN_DETAILS);
+
+		this.optionsPanel = uiController.loadComponentFromFile(getOptionsFilePath(), this);
+
+		if (pnDetails == null) {
+			uiController.add(this.wizardDialog, optionsPanel, 2);
+		} else {
+			uiController.add(pnDetails, optionsPanel);
+		}
+
+	}
+
 //> ACCESSORS
 
 //> UI SHOW METHODS
@@ -119,10 +150,10 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 	 * Shows the export wizard dialog, according to the supplied type.
 	 * @param export 
 	 */
-	public void showWizard(){
+	public void showWizard() {
 		_showWizard();
 	}
-	
+
 //> PUBLIC UI METHODS
 	public void filenameModified(String text) {
 		boolean enableExport = FrontlineUtils.getFilenameWithoutFinalExtension(new File(text)).length() > 0;
@@ -130,35 +161,23 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 	}
 
 //> INSTANCE HELPER METHODS
-	
 	/**
 	 * Gets the title to use for the title of Export wizard
 	 * @return i18n key for fetching the title of the wizard
 	 */
-	abstract String getWizardTitleI18nKey();
-	abstract String getOptionsFilePath();
-	abstract String getDialogFile();
-	
+	protected abstract String getWizardTitleI18nKey();
+
+	protected abstract String getOptionsFilePath();
+
+	protected abstract String getDialogFile();
+
 	/** Show the wizard for importing or exporting a particular type of entity. */
 	protected void _showWizard() {
-		// Load the import/export wizard, and save it to the class reference
-		this.wizardDialog = uiController.loadComponentFromFile(getDialogFile(), this);
-		
-		String titleI18nKey = getWizardTitleI18nKey();
-		uiController.setText(this.wizardDialog, InternationalisationUtils.getI18nString(titleI18nKey));
-		
-		Object pnDetails = this.uiController.find(this.wizardDialog, COMPONENT_PN_DETAILS);
-		Object optionsPanel = uiController.loadComponentFromFile(getOptionsFilePath(), this);
-		if (pnDetails == null) {
-			uiController.add(this.wizardDialog, optionsPanel, 2);
-		} else {
-			uiController.add(pnDetails, optionsPanel);
-		}
-
+		//The Init and Show are separate to allow manipulation
 		// Add the wizard to the Thinlet controller
 		uiController.add(this.wizardDialog);
 	}
-	
+
 	/**
 	 * Checks if a Thinlet checkbox component is checked.
 	 * @param checkboxComponentName The name of the checkbox component.
@@ -170,7 +189,7 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 		assert (cbComponent != null) : "The checkbox component could not be found with name: " + checkboxComponentName;
 		return this.uiController.isSelected(cbComponent);
 	}
-	
+
 	/**
 	 * Adds a marker to the {@link CsvRowFormat} iff the checkbox is checked.
 	 * @param rowFormat
@@ -182,7 +201,7 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 			rowFormat.addMarker(marker);
 		}
 	}
-	
+
 	/**
 	 * Creates an export row format for messages.
 	 * @return {@link CsvRowFormat} for message, reflecting the settings in {@link #wizardDialog}
@@ -197,7 +216,7 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 		addMarker(rowFormat, CsvUtils.MARKER_RECIPIENT_NUMBER, COMPONENT_CB_RECIPIENT);
 		return rowFormat;
 	}
-	
+
 	/**
 	 * Creates an export row format for {@link Contact}s.
 	 * @return {@link CsvRowFormat} for contacts, reflecting the settings in {@link #wizardDialog}
@@ -213,7 +232,7 @@ public abstract class ImportExportDialogHandler implements ThinletUiEventHandler
 		addMarker(rowFormat, CsvUtils.MARKER_CONTACT_GROUPS, COMPONENT_CB_GROUPS);
 		return rowFormat;
 	}
-	
+
 //> UI PASS-THRU METHODS
 	/** @param dialog the dialog to remove
 	 * @see UiGeneratorController#remove(Object) */

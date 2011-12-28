@@ -26,9 +26,7 @@ import net.frontlinesms.data.domain.Email;
 import net.frontlinesms.data.domain.EmailAccount;
 import net.frontlinesms.data.domain.Email.Field;
 import net.frontlinesms.data.repository.EmailDao;
-import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
-import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.BaseTabHandler;
@@ -40,12 +38,10 @@ import net.frontlinesms.ui.i18n.TextResourceKeyOwner;
 
 /**
  * @author Alex Anderson 
- * <li> alex(at)masabi(dot)com
  * @author Carlos Eduardo Genz
- * <li> kadu(at)masabi(dot)com
  */
 @TextResourceKeyOwner(prefix="MESSAGE_")
-public class EmailTabHandler extends BaseTabHandler implements PagedComponentItemProvider, EventObserver {
+public class EmailTabHandler extends BaseTabHandler implements PagedComponentItemProvider {
 //> UI LAYOUT FILES
 	/** Thinlet XML Layout file for the email tab */
 	public static final String UI_FILE_EMAILS_TAB = "/ui/core/email/emailsTab.xml";
@@ -77,7 +73,7 @@ public class EmailTabHandler extends BaseTabHandler implements PagedComponentIte
 	 * @param frontlineController
 	 */
 	public EmailTabHandler(UiGeneratorController ui) {
-		super(ui);
+		super(ui, true);
 		FrontlineSMS frontlineController = ui.getFrontlineController();
 		this.emailManager = frontlineController .getEmailServerHandler();
 		this.emailDao = frontlineController.getEmailDao();
@@ -92,9 +88,6 @@ public class EmailTabHandler extends BaseTabHandler implements PagedComponentIte
 	/** @see BaseTabHandler#init() */
 	protected Object initialiseTab() {
 		Object tabComponent = ui.loadComponentFromFile(UI_FILE_EMAILS_TAB, this);
-
-		// We register the observer to the UIGeneratorController, which notifies when tabs have changed
-		this.ui.getFrontlineController().getEventBus().registerObserver(this);
 		
 		emailListComponent = ui.find(tabComponent, COMPONENT_EMAIL_LIST);
 		this.emailListPager = new ComponentPagingHandler(this.ui, this, this.emailListComponent);
@@ -306,16 +299,13 @@ public class EmailTabHandler extends BaseTabHandler implements PagedComponentIte
 	 * UI event called when the user changes tab
 	 */
 	public void notify(FrontlineEventNotification notification) {
+		super.notify(notification);
 		// This object is registered to the UIGeneratorController and get notified when the users changes tab
 		if(notification instanceof TabChangedNotification) {
 			String newTabName = ((TabChangedNotification) notification).getNewTabName();
 			if (newTabName.equals(TAB_EMAIL_LOG)) {
-				this.refresh();
+				threadSafeRefresh();
 				this.ui.setStatus(InternationalisationUtils.getI18nString(MESSAGE_EMAILS_LOADED));
-			}
-		} else if (notification instanceof UiDestroyEvent) {
-			if(((UiDestroyEvent) notification).isFor(this.ui)) {
-				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
 			}
 		}
 	}

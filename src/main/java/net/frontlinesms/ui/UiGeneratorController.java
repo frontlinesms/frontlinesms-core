@@ -21,6 +21,7 @@ package net.frontlinesms.ui;
 
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -34,7 +35,9 @@ import net.frontlinesms.data.*;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.data.domain.FrontlineMessage.Type;
+import net.frontlinesms.data.events.EntityDeletedNotification;
 import net.frontlinesms.data.events.EntitySavedNotification;
+import net.frontlinesms.data.events.EntityUpdatedNotification;
 import net.frontlinesms.data.repository.*;
 import net.frontlinesms.debug.RandomDataGenerator;
 import net.frontlinesms.email.EmailException;
@@ -45,12 +48,13 @@ import net.frontlinesms.messaging.mms.email.MmsEmailServiceStatus;
 import net.frontlinesms.messaging.mms.events.MmsServiceStatusNotification;
 import net.frontlinesms.messaging.sms.SmsService;
 import net.frontlinesms.messaging.sms.SmsServiceManager;
-import net.frontlinesms.messaging.sms.events.InternetServiceEventNotification;
 import net.frontlinesms.messaging.sms.events.NoSmsServicesConnectedNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
+import net.frontlinesms.messaging.sms.modem.MissedCallNotification;
 import net.frontlinesms.plugins.*;
 import net.frontlinesms.resources.ResourceUtils;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.debug.SystemPropertyDebugDialog;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.*;
 import net.frontlinesms.ui.handler.contacts.*;
@@ -71,6 +75,7 @@ import net.frontlinesms.ui.i18n.*;
 import net.frontlinesms.ui.settings.FrontlineSettingsHandler;
 
 import org.apache.log4j.Logger;
+import org.smslib.CIncomingCall;
 import org.smslib.CIncomingMessage;
 
 import thinlet.FrameLauncher;
@@ -118,6 +123,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	
 	/** The INTERNAL NAME of the tab (a thinlet UI component) currently active */
 	private String currentTab;
+	
+	/** The bus for handling {@link FrontlineEventNotification}s. */
+	private final EventBus eventBus;
 	
 	/** The manager of {@link SmsService}s */
 	private final SmsServiceManager phoneManager;
@@ -168,6 +176,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	private NoPhonesDetectedDialogHandler deviceConnectionDialogHandler;
 	/** A Lock object used to synchronise methods accessing the {@link #deviceConnectionDialogHandler} */
 	private Object deviceConnectionDialogHandlerLock = new Object();
+	private IconMap iconMap;
 	
 	/**
 	 * Creates a new instance of the UI Controller.
@@ -177,8 +186,11 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 */
 	public UiGeneratorController(FrontlineSMS frontlineController, boolean detectPhones) throws Throwable {
 		this.frontlineController = frontlineController;
+		this.eventBus = this.frontlineController.getEventBus();
 		// We prepare listening events for device connection
-		this.frontlineController.getEventBus().registerObserver(this);
+		eventBus.registerObserver(this);
+
+		this.iconMap = new IconMap("META-INF/frontlinesms/icons.properties");
 		
 		// Load the requested language file.
 		AppProperties appProperties = AppProperties.getInstance();
@@ -215,7 +227,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			add(desktopUiComponent);
 			
 			// Remove the debug menu if this build is a proper release
-			if(!BuildProperties.getInstance().getVersion().contains("SNAPSHOT")) {
+			if(!BuildProperties.getInstance().isSnapshot()) {
 				Object debugMenuComponent = find(desktopUiComponent, "mnDebug");
 				if(debugMenuComponent != null) {
 					remove(debugMenuComponent);
@@ -330,7 +342,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			
 			frontlineController.setEmailListener(this);
 			frontlineController.setUiListener(this);
-			frontlineController.setSmsDeviceEventListener(this.phoneTabController);
 			
 			setStatus(InternationalisationUtils.getI18nString(MESSAGE_PHONE_MANAGER_INITIALISED));
 			
@@ -348,6 +359,20 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			LOG.error("Problem starting User Interface module.", t);
 			super.destroy();
 			throw t;
+		}
+	}
+	
+	public IconMap getIconMap() {
+		return this.iconMap;
+	}
+	
+	public Image getIcon(String iconPath) {
+		if(iconPath == null) {
+			return null;
+		} else if(iconPath.startsWith("map:")) {
+			return super.getIcon(iconMap.getIcon(iconPath.substring(4)));
+		} else {
+			return super.getIcon(iconPath);
 		}
 	}
 
@@ -450,7 +475,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	public void showStatsDialog() {
 		final StatisticsDialogHandler statisticsDialogHandler = new StatisticsDialogHandler(this);
 		
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				add(statisticsDialogHandler.getDialog());
 			}
@@ -550,11 +575,16 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		showConfirmationDialog(methodToBeCalled, this);
 	}
 	
+	@Override
+	public void setMethod(Object component, String key, String value, Object root, Object handler) {
+		super.setMethod(component, key, value, root, handler);
+	}
+	
 	/** Shows a general dialog asking the user to confirm his action. 
 	 * @param methodToBeCalled The name of the method to be called
 	 * @param handler The event handler to call the method on
 	 */
-	public void showConfirmationDialog(String methodToBeCalled, ThinletUiEventHandler handler){
+	public void showConfirmationDialog(String methodToBeCalled, ThinletUiEventHandler handler) {
 		Object conf = loadComponentFromFile(UI_FILE_CONFIRMATION_DIALOG_FORM);
 		setMethod(find(conf, COMPONENT_BT_CONTINUE), ATTRIBUTE_ACTION, methodToBeCalled, conf, handler);
 		add(conf);
@@ -771,7 +801,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	 * @param status the new status to display
 	 */
 	public void setStatus(final String status) {
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				setString(statusBarComponent, TEXT, status);		
 			}
@@ -865,14 +895,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			throw new RuntimeException(e);
 		}
 		LOG.trace("EXIT");
-	}
-
-	/**
-	 * Method called when an event is fired and should be added to the event list on the home tab.
-	 * @param newEvent New instance of {@link Event} to be added to the list.
-	 */
-	public void newEvent(Event newEvent) {
-		this.homeTabController.newEvent(newEvent);
 	}
 	
 	/**
@@ -1250,7 +1272,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		LOG.trace("ENTER");
 		Object newTab = getSelectedItem(tabbedPane);
 		currentTab = getString(newTab, NAME);
-		this.frontlineController.getEventBus().notifyObservers(new TabChangedNotification(currentTab));
+		eventBus.notifyObservers(new TabChangedNotification(currentTab));
 		
 		LOG.debug("Current tab [" + currentTab + "]");
 		if (currentTab == null) return;
@@ -1267,7 +1289,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			String[] recipients = email.getEmailRecipients().split(";");
 			String strRecipients = recipients[0] + (recipients.length > 1 ? InternationalisationUtils.getI18nString(EVENT_DESCRIPTION_MULTI_RECIPIENTS, recipients.length) : ""); 
 			
-			newEvent(new Event(Event.TYPE_OUTGOING_EMAIL, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipients, email.getEmailContent())));
+			eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.OUTGOING_EMAIL, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipients, email.getEmailContent())));
 		}
 		LOG.trace("EXIT");
 	}
@@ -1342,8 +1364,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		Contact sender = contactDao.getFromMsisdn(message.getSenderMsisdn());
 		String strSender = (sender == null ? message.getSenderMsisdn() : sender.getName());
 		
-		int eventType = (message instanceof FrontlineMultimediaMessage ? Event.TYPE_INCOMING_MMS : Event.TYPE_INCOMING_MESSAGE);
-		newEvent(new Event(eventType, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strSender, message.getTextContent())));
+		HomeTabEventNotification.Type eventType = (message instanceof FrontlineMultimediaMessage ? HomeTabEventNotification.Type.INCOMING_MMS : HomeTabEventNotification.Type.INCOMING_MESSAGE);
+		eventBus.notifyObservers(new HomeTabEventNotification(eventType, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strSender, message.getTextContent())));
 		setStatus(InternationalisationUtils.getI18nString(MESSAGE_MESSAGE_RECEIVED));
 		LOG.trace("EXIT");
 	}
@@ -1359,9 +1381,9 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		String strRecipient = (recipient == null ? message.getRecipientMsisdn() : recipient.getName());
 		
 		if (message.getStatus() == Status.SENT) {
-			newEvent(new Event(Event.TYPE_OUTGOING_MESSAGE, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
+			eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.OUTGOING_MESSAGE, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
 		} else if (message.getStatus() == Status.FAILED) {
-			newEvent(new Event(Event.TYPE_OUTGOING_MESSAGE_FAILED, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
+			eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.OUTGOING_MESSAGE_FAILED, InternationalisationUtils.getI18nString(EVENT_DESCRIPTION, strRecipient, message.getTextContent())));
 		}
 		LOG.trace("ENTER");
 	}
@@ -1565,14 +1587,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	public Collection<SmsInternetService> getSmsInternetServices() {
 		return this.frontlineController.getSmsInternetServices();
 	}
-	
-	public void addSmsInternetService(SmsInternetService smsInternetService) {
-		this.phoneManager.addSmsInternetService(smsInternetService);
-	}
-
-	private void removeSmsInternetService(SmsInternetService service) {
-		this.phoneManager.removeSmsInternetService(service);
-	}
 
 	public void contactRemovedFromGroup(Contact contact, Group group) {
 		if(this.currentTab.equals(TAB_CONTACT_MANAGER)) {
@@ -1608,9 +1622,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	public boolean destroy() {
 		final boolean destroy = super.destroy();
 		if(destroy) {
-			EventBus bus = this.frontlineController.getEventBus();
-			bus.unregisterObserver(this);
-			bus.notifyObservers(new UiDestroyEvent(this));
+			eventBus.unregisterObserver(this);
+			eventBus.notifyObservers(new UiDestroyEvent(this));
 		}
 		return destroy;
 	}
@@ -1672,6 +1685,10 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 		throw new RuntimeException("Exception generated from debug menu.");
 	}
 	
+	public void dbgSystemProperties() {
+		new SystemPropertyDebugDialog(this).show();
+	}
+	
 	public void dbgGenerateOutgoingSms() {
 		FrontlineMessage testMessage = FrontlineMessage.createOutgoingMessage(System.currentTimeMillis(), null, "+123456789", "Test outgoing SMS");
 		this.messageFactory.saveMessage(testMessage);
@@ -1680,14 +1697,18 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	
 	/** Handle notifications from the {@link EventBus} */
 	public void notify(final FrontlineEventNotification notification) {
-		if(notification instanceof NoSmsServicesConnectedNotification) {
+		if(notification instanceof MissedCallNotification) {
+			CIncomingCall missedCall = ((MissedCallNotification) notification).getCall();
+			// TODO i18n
+			eventBus.notifyObservers(new HomeTabEventNotification(net.frontlinesms.ui.HomeTabEventNotification.Type.INCOMING_MMS, "Missed call from: " + missedCall.getPhoneNumber() + " at " + InternationalisationUtils.getDatetimeFormat().format(missedCall.getTimeOfCall())));
+		} else if(notification instanceof NoSmsServicesConnectedNotification) {
 			// Unable to connect to SMS devices.  If configured so, prompt the help dialog
 			if (AppProperties.getInstance().shouldPromptDeviceConnectionDialog()) {
 				synchronized (deviceConnectionDialogHandlerLock) {
 					// If the dialog is not already created AND not already displayed, create a new one and show it now
 					if (deviceConnectionDialogHandler == null) {
 						deviceConnectionDialogHandler = new NoPhonesDetectedDialogHandler(this);
-						new FrontlineUiUpateJob() {
+						new FrontlineUiUpdateJob() {
 							public void run() {
 								deviceConnectionDialogHandler.initDialog((NoSmsServicesConnectedNotification) notification);
 								add(deviceConnectionDialogHandler.getDialog());
@@ -1700,7 +1721,7 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			// An MMS Service has changed status
 			MmsServiceStatusNotification mmsServiceStatusNotification = ((MmsServiceStatusNotification) notification);
 			if (mmsServiceStatusNotification.getStatus().equals(MmsEmailServiceStatus.FAILED_TO_CONNECT)) {
-				this.newEvent(new Event(Event.TYPE_SMS_INTERNET_SERVICE_RECEIVING_FAILED, 
+				eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.SMS_INTERNET_SERVICE_RECEIVING_FAILED, 
 											mmsServiceStatusNotification.getMmsService().getServiceName() + " - " + InternationalisationUtils.getI18nString(FrontlineSMSConstants.COMMON_SMS_INTERNET_SERVICE_RECEIVING_FAILED)));
 			}
 		} else if (notification instanceof EntitySavedNotification<?>) {
@@ -1708,19 +1729,18 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			if (entity instanceof FrontlineMultimediaMessage) {
 				// A new Multimedia Message has been received
 				this.incomingMessageEvent((FrontlineMultimediaMessage) entity);
-			}
-		} else if (notification instanceof InternetServiceEventNotification) {
-			// An Internet Service has been added or deleted
-			InternetServiceEventNotification internetServiceNotification = (InternetServiceEventNotification) notification;
-			switch (internetServiceNotification.getEventType()) {
-				case ADD:
-					this.addSmsInternetService(internetServiceNotification.getService());
-					break;
-				case DELETE:
-					this.removeSmsInternetService(internetServiceNotification.getService());
-					break;
-				default:
-					break;
+			} else if(entity instanceof PersistableSettings) {
+				PersistableSettings settings = (PersistableSettings) entity;
+				if(settings.getServiceTypeSuperclass().equals(SmsInternetService.class)) {
+					// An Internet Service has been added or deleted
+					if(notification instanceof EntitySavedNotification) {
+						phoneManager.addSmsInternetService(settings);
+					} else if(notification instanceof EntityUpdatedNotification) {
+						phoneManager.restartSmsInternetService(settings);
+					} else if(notification instanceof EntityDeletedNotification) {
+						phoneManager.removeSmsInternetService(settings);
+					}
+				}
 			}
 		}
 	}

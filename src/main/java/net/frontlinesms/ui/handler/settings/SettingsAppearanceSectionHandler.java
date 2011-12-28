@@ -12,7 +12,7 @@ import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.UiProperties;
 import net.frontlinesms.ui.i18n.FileLanguageBundle;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
-import net.frontlinesms.ui.settings.HomeTabLogoChangedEventNotification;
+import net.frontlinesms.ui.settings.HomeTabLogoChangedNotification;
 import net.frontlinesms.ui.settings.UiSettingsSectionHandler;
 
 import org.apache.log4j.Logger;
@@ -53,27 +53,29 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 
 	public SettingsAppearanceSectionHandler (UiGeneratorController uiController) {
 		super(uiController);
-		this.uiController = uiController;
+		this.ui = uiController;
 	}
 	
 	protected void init() {
-		this.panel = uiController.loadComponentFromFile(UI_SECTION_APPEARANCE, this);
+		this.panel = ui.loadComponentFromFile(UI_SECTION_APPEARANCE, this);
 		
 		initLanguageSettings();
 		initLogoSettings();
 	}
+	
+	public void deinit() {}
 
 	private void initLanguageSettings() {
 		Object fastLanguageSwitch = find(COMPONENT_PN_LANGUAGES);
 		for (FileLanguageBundle languageBundle : InternationalisationUtils.getLanguageBundles()) {
-			Object button = this.uiController.createRadioButton("", "", "rdGroupLanguage", languageBundle.equals(FrontlineUI.currentResourceBundle));
-			this.uiController.setIcon(button, this.uiController.getFlagIcon(languageBundle));
-			this.uiController.setString(button, "tooltip", languageBundle.getLanguageName());
-			this.uiController.setWeight(button, 1, 0);
-			this.uiController.setAttachedObject(button, languageBundle);
-			this.uiController.setAction(button, "languageChanged", null, this);
+			Object button = this.ui.createRadioButton("", "", "rdGroupLanguage", languageBundle.equals(FrontlineUI.currentResourceBundle));
+			this.ui.setIcon(button, this.ui.getFlagIcon(languageBundle));
+			this.ui.setString(button, "tooltip", languageBundle.getLanguageName());
+			this.ui.setWeight(button, 1, 0);
+			this.ui.setAttachedObject(button, languageBundle);
+			this.ui.setAction(button, "languageChanged", null, this);
 			
-			this.uiController.add(fastLanguageSwitch, button);
+			this.ui.add(fastLanguageSwitch, button);
 		}
 		
 		this.originalValues.put(SECTION_ITEM_LANGUAGE, FrontlineUI.currentResourceBundle);
@@ -103,13 +105,13 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 			radioButtonName = COMPONENT_CB_HOME_TAB_USE_DEFAULT_LOGO;
 		}
 		
-		this.uiController.setSelected(find(radioButtonName), true);
-		this.uiController.setSelected(find(COMPONENT_CB_HOME_TAB_LOGO_KEEP_ORIGINAL_SIZE), isOriginalSizeKept);
+		this.ui.setSelected(find(radioButtonName), true);
+		this.ui.setSelected(find(COMPONENT_CB_HOME_TAB_LOGO_KEEP_ORIGINAL_SIZE), isOriginalSizeKept);
 		
 		setHomeTabCustomLogo(find(COMPONENT_PN_CUSTOM_IMAGE), isCustomLogo && visible);
 		
 		if (imageLocation != null && imageLocation.length() > 0) {
-			this.uiController.setText(find(COMPONENT_TF_IMAGE_SOURCE), imageLocation);
+			this.ui.setText(find(COMPONENT_TF_IMAGE_SOURCE), imageLocation);
 		}
 		
 		// Save the original values
@@ -124,11 +126,11 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 		log.trace("Saving appearance settings...");
 		
 		/**** LOGO ****/
-		boolean invisible 			= this.uiController.isSelected(this.uiController.find(panel, COMPONENT_CB_HOME_TAB_LOGO_INVISIBLE));
-		boolean isCustomLogo 		= this.uiController.isSelected(this.uiController.find(panel, COMPONENT_CB_HOME_TAB_USE_CUSTOM_LOGO));
-		boolean isOriginalSizeKept 	= this.uiController.isSelected(this.uiController.find(panel, COMPONENT_CB_HOME_TAB_LOGO_KEEP_ORIGINAL_SIZE));
+		boolean invisible 			= this.ui.isSelected(this.ui.find(panel, COMPONENT_CB_HOME_TAB_LOGO_INVISIBLE));
+		boolean isCustomLogo 		= this.ui.isSelected(this.ui.find(panel, COMPONENT_CB_HOME_TAB_USE_CUSTOM_LOGO));
+		boolean isOriginalSizeKept 	= this.ui.isSelected(this.ui.find(panel, COMPONENT_CB_HOME_TAB_LOGO_KEEP_ORIGINAL_SIZE));
 		
-		String imgSource = this.uiController.getText(this.uiController.find(panel, COMPONENT_TF_IMAGE_SOURCE));
+		String imgSource = this.ui.getText(this.ui.find(panel, COMPONENT_TF_IMAGE_SOURCE));
 		log.debug("Hidden? " + invisible);
 		log.debug("Logo: " + (isCustomLogo ? "default" : "custom"));
 		log.debug("Image location [" + imgSource + "]");
@@ -140,17 +142,17 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 		uiProperties.saveToDisk();
 
 		// Update visibility of logo
-		this.eventBus.notifyObservers(new HomeTabLogoChangedEventNotification());
+		this.eventBus.notifyObservers(new HomeTabLogoChangedNotification());
 		
 		
 		/**** LANGUAGE ****/
-		for (Object radioButton : this.uiController.getItems(find(COMPONENT_PN_LANGUAGES))) {
-			if (this.uiController.isSelected(radioButton)) {
-				FileLanguageBundle languageBundle = this.uiController.getAttachedObject(radioButton, FileLanguageBundle.class);
+		for (Object radioButton : this.ui.getItems(find(COMPONENT_PN_LANGUAGES))) {
+			if (this.ui.isSelected(radioButton)) {
+				FileLanguageBundle languageBundle = this.ui.getAttachedObject(radioButton, FileLanguageBundle.class);
 				if (languageBundle != null && !languageBundle.equals(FrontlineUI.currentResourceBundle)) {
-					this.uiController.setAttachedObject(radioButton, languageBundle.getFile().getAbsolutePath());
-					if (this.uiController instanceof UiGeneratorController) {
-						((UiGeneratorController) this.uiController).changeLanguage(radioButton);
+					this.ui.setAttachedObject(radioButton, languageBundle.getFile().getAbsolutePath());
+					if (this.ui instanceof UiGeneratorController) {
+						((UiGeneratorController) this.ui).changeLanguage(radioButton);
 					}
 				}
 				break;
@@ -164,8 +166,8 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 		List<FrontlineValidationMessage> validationMessages = new ArrayList<FrontlineValidationMessage>();
 
 		// Home tab logo
-		if (this.uiController.isSelected(find(COMPONENT_CB_HOME_TAB_USE_CUSTOM_LOGO))
-				&& this.uiController.getText(find(COMPONENT_TF_IMAGE_SOURCE)).isEmpty()) {
+		if (this.ui.isSelected(find(COMPONENT_CB_HOME_TAB_USE_CUSTOM_LOGO))
+				&& this.ui.getText(find(COMPONENT_TF_IMAGE_SOURCE)).isEmpty()) {
 			validationMessages.add(new FrontlineValidationMessage (I18N_SETTINGS_MESSAGE_EMPTY_CUSTOM_LOGO, null, getIcon()));
 		}
 		
@@ -178,16 +180,16 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 	 * @param isCustom <code>true</code> if the logo is a custom logo; <code>false</code> otherwise.
 	 */
 	public void setHomeTabCustomLogo(Object panel, boolean isCustom) {
-		this.uiController.setEnabled(panel, isCustom);
-		for (Object obj : this.uiController.getItems(panel)) {
-			this.uiController.setEnabled(obj, isCustom);
+		this.ui.setEnabled(panel, isCustom);
+		for (Object obj : this.ui.getItems(panel)) {
+			this.ui.setEnabled(obj, isCustom);
 		}
 	}
 	
 	public void languageChanged() {
-		for (Object radioButton : this.uiController.getItems(find(COMPONENT_PN_LANGUAGES))) {
-			if (this.uiController.isSelected(radioButton)) {
-				FileLanguageBundle languageBundle = this.uiController.getAttachedObject(radioButton, FileLanguageBundle.class);
+		for (Object radioButton : this.ui.getItems(find(COMPONENT_PN_LANGUAGES))) {
+			if (this.ui.isSelected(radioButton)) {
+				FileLanguageBundle languageBundle = this.ui.getAttachedObject(radioButton, FileLanguageBundle.class);
 				super.settingChanged(SECTION_ITEM_LANGUAGE, languageBundle);
 				break;
 			}
@@ -198,9 +200,9 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 		this.setHomeTabCustomLogo(panel, isCustom);
 		
 		Object newValue;
-		if (this.uiController.isSelected(find(COMPONENT_CB_HOME_TAB_LOGO_INVISIBLE))) {
+		if (this.ui.isSelected(find(COMPONENT_CB_HOME_TAB_LOGO_INVISIBLE))) {
 			newValue = COMPONENT_CB_HOME_TAB_LOGO_INVISIBLE;
-		} else if (this.uiController.isSelected(find(COMPONENT_CB_HOME_TAB_USE_CUSTOM_LOGO))) {
+		} else if (this.ui.isSelected(find(COMPONENT_CB_HOME_TAB_USE_CUSTOM_LOGO))) {
 			newValue = COMPONENT_CB_HOME_TAB_USE_CUSTOM_LOGO;
 		} else {
 			newValue = COMPONENT_CB_HOME_TAB_USE_DEFAULT_LOGO;
@@ -210,7 +212,7 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 	}
 	
 	public void customImageSourceChanged(String imageSource) {
-		this.uiController.setText(find(COMPONENT_TF_IMAGE_SOURCE), imageSource);
+		this.ui.setText(find(COMPONENT_TF_IMAGE_SOURCE), imageSource);
 		
 		this.settingChanged(SECTION_ITEM_IMAGE_SOURCE, imageSource);
 	}
@@ -224,7 +226,7 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 	 * @see UiGeneratorController#showOpenModeFileChooser(Object)
 	 */
 	public void showFileChooser(Object component) {
-		this.uiController.showFileChooser(this, "customImageSourceChanged");
+		this.ui.showFileChooser(this, "customImageSourceChanged");
 	}
 
 	public String getTitle() {

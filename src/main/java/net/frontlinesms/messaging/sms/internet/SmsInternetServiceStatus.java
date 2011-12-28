@@ -12,7 +12,7 @@ import net.frontlinesms.messaging.sms.modem.SmsModem;
  * @author Alex Anderson <alex@frontlinesms.com>
  * @author Morgan Belkadi <morgan@frontlinesms.com>
  */
-public enum SmsInternetServiceStatus implements SmsServiceStatus {
+public enum SmsInternetServiceStatus implements SmsServiceStatus<SmsInternetService> {
 	CONNECTED(FrontlineSMSConstants.SMS_DEVICE_STATUS_CONNECTED),
 	CONNECTING(FrontlineSMSConstants.SMS_DEVICE_STATUS_CONNECTING),
 	DISCONNECTED(FrontlineSMSConstants.SMS_DEVICE_STATUS_DISCONNECT),

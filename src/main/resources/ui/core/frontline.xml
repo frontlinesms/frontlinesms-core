@@ -41,6 +41,7 @@
 			<menuitem icon="/icons/sms_send.png" text="Generate outgoing SMS" action="dbgGenerateOutgoingSms"/>
 			
 			<menuitem icon="/icons/report_error.png" text="Generate Error" action="dbgGenerateError"/>
+			<menuitem icon="/icons/survey.png" text="Get system property" action="dbgSystemProperties"/>
 		</menu>
 		
 		<menu text="i18n.menubar.help">

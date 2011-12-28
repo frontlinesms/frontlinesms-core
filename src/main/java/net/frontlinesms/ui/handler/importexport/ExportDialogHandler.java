@@ -48,7 +48,7 @@ public abstract class ExportDialogHandler<T> extends ImportExportDialogHandler {
 
 //> ACCESSORS
 	@Override
-	String getDialogFile() {
+	protected String getDialogFile() {
 		return UI_FILE_EXPORT_WIZARD_FORM;
 	}
 	

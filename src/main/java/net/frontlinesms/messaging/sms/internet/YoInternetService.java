@@ -20,16 +20,16 @@
 package net.frontlinesms.messaging.sms.internet;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
-import net.frontlinesms.messaging.Provider;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneNumber;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.ui.handler.settings.SmsInternetServiceSettingsHandler;
 
 import org.apache.log4j.Logger;
@@ -48,7 +48,7 @@ import yo.sms.service.XmlEntityBuilder;
  * @author Eric <elwanga@yo.co.ug>
  *
  */
-@Provider(name = "Yo! (beta)", icon = "/icons/sms_http.png")
+@ConfigurableServiceProperties(name = "Yo! (beta)", icon = "/icons/sms_http.png")
 public class YoInternetService extends AbstractSmsInternetService {
     /**
      * Prefix attached to every property name. Used in application internet
@@ -147,18 +147,18 @@ public class YoInternetService extends AbstractSmsInternetService {
     }
 
     public String getMsisdn() {
-	return getPropertyValue(PROPERTY_FROM_MSISDN, PhoneSection.class).getValue();
+	return getPropertyValue(PROPERTY_FROM_MSISDN, PhoneNumber.class).getValue();
     }
 
-    public LinkedHashMap<String, Object> getPropertiesStructure() {
-	LinkedHashMap<String, Object> defaultSettings = new LinkedHashMap<String, Object>();
-	defaultSettings.put(PROPERTY_USERNAME, "");
-	defaultSettings.put(PROPERTY_PASSWORD, new PasswordString(""));
-	defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneSection(""));
-	// defaultSettings.put(PROPERTY_SSL, Boolean.FALSE);
-	defaultSettings.put(PROPERTY_USE_FOR_SENDING, Boolean.TRUE);
-	// defaultSettings.put(PROPERTY_USE_FOR_RECEIVING, Boolean.FALSE);
-	return defaultSettings;
+    public StructuredProperties getPropertiesStructure() {
+		StructuredProperties defaultSettings = new StructuredProperties();
+		defaultSettings.put(PROPERTY_USERNAME, "");
+		defaultSettings.put(PROPERTY_PASSWORD, new PasswordString(""));
+		defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneNumber(""));
+		// defaultSettings.put(PROPERTY_SSL, Boolean.FALSE);
+		defaultSettings.put(PROPERTY_USE_FOR_SENDING, Boolean.TRUE);
+		// defaultSettings.put(PROPERTY_USE_FOR_RECEIVING, Boolean.FALSE);
+		return defaultSettings;
     }
 
     public boolean isConnected() {

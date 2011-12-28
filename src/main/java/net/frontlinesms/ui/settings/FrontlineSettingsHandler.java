@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
@@ -53,7 +53,7 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 //> INSTANCE PROPERTIES
 	/** Thinlet instance that owns this handler */
 	private final UiGeneratorController uiController;
-	/** dialog for editing {@link SmsInternetService} settings, {@link SmsInternetServiceSettings} instances */
+	/** dialog for editing {@link SmsInternetService} settings, {@link PersistableSettings} instances */
 	private Object settingsDialog;
 
 	private EventBus eventBus;
@@ -142,6 +142,7 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 					this.uiController.add(find(UI_COMPONENT_PLUGIN_TREE), pluginRootNode);
 				}
 			} catch (Throwable t) {
+				t.printStackTrace();
 				LOG.warn("Error when trying to load settings for Plugin " + pluginClass.getSimpleName(), t);
 			}
 		}
@@ -152,10 +153,16 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 	 * @param tree
 	 */
 	public void selectionChanged(Object tree) {
+		uiController.setSelectedItem(getOtherTree(tree), null);
 		Object selected = this.uiController.getSelectedItem(tree);
 		
 		Object attachedObject = this.uiController.getAttachedObject(selected);
 		this.displayPanel((UiSettingsSectionHandler) attachedObject);
+	}
+
+	private Object getOtherTree(Object tree) {
+		String otherName = uiController.getName(tree).equals(UI_COMPONENT_CORE_TREE)? UI_COMPONENT_PLUGIN_TREE: UI_COMPONENT_CORE_TREE;
+		return uiController.find(settingsDialog, otherName);
 	}
 
 	/**
@@ -190,6 +197,10 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 	 * Removes the provided component from the view.
 	 */
 	public void removeDialog() {
+		for(UiSettingsSectionHandler h : this.handlersList) {
+			h.deinit();
+		}
+		this.eventBus.unregisterObserver(this);
 		this.uiController.remove(this.settingsDialog);
 		this.uiController.removeConfirmationDialog();
 	}
@@ -236,7 +247,7 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 			settingsSectionHandler.save();
 		}
 		
-		this.uiController.removeDialog(settingsDialog);
+		removeDialog();
 		this.uiController.infoMessage(InternationalisationUtils.getI18nString(I18N_SETTINGS_SAVED));
 	}
 

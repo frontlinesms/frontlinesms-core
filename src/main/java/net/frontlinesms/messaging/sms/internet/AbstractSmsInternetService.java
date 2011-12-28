@@ -19,24 +19,21 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
+import net.frontlinesms.events.EventBus;
 import net.frontlinesms.listener.SmsListener;
-import net.frontlinesms.messaging.sms.properties.OptionalRadioSection;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
+import net.frontlinesms.messaging.sms.events.SmsInternetServiceStatusNotification;
+import net.frontlinesms.serviceconfig.ConfigurableService;
 
 import org.apache.log4j.Logger;
 
 /**
  * Abstract class containing all default information needed by 
  * Sms Internet Services (e.g Clickatell, IntelliSMS, etc).
- * 
  * @author Carlos Eduardo Endler Genz
  * @date 26/01/2009
  */
@@ -59,8 +56,9 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	protected ConcurrentLinkedQueue<FrontlineMessage> outbox = new ConcurrentLinkedQueue<FrontlineMessage>();
 	/** The SmsListener to which this phone handler should report SMS Message events. */
 	protected SmsListener smsListener;
+	protected EventBus eventBus;
 	/** Settings for this service */
-	private SmsInternetServiceSettings settings;
+	private PersistableSettings settings;
 	/** The status of this device */
 	private SmsInternetServiceStatus status = SmsInternetServiceStatus.DORMANT;
 	/** Extra info relating to the current status. */
@@ -74,13 +72,17 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	}
 	
 	/** @return the settings attached to this {@link SmsInternetService} instance. */
-	public SmsInternetServiceSettings getSettings() {
+	public PersistableSettings getSettings() {
 		return settings;
 	}
 	
 	/** @param smsListener new vlue for {@link SmsListener} */
 	public void setSmsListener(SmsListener smsListener) {
 		this.smsListener = smsListener;
+	}
+	
+	public void setEventBus(EventBus eventBus) {
+		this.eventBus = eventBus;
 	}
 	
 	/** @return {@link #statusDetail} */
@@ -103,17 +105,20 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	 * @param detail detail relating to the status
 	 */
 	protected void setStatus(SmsInternetServiceStatus status, String detail) {
-		if(this.status == null || !this.status.equals(status) || this.statusDetail == null || this.statusDetail.equals(detail)) {
+		if(this.status == null || !this.status.equals(status) ||
+				this.statusDetail == null || this.statusDetail.equals(detail)) {
 			this.status = status;
 			this.statusDetail = detail;
 			LOG.debug("Status [" + status.name()
 					+ (detail == null?"":": "+detail)
 					+ "]");
 	
-			if (smsListener != null) {
-				smsListener.smsDeviceEvent(this, status);
-			}
+			eventBus.notifyObservers(new SmsInternetServiceStatusNotification(this, status));
 		}
+	}
+	
+	public Class<? extends ConfigurableService> getSuperType() {
+		return SmsInternetService.class;
 	}
 	
 //> OTHER METHODS
@@ -147,15 +152,10 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	 * @param clazz The class of the property's value
 	 * @param <T> The class of the property's value
 	 * @return The property value, either the one stored on db (if any) or the default value.
+	 * FIXME must be a cleaner way to implement than this...!  e.g. settings.get(KEY, String.class)
 	 */
-	@SuppressWarnings("unchecked")
 	protected <T extends Object> T getPropertyValue(String key, Class<T> clazz) {
-		T defaultValue = (T) getValue(key, getPropertiesStructure());
-		if (defaultValue == null) throw new IllegalArgumentException("No default value could be found for key: " + key);
-		
-		SmsInternetServiceSettingValue setValue = this.settings.get(key);
-		if(setValue == null) return defaultValue;
-		else return (T) SmsInternetServiceSettings.fromValue(defaultValue, setValue);
+		return PersistableSettings.getPropertyValue(getPropertiesStructure(), settings, key, clazz);
 	}
 	
 	/** Stop this service from running */
@@ -168,14 +168,14 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	
 	/**
 	 * Initialise the service using the supplied properties.
-	 * @see SmsInternetService#setSettings(SmsInternetServiceSettings)
+	 * @see SmsInternetService#setSettings(PersistableSettings)
 	 */
-	public void setSettings(SmsInternetServiceSettings settings) {
+	public void setSettings(PersistableSettings settings) {
 		this.settings = settings;
 	}
 
 	/** Starts this service. */
-	public synchronized void startThisThing() {
+	public synchronized void startService() {
 		try {
 			setStatus(SmsInternetServiceStatus.CONNECTING, null);
 			init();
@@ -189,19 +189,19 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 			// we need to keep the old, meaningul message from before
 			SmsInternetServiceStatus status = getStatus();
 			String statusDetail = getStatusDetail();
-			this.stopThisThing();
+			this.stopService();
 			this.setStatus(status, statusDetail);
 		}
 	}
 	
 	/** Re-connects this service. */
-	public void restartThisThing() {
-		this.stopThisThing();
-		this.startThisThing();
+	public void restartService() {
+		this.stopService();
+		this.startService();
 	}
 	
 	/** Stop this service from running */
-	public void stopThisThing() {
+	public void stopService() {
 		deinit();
 		if(this.thread != null) this.thread.running = false;
 	}
@@ -276,37 +276,4 @@ public abstract class AbstractSmsInternetService implements SmsInternetService {
 	 * @throws SmsInternetServiceReceiveException If there was a problem receiving SMS
 	 */
 	protected abstract void receiveSms() throws SmsInternetServiceReceiveException;
-	
-//> STATIC HELPER METHODS
-	/**
-	 * Deep-searches nested maps for a propertt's value.  Maps may be nested as values
-	 * inside other maps by wrapping them in either an {@link OptionalSection} or an
-	 * {@link OptionalRadioSection}.
-	 * @param key
-	 * @param map
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	static Object getValue(String key, Map<String, Object> map) {
-		if (map == null) {
-			// TODO when would map be null?  perhaps we should just be clear that the result is undefined when this is the case?
-			return null;
-		} else if (map.containsKey(key)) {
-			return map.get(key);
-		} else {
-			for(Object mapValue : map.values()) {
-				if(mapValue instanceof OptionalSection) {
-					Object value = getValue(key, ((OptionalSection)mapValue).getDependencies());
-					if(value != null) return value;
-				} else if(mapValue instanceof OptionalRadioSection) {
-					Collection<LinkedHashMap<String, Object>> dependencies = ((OptionalRadioSection)mapValue).getAllDependencies();
-					for(LinkedHashMap<String, Object> dependencyMap : dependencies) {
-						Object value = getValue(key, dependencyMap);
-						if(value != null) return value;
-					}
-				}
-			}
-		}
-		return null;
-	}
 }

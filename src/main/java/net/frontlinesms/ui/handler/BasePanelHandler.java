@@ -43,7 +43,7 @@ public abstract class BasePanelHandler implements ThinletUiEventHandler {
 	
 //> ACCESSORS
 	/** @return {@link #panelComponent} */
-	protected Object getPanelComponent() {
+	public Object getPanelComponent() {
 		return this.panelComponent;
 	}
 	

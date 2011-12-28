@@ -14,32 +14,28 @@ import javax.imageio.ImageIO;
 
 import net.frontlinesms.AppProperties;
 import net.frontlinesms.events.AppPropertiesEventNotification;
-import net.frontlinesms.events.EventBus;
-import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
-import net.frontlinesms.ui.Event;
+import net.frontlinesms.ui.HomeTabEventNotification;
 import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.FrontlineUiUtils;
-import net.frontlinesms.ui.Icon;
-import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.UiGeneratorControllerConstants;
 import net.frontlinesms.ui.UiProperties;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.handler.message.MessagePanelHandler;
 import net.frontlinesms.ui.i18n.FileLanguageBundle;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
-import net.frontlinesms.ui.settings.HomeTabLogoChangedEventNotification;
+import net.frontlinesms.ui.settings.HomeTabLogoChangedNotification;
 
 /**
  * Event handler for the Home tab and associated dialogs
  * @author Alex Anderson <alex@frontlinesms.com>
  * @author Morgan Belkadi <morgan@frontlinesms.com>
  */
-public class HomeTabHandler extends BaseTabHandler implements EventObserver {
+public class HomeTabHandler extends BaseTabHandler {
 //> STATIC CONSTANTS
 	/** Limit of the number of events to be displayed on the home screen */
-	static final int EVENTS_LIMIT = 30;
+	final int EVENTS_LIMIT = UiProperties.getInstance().getHomeTabEventLimit();
 	
 	/** UI XML File Path: the Home Tab itself */
 	protected static final String UI_FILE_HOME_TAB = "/ui/core/home/homeTab.xml";
@@ -69,8 +65,6 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	/** Max FrontlineSMS home logo height */
 	private static final double FRONTLINE_LOGO_MAX_HEIGHT = 300.0;
 
-	private EventBus eventBus;
-
 	private MessagePanelHandler messagePanel;
 
 
@@ -82,10 +76,7 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	 * @param ui value for {@link #ui}
 	 */
 	public HomeTabHandler(UiGeneratorController ui) {
-		super(ui);
-		this.eventBus = ui.getFrontlineController().getEventBus();
-		
-		this.eventBus.registerObserver(this);
+		super(ui, true);
 	}
 
 //> UI METHODS
@@ -271,38 +262,10 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	}
 
 //> UI HELPER METHODS
-	private Object getRow(Event newEvent) {
+	private Object getRow(HomeTabEventNotification newEvent) {
 		Object row = ui.createTableRow(newEvent);
-		String icon = null;
-		switch(newEvent.getType()) {
-		case Event.TYPE_INCOMING_MESSAGE:
-			icon = Icon.SMS_RECEIVE;
-			break;
-		case Event.TYPE_OUTGOING_MESSAGE:
-			icon = Icon.SMS_SEND;
-			break;
-		case Event.TYPE_INCOMING_MMS:
-			icon = Icon.MMS_RECEIVE;
-			break;
-		case Event.TYPE_OUTGOING_MESSAGE_FAILED:
-			icon = Icon.SMS_SEND_FAILURE;
-			break;
-		case Event.TYPE_OUTGOING_EMAIL:
-			icon = Icon.EMAIL_SEND;
-			break;
-		case Event.TYPE_PHONE_CONNECTED:
-			icon = Icon.PHONE_CONNECTED;
-			break;
-		case Event.TYPE_SMS_INTERNET_SERVICE_CONNECTED:
-			icon = Icon.SMS_INTERNET_SERVICE_CONNECTED;
-			break;
-		case Event.TYPE_SMS_INTERNET_SERVICE_RECEIVING_FAILED:
-			icon = Icon.SMS_INTERNET_SERVICE_RECEIVING_FAILED;
-			break;
-		}
-		
 		Object cell = ui.createTableCell("");
-		ui.setIcon(cell, icon);
+		ui.setIcon(cell, newEvent.getIcon());
 		ui.add(row, cell);
 		ui.add(row, ui.createTableCell(newEvent.getDescription()));
 		ui.add(row, ui.createTableCell(InternationalisationUtils.getDatetimeFormat().format(newEvent.getTime())));
@@ -310,34 +273,37 @@ public class HomeTabHandler extends BaseTabHandler implements EventObserver {
 	}
 
 //> LISTENER EVENT METHODS
-	public void newEvent(final Event newEvent) {
-		new FrontlineUiUpateJob() {
-			public void run() {
-				Object eventListComponent = find(COMPONENT_EVENTS_LIST);
-				if(eventListComponent != null) {
-					if (ui.getItems(eventListComponent).length >= HomeTabHandler.EVENTS_LIMIT) {
-						ui.remove(ui.getItem(eventListComponent, 0));
-					}
-					ui.add(eventListComponent, getRow(newEvent));
-				}		
-			}
-		}.execute();
-	}
-
-	public void notify(FrontlineEventNotification notification) {
-		if (notification instanceof HomeTabLogoChangedEventNotification) {
-			this.refreshLogoVisibility(getTab());
+	public void notify(final FrontlineEventNotification notification) {
+		super.notify(notification);
+		if (notification instanceof HomeTabLogoChangedNotification) {
+			new FrontlineUiUpdateJob() {
+				public void run() {
+					refreshLogoVisibility(getTab());					
+				}
+			}.execute();
 		} else if (notification instanceof AppPropertiesEventNotification) {
-			String property = ((AppPropertiesEventNotification) notification).getProperty();
-			if (property.equals(AppProperties.KEY_SMS_COST_SENT_MESSAGES)
-					|| property.equals(UiProperties.CURRENCY_FORMAT)
-					|| property.equals(UiProperties.CURRENCY_FORMAT_IS_CUSTOM)) {
-				this.messagePanel.updateCost();
-			}
-		} else if (notification instanceof UiDestroyEvent) {
-			if(((UiDestroyEvent) notification).isFor(this.ui)) {
-				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
-			}
+			new FrontlineUiUpdateJob() {
+				public void run() {
+					String property = ((AppPropertiesEventNotification) notification).getProperty();
+					if (property.equals(AppProperties.KEY_SMS_COST_SENT_MESSAGES)
+							|| property.equals(UiProperties.CURRENCY_FORMAT)
+							|| property.equals(UiProperties.CURRENCY_FORMAT_IS_CUSTOM)) {
+						messagePanel.updateCost();
+					}
+				}
+			}.execute();
+		} else if (notification instanceof HomeTabEventNotification) {
+			new FrontlineUiUpdateJob() {
+				public void run() {
+					Object eventListComponent = find(COMPONENT_EVENTS_LIST);
+					if(eventListComponent != null) {
+						while(ui.getItems(eventListComponent).length >= EVENTS_LIMIT) {
+							ui.remove(ui.getItem(eventListComponent, EVENTS_LIMIT-1));
+						}
+						ui.add(eventListComponent, getRow((HomeTabEventNotification) notification), 0);
+					}		
+				}
+			}.execute();
 		}
 	}
 

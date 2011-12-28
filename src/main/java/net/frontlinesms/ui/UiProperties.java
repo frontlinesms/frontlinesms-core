@@ -35,6 +35,8 @@ public final class UiProperties extends UserHomeFilePropertySet {
 	public static final String KEY_HOMETABLOGO_SOURCE = "hometab.logo.source";
 	/** Property Key (String) indicating whether the custom logo should keep its original size. */
 	public static final String KEY_HOMETABLOGO_KEEP_ORIGINAL_SIZE = "hometab.logo.keeporiginalsize";
+	/** Property Key (int) the number of items to display on the home tab event list */
+	public static final String KEY_HOMETAB_EVENT_LIMIT = "hometab.events.limit";
 	/** Property key (int) the number of items to display per page */
 	public static final String KEY_ITEMS_PER_PAGE = "paging.itemcount";
 
@@ -190,6 +192,11 @@ public final class UiProperties extends UserHomeFilePropertySet {
 	/** @param isCurrencyFormatCustom A boolean indicating whether the user uses a custom currency format */
 	public void setIsCurrencyFormatCustom(boolean isCurrencyFormatCustom) {
 		super.setPropertyAsBoolean(CURRENCY_FORMAT_IS_CUSTOM, isCurrencyFormatCustom);
+	}
+
+	/** @return the number of events to display in the home tab event list */
+	public int getHomeTabEventLimit() {
+		return super.getPropertyAsInt(KEY_HOMETAB_EVENT_LIMIT, 100);
 	}
 	
 //> INSTANCE HELPER METHODS

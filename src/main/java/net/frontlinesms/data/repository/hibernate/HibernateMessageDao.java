@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.SimpleExpression;
 
@@ -180,9 +181,8 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 	}
 
 	/** @see MessageDao#getMessagesForKeyword(int, Keyword) */
-	@SuppressWarnings("unchecked")
 	public List<FrontlineMessage> getMessagesForKeyword(FrontlineMessage.Type messageType, Keyword keyword) {
-		PartialQuery q = createQueryStringForKeyword(false, messageType, keyword);
+		PartialQuery<FrontlineMessage> q = createQueryStringForKeyword(false, messageType, keyword);
 		return super.getList(q.getQueryString(), q.getInsertValues());
 	}
 	
@@ -290,10 +290,10 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 	 */
 	private void addKeywordMatchCriteria(DetachedCriteria criteria, Keyword keyword) {
 		String keywordString = keyword.getKeyword();
-		// FIXME this should be case-insensitive
+		// FIXME these criteria need integration testing to make sure that they correctly match single-word messages and messages starting with a particular word *ignoring leading and trailing whitespace*
 		Criterion matchKeyword = Restrictions.or(
 				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString), // This should match the keyword exactly, case insensitive
-				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString + ' '));
+				Restrictions.ilike(Field.MESSAGE_CONTENT.getFieldName(), keywordString + ' ', MatchMode.START)); // this should check the message starts with the keyword
 		criteria.add(matchKeyword);
 	}
 	

@@ -19,11 +19,12 @@ public class SettingsEmptySectionHandler extends BaseSectionHandler implements U
 	}
 	
 	protected void init() {
-		this.panel = uiController.loadComponentFromFile(UI_EMPTY_SECTION, this);
+		this.panel = ui.loadComponentFromFile(UI_EMPTY_SECTION, this);
 	}
+
+	public void deinit() {}
 	
-	public void save() {
-	}
+	public void save() {}
 	
 	public List<FrontlineValidationMessage> validateFields() {
 		return null;

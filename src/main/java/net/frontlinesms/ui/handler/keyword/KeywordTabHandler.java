@@ -37,11 +37,9 @@ import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.domain.KeywordAction;
 import net.frontlinesms.data.repository.KeywordActionDao;
 import net.frontlinesms.data.repository.KeywordDao;
-import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
-import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.BaseTabHandler;
 import net.frontlinesms.ui.handler.ComponentPagingHandler;
@@ -56,7 +54,7 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
  * @author Alex Anderson alex@frontlinesms.com
  * @author Carlos Eduardo Genz kadu@masabi.com
  */
-public class KeywordTabHandler extends BaseTabHandler implements PagedComponentItemProvider, SingleGroupSelecterDialogOwner, EventObserver {
+public class KeywordTabHandler extends BaseTabHandler implements PagedComponentItemProvider, SingleGroupSelecterDialogOwner {
 //> UI LAYOUT FILES
 	public static final String UI_FILE_KEYWORDS_TAB = "/ui/core/keyword/keywordsTab.xml";
 	public static final String UI_FILE_KEYWORDS_SIMPLE_VIEW = "/ui/core/keyword/pnSimpleView.xml";
@@ -90,7 +88,7 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 	private Object keywordForm;
 	
 	public KeywordTabHandler(UiGeneratorController ui) {
-		super(ui);
+		super(ui, true);
 		
 		FrontlineSMS frontlineController = ui.getFrontlineController();
 		this.keywordDao = frontlineController.getKeywordDao();
@@ -101,8 +99,6 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 		Object tabComponent = ui.loadComponentFromFile(UI_FILE_KEYWORDS_TAB, this);
 		this.keywordListComponent = ui.find(tabComponent, COMPONENT_KEYWORD_LIST);
 		this.keywordListPagingHandler = new ComponentPagingHandler(ui, this, keywordListComponent);
-		// We register the observer to the UIGeneratorController, which notifies when tabs have changed
-		this.ui.getFrontlineController().getEventBus().registerObserver(this);
 		
 		// Add the paging controls just below the list of keyword
 		Object pageControls = keywordListPagingHandler.getPanel();
@@ -632,7 +628,7 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 	 * <br>Has no effect in classic mode.
 	 */
 	private void updateKeywordList() {
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				keywordListPagingHandler.refresh();
 				showSelectedKeyword();
@@ -835,16 +831,13 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 	 * UI event called when the user changes tab
 	 */
 	public void notify(FrontlineEventNotification notification) {
+		super.notify(notification);
 		// This object is registered to the UIGeneratorController and get notified when the users changes tab
 		if(notification instanceof TabChangedNotification) {
 			String newTabName = ((TabChangedNotification) notification).getNewTabName();
 			if (newTabName.equals(TAB_KEYWORD_MANAGER)) {
-				this.refresh();
-				this.ui.setStatus(InternationalisationUtils.getI18nString(MESSAGE_KEYWORDS_LOADED));
-			}
-		} else if (notification instanceof UiDestroyEvent) {
-			if(((UiDestroyEvent) notification).isFor(this.ui)) {
-				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
+				threadSafeRefresh();
+				ui.setStatus(InternationalisationUtils.getI18nString(MESSAGE_KEYWORDS_LOADED));
 			}
 		}
 	}

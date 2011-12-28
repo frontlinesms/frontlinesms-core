@@ -20,7 +20,6 @@ public class CurrencyFormatter {
 	
 	/** Create a new {@link CurrencyFormatter} */
 	public CurrencyFormatter(String currencyFormat) {
-
 		if(currencyFormat.contains("#") | currencyFormat.contains("0")){
 			this.currencyFormat = new DecimalFormat(currencyFormat);
 		} else {
@@ -41,11 +40,20 @@ public class CurrencyFormatter {
 	/**
 	 * Format a floating point number into a string representation of a currency
 	 * value.
-	 * 
-	 * @param Input number
-	 * @return Formatted currency string
+	 * @param input number
+	 * @return formatted currency string
 	 */
 	public String format(double input) {
+		return currencyFormat.format(input);
+	}
+
+	/**
+	 * Format a {@link BigDecimal} number into a string representation of a currency
+	 * value.
+	 * @param input number
+	 * @return formatted currency string
+	 */
+	public String format(BigDecimal input) {
 		return currencyFormat.format(input);
 	}
 }

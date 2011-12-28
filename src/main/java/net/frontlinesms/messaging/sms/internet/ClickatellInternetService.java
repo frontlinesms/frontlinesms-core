@@ -19,14 +19,13 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
-import java.util.LinkedHashMap;
-
 import net.frontlinesms.*;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
-import net.frontlinesms.messaging.Provider;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneNumber;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.ui.handler.settings.SmsInternetServiceSettingsHandler;
 
 import org.apache.log4j.Logger;
@@ -40,7 +39,7 @@ import org.smslib.v3.http.ClickatellHTTPGateway;
  * @author Carlos Eduardo Endler Genz
  * @date 26/01/2009
  */
-@Provider(name = "Clickatell", icon = "/icons/sms_http.png")
+@ConfigurableServiceProperties(name = "Clickatell", icon = "/icons/sms_http.png")
 public class ClickatellInternetService extends AbstractSmsInternetService {
 	/** Prefix attached to every property name. */
 	private static final String PROPERTY_PREFIX = "smsdevice.internet.clickatell.";
@@ -149,7 +148,7 @@ public class ClickatellInternetService extends AbstractSmsInternetService {
 	 * Stops the service showing the remaining credits
 	 */
 	public void creditLow() {
-		stopThisThing();
+		stopService();
 	}
 
 	/**
@@ -188,12 +187,12 @@ public class ClickatellInternetService extends AbstractSmsInternetService {
 	/** 
 	 * Get the default properties for this class.
 	 */
-	public LinkedHashMap<String, Object> getPropertiesStructure() {
-		LinkedHashMap<String, Object> defaultSettings = new LinkedHashMap<String, Object>();
+	public StructuredProperties getPropertiesStructure() {
+		StructuredProperties defaultSettings = new StructuredProperties();
 		defaultSettings.put(PROPERTY_USERNAME, "");
 		defaultSettings.put(PROPERTY_PASSWORD, new PasswordString(""));
 		defaultSettings.put(PROPERTY_API, "");
-		defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneSection(""));
+		defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneNumber(""));
 		defaultSettings.put(PROPERTY_SSL, Boolean.FALSE);
 		defaultSettings.put(PROPERTY_USE_FOR_SENDING, Boolean.TRUE);
 		return defaultSettings;
@@ -261,7 +260,7 @@ public class ClickatellInternetService extends AbstractSmsInternetService {
 	 * Gets the MSISDN that numbers sent from this service will appear to be from. 
 	 */
 	public String getMsisdn() {
-		return getPropertyValue(PROPERTY_FROM_MSISDN, PhoneSection.class).getValue();
+		return getPropertyValue(PROPERTY_FROM_MSISDN, PhoneNumber.class).getValue();
 	}
 
 	/**

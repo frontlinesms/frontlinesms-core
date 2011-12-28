@@ -13,3 +13,5 @@ Nokia_S40_3ed			Nokia_3500classic, Nokia_3109classic, Nokia_3110classic, Nokia_3
 # These phones run the Symbian Pi-Access to allow access to a fully-functional AT command handler
 #Symbian_PiAccess		Nokia_3230, Nokia_6630
 # PiAccess support is disabled as these phones are rarely detected correctly, and without PiAccess they will still happily send SMS, if not receive it.
+
+Wavecom_Stk				Wavecom_MULTIBAND900E1800

@@ -10,14 +10,14 @@ import net.frontlinesms.ui.settings.UiSettingsSectionHandler;
 
 public abstract class BaseSectionHandler {
 	protected EventBus eventBus;
-	protected UiGeneratorController uiController;
+	protected UiGeneratorController ui;
 	protected Object panel;
 	protected Map<String, Object> originalValues;
 
-	protected BaseSectionHandler (UiGeneratorController uiController) {
-		this.uiController = uiController;
-		if (this.uiController instanceof UiGeneratorController) {
-			this.eventBus = ((UiGeneratorController) uiController).getFrontlineController().getEventBus();
+	protected BaseSectionHandler(UiGeneratorController ui) {
+		this.ui = ui;
+		if (this.ui instanceof UiGeneratorController) {
+			this.eventBus = ((UiGeneratorController) ui).getFrontlineController().getEventBus();
 		}
 		
 		this.originalValues = new HashMap<String, Object>();
@@ -62,15 +62,15 @@ public abstract class BaseSectionHandler {
 	 * @return
 	 */
 	protected Object createSectionNode(String title, UiSettingsSectionHandler attachedObject, String iconPath) {
-		Object sectionRootNode = uiController.createNode(title, attachedObject);
+		Object sectionRootNode = ui.createNode(title, attachedObject);
 		
 		// Try to get an icon from the classpath
-		this.uiController.setIcon(sectionRootNode, iconPath);
+		this.ui.setIcon(sectionRootNode, iconPath);
 		
 		return sectionRootNode;
 	}
 	
 	protected Object find (String component) {
-		return this.uiController.find(this.panel, component);
+		return this.ui.find(this.panel, component);
 	}
 }
