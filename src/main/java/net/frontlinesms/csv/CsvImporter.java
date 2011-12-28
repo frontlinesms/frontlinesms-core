@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
  * @author Morgan Belkadi <morgan@frontlinesms.com>
  */
 public abstract class CsvImporter {
+//> INSTANCE VARIABLES
 	/** Logging object */
 	protected Logger log = FrontlineUtils.getLogger(this.getClass());
 	/** The first line of values as loaded from disk */
@@ -44,10 +45,21 @@ public abstract class CsvImporter {
 	/** Raw values as loaded from disk */
 	private List<String[]> rawValues;
 	
+//> CONSTRUCTORS
 	protected CsvImporter(File importFile) throws CsvParseException {
 		this.loadValuesFromCsvFile(importFile);
 	}
 
+//> ACCESSORS
+	public String[] getRawFirstLine() {
+		return this.rawFirstLine;
+	}
+
+	public List<String[]> getRawValues() {
+		return this.rawValues;
+	}
+
+//> LOAD METHODS
 	/**
 	 * Import contacts from a CSV file.
 	 * @param filename the file to import from
@@ -81,9 +93,5 @@ public abstract class CsvImporter {
 		
 		log.trace("EXIT");
 		this.rawValues = valuesList;
-	}
-	
-	public List<String[]> getRawValues() {
-		return this.rawValues;
 	}
 }

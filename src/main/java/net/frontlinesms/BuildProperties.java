@@ -37,6 +37,10 @@ public final class BuildProperties extends ClasspathPropertySet {
 		return super.getProperty(PROPERTY_VERSION);
 	}
 
+	public boolean isSnapshot() {
+		return getVersion().contains("SNAPSHOT");
+	}
+
 //> INSTANCE HELPER METHODS
 
 //> STATIC FACTORIES
