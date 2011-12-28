@@ -10,6 +10,9 @@
 	    <label name="lbReceiveNotSupported" text="i18n.error.phone.receive.not.supported"/>
 	    <checkbox colspan="2" icon="/icons/sms_receive.png" name="cbReceiving" selected="true" text="i18n.common.use.for.receiving" action="phoneManagerDetailsCheckboxChanged(this)"/>
 	    <checkbox colspan="2" icon="/icons/sms_delete.png" name="cbDeleteMsgs" selected="true" text="i18n.common.delete.from.phone"/>
+	    <checkbox colspan="2" icon="/icons/sms_delete.png" name="cbReadOnlyUnread" selected="false" text="i18n.modem.settings.readonlyunread"/>
+	    <separator colspan="2"/>
+	    <checkbox colspan="2" icon="/icons/phone_call.png" name="cbMonitorCalls" selected="false" text="i18n.modem.settings.calls.monitor"/>
 	</panel>
 	
 	<separator colspan="2"/>
@@ -20,5 +23,19 @@
 			
 			<label text="i18n.phone.settings.pin" icon="/icons/key.png" tooltip="i18n.phone.settings.pin.tooltip"/>
 			<passwordfield action="pinChanged(this.text)" name="tfPin" weightx="1" tooltip="i18n.phone.settings.pin.tooltip"/>
+	</panel>
+	
+	<panel name="pnDebug" colspan="2" columns="2" gap="7">
+		<separator colspan="2" name="final-separator"/>
+		
+		<label text="CATHandler" icon="/icons/phone.png"/>
+		<textfield name="tfCatHandler" weightx="1" enabled="false"/>
+		
+		<label text="Serial #" icon="/icons/phone.png"/>
+		<textfield name="tfSerial" weightx="1" enabled="false"/>
+		
+	    <button action="debug_stk" icon="/icons/tick.png" text="STK debug"/>
+		
+	    <button action="debug_ussd" icon="/icons/tick.png" text="USSD debug"/>
 	</panel>
 </panel>

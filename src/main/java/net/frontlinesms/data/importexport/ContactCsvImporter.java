@@ -6,9 +6,6 @@ package net.frontlinesms.data.importexport;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
-
-import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.csv.CsvImportReport;
 import net.frontlinesms.csv.CsvImporter;
 import net.frontlinesms.csv.CsvParseException;

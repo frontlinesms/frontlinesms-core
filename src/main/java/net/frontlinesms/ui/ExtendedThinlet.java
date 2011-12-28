@@ -192,6 +192,7 @@ private static final String START = "start";
 	public void setWidth(Object component, int width) {
 		setInteger(component, Thinlet.ATTRIBUTE_WIDTH, width);
 	}
+	
 	/**
 	 * Sets the height of a thinlet component.
 	 * @param component
@@ -404,8 +405,8 @@ private static final String START = "start";
 	 * @return a table row with an object attached
 	 */
 	public final Object createTableRow() {
-    	Object row = Thinlet.create(ROW);
-    	return row;
+		Object row = Thinlet.create(ROW);
+    		return row;
     }
 
 	/**
@@ -415,10 +416,25 @@ private static final String START = "start";
 	 * @return a table row with an object attached
 	 */
 	public final Object createTableRow(Object attachedObject) {
-    	Object row = createTableRow();
-    	setAttachedObject(row, attachedObject);
-    	return row;
+		Object row = createTableRow();
+		setAttachedObject(row, attachedObject);
+		return row;
     }
+
+	/**
+	 * Create a Thinlet UI Component of type table row, attaches the
+	 * supplied object to it and adds cells with the given text.
+	 * @param attachedObject
+	 * @param cellText
+	 * @return a table row with an object attached
+	 */
+	public final Object createTableRow(Object attachedObject, String... cellText) {
+		Object row = createTableRow(attachedObject);
+		for(String t : cellText) {
+			add(row, createTableCell(t));
+		}
+		return row;
+	}
 	
 	/**
 	 * Create a Thinlet UI component of type table cell containing the supplied number.
@@ -426,7 +442,7 @@ private static final String START = "start";
 	 * @return a table cell
 	 */
 	public final Object createTableCell(int integerContent) {
-    	return createTableCell(Integer.toString(integerContent));
+		return createTableCell(Integer.toString(integerContent));
     }
         
 	/**

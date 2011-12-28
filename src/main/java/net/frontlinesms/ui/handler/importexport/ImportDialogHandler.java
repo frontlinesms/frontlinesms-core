@@ -5,7 +5,6 @@ package net.frontlinesms.ui.handler.importexport;
 
 import net.frontlinesms.csv.CsvImporter;
 import net.frontlinesms.csv.CsvParseException;
-import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
@@ -30,33 +29,21 @@ public abstract class ImportDialogHandler extends ImportExportDialogHandler {
 	protected static final String COMPONENT_PN_CHECKBOXES = "pnInfo";
 	protected static final String COMPONENT_PN_CHECKBOXES_2 = "pnInfo2";
 	
-//> STATIC CONSTANTS
-	public enum EntityType {
-		/** Export entity type: {@link Contact} */
-		CONTACTS,
-		/** Export entity type: {@link Message} */
-		MESSAGES;
-	}
-
-	/** The type of object we are dealing with, one of {@link #TYPE_CONTACT}, {@link #TYPE_KEYWORD}, {@link #TYPE_MESSAGE}. */
-	protected final EntityType type;
-	
 //> PROPERTIES
 	
 //> CONSTRUCTORS
-	public ImportDialogHandler(UiGeneratorController ui, EntityType type) {
+	public ImportDialogHandler(UiGeneratorController ui) {
 		super(ui);
-		this.type = type;
 	}
 	
 //> ACCESSORS
 	@Override
-	String getDialogFile() {
+	protected String getDialogFile() {
 		return UI_FILE_IMPORT_WIZARD_FORM;
 	}
 
 //> UI EVENT METHODS
-	abstract void doSpecialImport(String dataPath) throws CsvParseException;
+	protected abstract void doSpecialImport(String dataPath) throws CsvParseException;
 	
 	public void openChooseComplete(String filePath) {
 		this.uiController.setText(uiController.find(this.wizardDialog, "tfDirectory"), filePath);

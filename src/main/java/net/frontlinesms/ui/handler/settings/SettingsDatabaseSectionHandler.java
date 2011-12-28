@@ -43,7 +43,7 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 	}
 	
 	protected void init() {
-		this.panel = uiController.loadComponentFromFile(UI_SECTION_DATABASE, this);
+		this.panel = ui.loadComponentFromFile(UI_SECTION_DATABASE, this);
 		
 		// Populate combobox
 		String selectedDatabaseConfigPath = AppProperties.getInstance().getDatabaseConfigPath();
@@ -52,12 +52,12 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 		for(int settingsIndex = 0; settingsIndex < databaseSettings.size(); ++settingsIndex) {
 			DatabaseSettings settings = databaseSettings.get(settingsIndex);
 			Object comboBox = createComboBoxChoice(settings);
-			this.uiController.add(settingsSelection, comboBox);
+			this.ui.add(settingsSelection, comboBox);
 
 			// if appropriate, choose the combobox selection
 			if(settings.getFilePath().equals(selectedDatabaseConfigPath)) {
 				this.selectedSettings = settings;
-				this.uiController.setSelectedIndex(settingsSelection, settingsIndex);
+				this.ui.setSelectedIndex(settingsSelection, settingsIndex);
 			}
 		}
 		
@@ -67,8 +67,10 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 		refreshSettingsPanel();
 	}
 	
+	public void deinit() {}
+	
 	private Object createComboBoxChoice(DatabaseSettings settings) {
-		Object cb = this.uiController.createComboboxChoice(settings.getName(), settings);
+		Object cb = this.ui.createComboboxChoice(settings.getName(), settings);
 		// TODO perhaps we could set a settings-specific icon here
 		return cb;
 	}
@@ -77,19 +79,19 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 	private void refreshSettingsPanel() {
 		// populate the settings panel
 		Object settingsPanel = find(COMPONENT_PN_DATABASE_SETTINGS);
-		this.uiController.removeAll(settingsPanel);
+		this.ui.removeAll(settingsPanel);
 		
 		this.selectedSettings.loadProperties();
 		for(String key : this.selectedSettings.getPropertyKeys()) {
 			// TODO would be nice to set icons for the different settings
-			this.uiController.add(settingsPanel, this.uiController.createLabel(key));
+			this.ui.add(settingsPanel, this.ui.createLabel(key));
 			// TODO may want to set the types of these, e.g. password, number etc.
 			String value = this.selectedSettings.getPropertyValue(key);
 			Object field;
 			if (key.equals(PASSWORD_PROPERTY_KEY)) {
-				field = this.uiController.createPasswordfield(key, value);
+				field = this.ui.createPasswordfield(key, value);
 			} else {
-				field = this.uiController.createTextfield(key, value);
+				field = this.ui.createTextfield(key, value);
 			}
 			
 			if (this.selectedSettings.getFilePath().equals(this.originalValues.get(SECTION_ITEM_DATABASE_CONFIG_PATH))) {
@@ -106,9 +108,9 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 				}
 			}
 			
-			this.uiController.setAttachedObject(field, key);
-			this.uiController.setAction(field, "configFieldChanged(this)", null, this);
-			this.uiController.add(settingsPanel, field);
+			this.ui.setAttachedObject(field, key);
+			this.ui.setAction(field, "configFieldChanged(this)", null, this);
+			this.ui.add(settingsPanel, field);
 		}
 	}
 	
@@ -116,8 +118,8 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 	 * A new database type has been selected in the ComboBox
 	 */
 	public void configFileChanged() {
-		String selected = this.uiController.getText(this.uiController.getSelectedItem(find(COMPONENT_SETTINGS_SELECTION)));
-		int selectedIndex = this.uiController.getSelectedIndex(find(COMPONENT_SETTINGS_SELECTION));
+		String selected = this.ui.getText(this.ui.getSelectedItem(find(COMPONENT_SETTINGS_SELECTION)));
+		int selectedIndex = this.ui.getSelectedIndex(find(COMPONENT_SETTINGS_SELECTION));
 
 		if (selected != null) {
 			this.selectedSettings = DatabaseSettings.getSettings().get(selectedIndex);
@@ -133,7 +135,7 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 	 */
 	public void configFieldChanged(Object databaseConfigField) {
 		if (selectedSettings.getFilePath().equals(this.originalValues.get(SECTION_ITEM_DATABASE_CONFIG_PATH))) {
-			this.settingChanged(SECTION_ITEM_DATABASE_CONFIG + this.uiController.getAttachedObject(databaseConfigField, String.class), this.uiController.getText(databaseConfigField));
+			this.settingChanged(SECTION_ITEM_DATABASE_CONFIG + this.ui.getAttachedObject(databaseConfigField, String.class), this.ui.getText(databaseConfigField));
 		}
 	}
 
@@ -171,21 +173,21 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 				this.selectedSettings.saveProperties();
 			}
 			
-			this.uiController.alert(InternationalisationUtils.getI18nString(I18N_MESSAGE_DATABASE_SETTINGS_CHANGED));
+			this.ui.alert(InternationalisationUtils.getI18nString(I18N_MESSAGE_DATABASE_SETTINGS_CHANGED));
 		}
 	}
 	
 	/** @return the settings and values that are currently displayed on the UI */
 	private List<Setting> getDisplayedSettingValues() {
 		Object settingsPanel = find(COMPONENT_PN_DATABASE_SETTINGS);
-		Object[] settingsComponents = this.uiController.getItems(settingsPanel);
+		Object[] settingsComponents = this.ui.getItems(settingsPanel);
 		
 		ArrayList<Setting> settings = new ArrayList<Setting>();
 		for (int settingIndex=1; settingIndex<settingsComponents.length; settingIndex+=2) {
 			// This code assumes that all settings are in TEXTFIELDS; this may change in the future.
 			Object tf = settingsComponents[settingIndex];
-			String key = this.uiController.getName(tf);
-			String value = this.uiController.getText(tf);
+			String key = this.ui.getName(tf);
+			String value = this.ui.getText(tf);
 			settings.add(new Setting(key, value));
 		}
 		
@@ -197,18 +199,18 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 	 * @param titleI18nKey
 	 */
 	public void showAsDialog() {
-		Object dialogComponent = this.uiController.createDialog("Pwals");
-		this.panel = this.uiController.loadComponentFromFile(UI_SECTION_DATABASE_AS_DIALOG, this);
+		Object dialogComponent = this.ui.createDialog("Pwals");
+		this.panel = this.ui.loadComponentFromFile(UI_SECTION_DATABASE_AS_DIALOG, this);
 		this.init();
 		
-		this.uiController.add(dialogComponent, panel);
-		this.uiController.setCloseAction(dialogComponent, "removeDialog", dialogComponent, this);
-		this.uiController.add(dialogComponent);
+		this.ui.add(dialogComponent, panel);
+		this.ui.setCloseAction(dialogComponent, "removeDialog", dialogComponent, this);
+		this.ui.add(dialogComponent);
 		this.dialogComponent = dialogComponent;
 	}
 	
 	public void removeDialog() {
-		this.uiController.remove(this.dialogComponent);
+		this.ui.remove(this.dialogComponent);
 	}
 
 	public List<FrontlineValidationMessage> validateFields() {

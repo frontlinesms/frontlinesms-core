@@ -22,19 +22,22 @@ package net.frontlinesms.messaging.sms.modem;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.SynchronousQueue;
 
 import serial.*;
 
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
+import net.frontlinesms.events.EventBus;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.CatHandlerAliasMatcher;
 import net.frontlinesms.messaging.sms.SmsService;
+import net.frontlinesms.messaging.sms.events.SmsModemStatusNotification;
 
 import org.apache.log4j.Logger;
 import org.smslib.*;
-import org.smslib.CService.MessageClass;
+import org.smslib.service.MessageClass;
 
 /**
  * Class for handling the serial connection to an individual SMS device.
@@ -44,7 +47,7 @@ import org.smslib.CService.MessageClass;
  * @author Carlos Eduardo Genz kadu(at)masabi(dot)com
  * @author james@tregaskis.org
  */
-public class SmsModem extends Thread implements SmsService {
+public class SmsModem extends Thread implements SmsService, ICallListener {
 	
 //> CONSTANTS
 	private static final int SMS_BULK_LIMIT = 10;
@@ -80,6 +83,7 @@ public class SmsModem extends Thread implements SmsService {
 	private final ConcurrentLinkedQueue<FrontlineMessage> outbox = new ConcurrentLinkedQueue<FrontlineMessage>();
 	/** The SmsListener to which this phone handler should report SMS Message events. */
 	private final SmsListener smsListener;
+	private final EventBus eventBus;
 
 	/** The name of the COM port that this PhoneHandler controls. */
 	private final String portName;
@@ -106,6 +110,9 @@ public class SmsModem extends Thread implements SmsService {
 	private boolean useForSending;
 	/** true if this phone is or will be used for receiving SMS messages */
 	private boolean useForReceiving;
+	/** TODO enable changing of this through settings */
+	private boolean monitorCalls = true;
+	private final SynchronousQueue<CIncomingCall> callQueue = new SynchronousQueue<CIncomingCall>();
 	/** true if this thread has timed out */
 	private boolean timedOut;
 
@@ -114,6 +121,7 @@ public class SmsModem extends Thread implements SmsService {
 
 	private boolean deleteMessagesAfterReceiving;
 	private boolean useDeliveryReports;
+	private boolean readOnlyUnreadMessages;
 
 	private String manufacturer = "";
 	private String model = "";
@@ -139,7 +147,7 @@ public class SmsModem extends Thread implements SmsService {
 	 * @param smsListener the value for {@link #smsListener} 
 	 * @throws NoSuchPortException 
 	 */
-	public SmsModem(String portName, SmsListener smsListener) throws NoSuchPortException {
+	public SmsModem(String portName, SmsListener smsListener, EventBus eventBus) throws NoSuchPortException {
 		super("SmsModem :: " + portName);
 		/*
 		 * Make this into a daemon thread - we never know when it may get blocked in native code.  Indeed this can be
@@ -155,6 +163,7 @@ public class SmsModem extends Thread implements SmsService {
 
 		assert(smsListener != null);
 		this.smsListener = smsListener;
+		this.eventBus = eventBus;
 		this.portName = portName;
 
 		resetWatchdog();
@@ -194,7 +203,7 @@ public class SmsModem extends Thread implements SmsService {
 				+ (detail == null?"":": "+detail)
 				+ "]");
 		
-		smsListener.smsDeviceEvent(this, this.status);
+		eventBus.notifyObservers(new SmsModemStatusNotification(this, status));
 	}
 	
 	/** @return {@link #statusDetail} */
@@ -343,6 +352,11 @@ public class SmsModem extends Thread implements SmsService {
 		return serialNumber;
 	}
 	
+	/** @return {@link #imsi} */
+	public String getImsiNumber() {
+		return imsiNumber;
+	}
+	
 	public String getServiceName() {
 		return FrontlineUtils.getManufacturerAndModel(getManufacturer(), getModel());
 	}
@@ -437,18 +451,25 @@ public class SmsModem extends Thread implements SmsService {
 			autoReconnect = true;
 			smsLibConnected = true;
 			
+			if(this.monitorCalls) {
+				cService.setCallHandler(this);
+			}
+			
 			this.setStatus(SmsModemStatus.CONNECTED, Integer.toString(maxSpeedRequested));
 			
 			resetWatchdog();
 			LOG.debug("Connection successful!");
 			LOG.trace("EXIT");
 			return true;
-		} catch (GsmNetworkRegistrationException e) {
+		} catch (GsmNetworkRegistrationException ex) {
 			this.setStatus(SmsModemStatus.GSM_REG_FAILED, null);
+			LOG.warn("Modem connection failed.", ex);
 		} catch (PortInUseException ex) {
 			this.setStatus(SmsModemStatus.OWNED_BY_SOMEONE_ELSE, ex.getClass().getSimpleName() + " : " + ex.getMessage());
+			LOG.warn("Modem connection failed.", ex);
 		} catch (Exception ex) {
 			this.setStatus(SmsModemStatus.FAILED_TO_CONNECT, ex.getClass().getSimpleName() + " : " + ex.getMessage());
+			LOG.warn("Modem connection failed.", ex);
 		}
 		LOG.debug("Connection failed!");
 		LOG.trace("EXIT");
@@ -524,6 +545,13 @@ public class SmsModem extends Thread implements SmsService {
 						}
 						LOG.debug("Send messages took [" + (System.currentTimeMillis() - startTime) + "]");
 						resetWatchdog();
+					}
+					
+					if(monitorCalls) {
+						CIncomingCall call;
+						while((call = callQueue.poll()) != null) {
+							eventBus.notifyObservers(new MissedCallNotification(this, call));
+						}
 					}
 				} catch(UnrecognizedHandlerProtocolException ex) {
 					LOG.debug("Invalid message protocol specified for device.", ex);
@@ -681,6 +709,7 @@ public class SmsModem extends Thread implements SmsService {
 				cService.serialDriver.open();
 				// wait for port to open and AT handler to awake
 				FrontlineUtils.sleep_ignoreInterrupts(500);
+				cService.serialDriver.clearBuffer();
 					
 				setManufacturer(cService.getManufacturer());
 				setModel(cService.getModel());
@@ -738,7 +767,7 @@ public class SmsModem extends Thread implements SmsService {
 		LOG.trace("ENTER");
 		resetWatchdog();
 		LinkedList<CIncomingMessage> messageList = new LinkedList<CIncomingMessage>();
-		cService.readMessages(messageList, MessageClass.UNREAD); // TODO make this changeable in settings - UNREAD vs ALL
+		cService.readMessages(messageList, readOnlyUnreadMessages? MessageClass.UNREAD: MessageClass.ALL);
 		resetWatchdog();
 
 		LOG.debug("[" + messageList.size() + "] message(s) received.");
@@ -807,6 +836,28 @@ public class SmsModem extends Thread implements SmsService {
 	public void setMsisdn(String msisdn) {
 		this.msisdn = msisdn;
 	}
+	
+	public boolean isReadOnlyUnreadMessages() {
+		return readOnlyUnreadMessages;
+	}
+	
+	public void setReadOnlyUnreadMessages(boolean readOnlyUnreadMessages) {
+		this.readOnlyUnreadMessages = readOnlyUnreadMessages;
+	}
+	
+	public boolean isMonitoringCalls() {
+		return monitorCalls;
+	}
+	
+	public void setMonitorCalls(boolean monitorCalls) {
+		this.monitorCalls = monitorCalls;
+		if(monitorCalls) {
+			this.cService.setCallHandler(this);
+		} else {
+			this.cService.setCallHandler(null);
+			this.callQueue.clear();
+		}
+	}
 
 	public boolean isDeleteMessagesAfterReceiving() {
 		return deleteMessagesAfterReceiving;
@@ -861,6 +912,11 @@ public class SmsModem extends Thread implements SmsService {
 	
 	public boolean isDisconnecting() {
 		return disconnecting;
+	}
+	
+	public CService getCService() {
+		// FIXME there may be a better solution that this long term... have a good think about whether this should be accessible.
+		return this.cService;
 	}
 	
 //> OTHER METHODS
@@ -1005,7 +1061,11 @@ public class SmsModem extends Thread implements SmsService {
 					+ "\n -Date [" + msg.getDate() + "]");
 		}
 	}
-//> STATIC HELPER METHODS
+
+	public void received(CService service, CIncomingCall call) {
+		if(monitorCalls) callQueue.add(call);
+	}
 	
+//> STATIC HELPER METHODS
 
 }

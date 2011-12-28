@@ -23,7 +23,6 @@ import org.smslib.CIncomingMessage;
 
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.messaging.sms.SmsService;
-import net.frontlinesms.messaging.sms.SmsServiceStatus;
 
 /**
  * Abstract - implement this one event listener to be passed SMS messages.
@@ -44,15 +43,4 @@ public interface SmsListener {
 	 * @param outgoingMessage The sent message.
 	 */
 	public void outgoingMessageEvent(SmsService sender, FrontlineMessage outgoingMessage);
-	
-	/**
-	 * called when one of the SMS devices (phones or http senders) has a change in status,
-	 * such as detection, connection, disconnecting, running out of batteries, etc.
-	 * see PhoneHandler.STATUS_CODE_MESSAGES[smsDeviceEventCode] to get the relevant messages
-	 *  
-	 * @param activeDevice
-	 * @param smsDeviceStatus the new status of the {@link SmsService}
-	 */
-	public void smsDeviceEvent(SmsService activeDevice, SmsServiceStatus smsDeviceStatus);
-		
 }

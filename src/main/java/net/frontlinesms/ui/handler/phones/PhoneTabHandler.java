@@ -14,15 +14,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.data.domain.EmailAccount;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.domain.SmsModemSettings;
 import net.frontlinesms.data.events.DatabaseEntityNotification;
 import net.frontlinesms.data.repository.SmsModemSettingsDao;
-import net.frontlinesms.events.EventObserver;
 import net.frontlinesms.events.FrontlineEventNotification;
 import net.frontlinesms.messaging.FrontlineMessagingService;
 import net.frontlinesms.messaging.FrontlineMessagingServiceStatus;
-import net.frontlinesms.messaging.FrontlineMessagingServiceEventListener;
 import net.frontlinesms.messaging.mms.MmsService;
 import net.frontlinesms.messaging.mms.MmsServiceManager;
 import net.frontlinesms.messaging.mms.email.MmsEmailService;
@@ -30,15 +28,16 @@ import net.frontlinesms.messaging.mms.email.MmsEmailServiceStatus;
 import net.frontlinesms.messaging.mms.events.MmsServiceStatusNotification;
 import net.frontlinesms.messaging.sms.SmsService;
 import net.frontlinesms.messaging.sms.SmsServiceManager;
+import net.frontlinesms.messaging.sms.events.SmsInternetServiceStatusNotification;
+import net.frontlinesms.messaging.sms.events.SmsModemStatusNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.internet.SmsInternetServiceStatus;
 import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.messaging.sms.modem.SmsModemStatus;
-import net.frontlinesms.ui.Event;
+import net.frontlinesms.ui.HomeTabEventNotification;
 import net.frontlinesms.ui.Icon;
-import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
-import net.frontlinesms.ui.events.FrontlineUiUpateJob;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.events.TabChangedNotification;
 import net.frontlinesms.ui.handler.BaseTabHandler;
 import net.frontlinesms.ui.handler.email.EmailAccountSettingsDialogHandler;
@@ -54,7 +53,7 @@ import serial.NoSuchPortException;
  * @author Morgan Belkadi <morgan@frontlinesms.com>
  */
 @TextResourceKeyOwner(prefix={"COMMON_", "I18N_", "MESSAGE_"})
-public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagingServiceEventListener, EventObserver {
+public class PhoneTabHandler extends BaseTabHandler {
 //> STATIC CONSTANTS
 	/** {@link Comparator} used for sorting {@link FrontlineMessagingService}s into a friendly order. */
 	private static final Comparator<? super FrontlineMessagingService> MESSAGING_SERVICE_COMPARATOR = new Comparator<FrontlineMessagingService>() {
@@ -100,14 +99,14 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 	private final SmsServiceManager phoneManager;
 	/** Data Access Object for {@link SmsModemSettings}s */
 	private final SmsModemSettingsDao smsModelSettingsDao;
-	private MmsServiceManager mmsServiceManager;
+	private final MmsServiceManager mmsServiceManager;
 //> CONSTRUCTORS
 	/**
 	 * Create a new instance of this class.
 	 * @param uiController value for {@link #ui}
 	 */
 	public PhoneTabHandler(UiGeneratorController ui) {
-		super(ui);
+		super(ui, true);
 		this.phoneManager = ui.getPhoneManager();
 		this.mmsServiceManager = ui.getFrontlineController().getMmsServiceManager();
 		this.smsModelSettingsDao = ui.getPhoneDetailsManager();
@@ -116,8 +115,6 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 	@Override
 	protected Object initialiseTab() {
 		// We register the observer to the UIGeneratorController, which notifies when tabs have changed
-		this.ui.getFrontlineController().getEventBus().registerObserver(this);
-		
 		return ui.loadComponentFromFile(UI_FILE_PHONES_TAB, this);
 	}
 
@@ -146,7 +143,7 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 				}
 			} else if (service instanceof SmsInternetService) {
 				SmsInternetServiceSettingsHandler serviceHandler = new SmsInternetServiceSettingsHandler(this.ui);
-				serviceHandler.showConfigureService((SmsInternetService) service, null);
+				serviceHandler.showConfigureService(((SmsInternetService) service).getSettings());
 			} else if (service instanceof MmsEmailService) {
 				EmailAccountSettingsDialogHandler emailAccountSettingsDialogHandler = new EmailAccountSettingsDialogHandler(ui, true);
 				emailAccountSettingsDialogHandler.initDialog(((MmsEmailService) service).getEmailAccount());
@@ -163,7 +160,7 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 	public void showPhoneSettingsDialog(SmsModem device, boolean isNewPhone) {
 		final DeviceSettingsDialogHandler deviceSettingsDialog = new DeviceSettingsDialogHandler(ui, device, isNewPhone);
 		
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				deviceSettingsDialog.initDialog();
 				ui.add(deviceSettingsDialog.getDialog());
@@ -258,10 +255,10 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 				try {
 					phoneManager.requestConnect(modem.getPort());
 				} catch (NoSuchPortException ex) {
-					log.info("", ex);
+					log.info("Unable to connect to requested modem/phone.", ex);
 				}
 			} else if (service instanceof SmsInternetService) {
-				phoneManager.addSmsInternetService((SmsInternetService) service);
+				((SmsInternetService) service).restartService();
 			} else if (service instanceof MmsEmailService) {
 				this.mmsServiceManager.connectMmsEmailService((MmsEmailService) service, true);
 			}
@@ -281,7 +278,7 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 		// We create the manual config dialog and put the display job in the AWT event queue
 		final DeviceManualConfigDialogHandler configDialog = new DeviceManualConfigDialogHandler(ui, selectedModem);
 		
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				ui.add(configDialog.getDialog());
 			}
@@ -293,83 +290,12 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 		phoneManager.refreshPhoneList(true);
 	}
 	
-	/**
-	 * called when one of the SMS devices (phones or http senders) has a change in status,
-	 * such as detection, connection, disconnecting, running out of batteries, etc.
-	 * see PhoneHandler.STATUS_CODE_MESSAGES[smsDeviceEventCode] to get the relevant messages
-	 * @param messagingService
-	 * @param serviceStatus
-	 */
-	public void messagingServiceEvent(FrontlineMessagingService messagingService, FrontlineMessagingServiceStatus serviceStatus) {
-		log.trace("ENTER");
-		
-		// Handle modems first
-		if (messagingService instanceof SmsModem) {
-			SmsModem activeService = (SmsModem) messagingService;
-			// FIXME re-implement status update on the AWT Event Queue - doing it here causes splitpanes to collapse
-			// ui.setStatus(InternationalisationUtils.getI18NString(MESSAGE_PHONE) + ": " + activeDevice.getPort() + ' ' + getSmsDeviceStatusAsString(device));
-			if (serviceStatus.equals(SmsModemStatus.CONNECTED)) {
-				log.debug("Phone is connected. Try to read details from database!");
-				String serial = activeService.getSerial();
-				SmsModemSettings settings = smsModelSettingsDao.getSmsModemSettings(serial);
-				
-				// If this is the first time we've attached this phone, or no settings were
-				// saved last time, we should show the settings dialog automatically
-				if(settings == null) {
-					log.debug("User need to make setting related this phone.");
-					showPhoneSettingsDialog(activeService, true);
-				} else {
-					// Let's update the Manufacturer & Model for this device, if it wasn't previously set
-					if (settings.getManufacturer() == null || settings.getModel() == null) {
-						settings.setManufacturer(activeService.getManufacturer());
-						settings.setModel(activeService.getModel());
-						
-						smsModelSettingsDao.updateSmsModemSettings(settings);
-					}
-					
-					boolean supportsReceive = activeService.supportsReceive();
-					if (settings.supportsReceive() != supportsReceive) {
-						settings.setSupportsReceive(supportsReceive);
-						
-						smsModelSettingsDao.updateSmsModemSettings(settings);
-					}
-					
-					activeService.setUseForSending(settings.useForSending());
-					activeService.setUseDeliveryReports(settings.useDeliveryReports());
-
-					if(activeService.supportsReceive()) {
-						activeService.setUseForReceiving(settings.useForReceiving());
-						activeService.setDeleteMessagesAfterReceiving(settings.deleteMessagesAfterReceiving());
-					}
-				}
-
-				ui.newEvent(new Event(Event.TYPE_PHONE_CONNECTED, InternationalisationUtils.getI18nString(COMMON_PHONE_CONNECTED) + ": " + activeService.getModel()));
-			}
-		} else {
-			SmsInternetService service = (SmsInternetService) messagingService;
-			// TODO document why newEvent is called here, and why it is only called for certain statuses.
-			if (serviceStatus.equals(SmsInternetServiceStatus.CONNECTED)) {
-				ui.newEvent(new Event(
-						Event.TYPE_SMS_INTERNET_SERVICE_CONNECTED,
-						InternationalisationUtils.getI18nString(COMMON_SMS_INTERNET_SERVICE_CONNECTED) 
-						+ ": " + SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()));
-			} else if (serviceStatus.equals(SmsInternetServiceStatus.RECEIVING_FAILED)) {
-				ui.newEvent(new Event(
-						Event.TYPE_SMS_INTERNET_SERVICE_RECEIVING_FAILED,
-						SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()
-						+ ": " + InternationalisationUtils.getI18nString(FrontlineSMSConstants.COMMON_SMS_INTERNET_SERVICE_RECEIVING_FAILED)));
-			}
-		}
-		refresh();
-		log.trace("EXIT");
-	}
-
 //> INSTANCE HELPER METHODS
 	/** 
 	 * Refreshes the list of PhoneHandlers displayed on the PhoneManager tab.
 	 */
 	public void refresh() {
-		new FrontlineUiUpateJob() {
+		new FrontlineUiUpdateJob() {
 			public void run() {
 				Object modemListError = ui.find(COMPONENT_PHONE_MANAGER_MODEM_LIST_ERROR);
 				// cache the selected item so we can reselect it when we've finished!
@@ -498,28 +424,90 @@ public class PhoneTabHandler extends BaseTabHandler implements FrontlineMessagin
 	/**
 	 * UI event called when the user changes tab
 	 */
-	public void notify(FrontlineEventNotification notification) {
+	public void notify(final FrontlineEventNotification notification) {
+		super.notify(notification);
 		// This object is registered to the UIGeneratorController and get notified when the users changes tab
 		if (notification instanceof TabChangedNotification) {
 			String newTabName = ((TabChangedNotification) notification).getNewTabName();
 			if (newTabName.equals(TAB_ADVANCED_PHONE_MANAGER)) {
-				this.refresh();
-				this.ui.setStatus(InternationalisationUtils.getI18nString(MESSAGE_MODEM_LIST_UPDATED));
+				threadSafeRefresh();
+				ui.setStatus(InternationalisationUtils.getI18nString(MESSAGE_MODEM_LIST_UPDATED));
 			}
+		} else if (notification instanceof SmsModemStatusNotification) {
+			new FrontlineUiUpdateJob() {
+				public void run() {
+					SmsModem activeService = ((SmsModemStatusNotification) notification).getService();
+					SmsModemStatus serviceStatus = ((SmsModemStatusNotification) notification).getStatus();
+					// FIXME re-implement status update on the AWT Event Queue - doing it here causes splitpanes to collapse
+					// ui.setStatus(InternationalisationUtils.getI18NString(MESSAGE_PHONE) + ": " + activeDevice.getPort() + ' ' + getSmsDeviceStatusAsString(device));
+					if (serviceStatus.equals(SmsModemStatus.CONNECTED)) {
+						log.debug("Phone is connected. Try to read details from database!");
+						String serial = activeService.getSerial();
+						SmsModemSettings settings = smsModelSettingsDao.getSmsModemSettings(serial);
+						
+						// If this is the first time we've attached this phone, or no settings were
+						// saved last time, we should show the settings dialog automatically
+						if(settings == null) {
+							log.debug("User need to make setting related this phone.");
+							showPhoneSettingsDialog(activeService, true);
+						} else {
+							// Let's update the Manufacturer & Model for this device, if it wasn't previously set
+							if (settings.getManufacturer() == null || settings.getModel() == null) {
+								settings.setManufacturer(activeService.getManufacturer());
+								settings.setModel(activeService.getModel());
+								
+								smsModelSettingsDao.updateSmsModemSettings(settings);
+							}
+							
+							boolean supportsReceive = activeService.supportsReceive();
+							if (settings.supportsReceive() != supportsReceive) {
+								settings.setSupportsReceive(supportsReceive);
+								
+								smsModelSettingsDao.updateSmsModemSettings(settings);
+							}
+							
+							activeService.setUseForSending(settings.useForSending());
+							activeService.setUseDeliveryReports(settings.useDeliveryReports());
+		
+							if(activeService.supportsReceive()) {
+								activeService.setUseForReceiving(settings.useForReceiving());
+								activeService.setDeleteMessagesAfterReceiving(settings.deleteMessagesAfterReceiving());
+								activeService.setReadOnlyUnreadMessages(settings.readOnlyUnreadMessages());
+							}
+							
+							activeService.setMonitorCalls(settings.monitorCalls());
+						}
+		
+						eventBus.notifyObservers(new HomeTabEventNotification(HomeTabEventNotification.Type.PHONE_CONNECTED, InternationalisationUtils.getI18nString(COMMON_PHONE_CONNECTED) + ": " + activeService.getModel()));
+					}
+					refresh();
+				}
+			}.execute();
+		} else if(notification instanceof SmsInternetServiceStatusNotification) {
+			SmsInternetService service = ((SmsInternetServiceStatusNotification) notification).getService();
+			SmsInternetServiceStatus serviceStatus = ((SmsInternetServiceStatusNotification) notification).getStatus();
+			if (serviceStatus.equals(SmsInternetServiceStatus.CONNECTED)) {
+				eventBus.notifyObservers(new HomeTabEventNotification(
+						HomeTabEventNotification.Type.SMS_INTERNET_SERVICE_CONNECTED,
+						InternationalisationUtils.getI18nString(COMMON_SMS_INTERNET_SERVICE_CONNECTED) 
+						+ ": " + SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()));
+			} else if (serviceStatus.equals(SmsInternetServiceStatus.RECEIVING_FAILED)) {
+				eventBus.notifyObservers(new HomeTabEventNotification(
+						HomeTabEventNotification.Type.SMS_INTERNET_SERVICE_RECEIVING_FAILED,
+						SmsInternetServiceSettingsHandler.getProviderName(service.getClass()) + " - " + service.getIdentifier()
+						+ ": " + InternationalisationUtils.getI18nString(FrontlineSMSConstants.COMMON_SMS_INTERNET_SERVICE_RECEIVING_FAILED)));
+			}
+			threadSafeRefresh();
 		} else if (notification instanceof MmsServiceStatusNotification) {
-			refresh();
+			threadSafeRefresh();
 		} else if (notification instanceof DatabaseEntityNotification<?>) {
 			// Database notification
 			Object entity = ((DatabaseEntityNotification<?>) notification).getDatabaseEntity();
 			if (entity instanceof EmailAccount
 					|| entity instanceof SmsModemSettings
-					|| entity instanceof SmsInternetServiceSettings) {
+					|| entity instanceof PersistableSettings) {
 				// If there is any change in the E-Mail accounts, we refresh the list of Messaging Services
-				refresh();
-			}
-		} else if (notification instanceof UiDestroyEvent) {
-			if(((UiDestroyEvent) notification).isFor(this.ui)) {
-				this.ui.getFrontlineController().getEventBus().unregisterObserver(this);
+				threadSafeRefresh();
 			}
 		}
 	}

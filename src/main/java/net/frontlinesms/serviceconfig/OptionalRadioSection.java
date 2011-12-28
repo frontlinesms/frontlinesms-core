@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with FrontlineSMS. If not, see <http://www.gnu.org/licenses/>.
  */
-package net.frontlinesms.messaging.sms.properties;
+package net.frontlinesms.serviceconfig;
 
 import java.util.*;
 
@@ -29,28 +29,28 @@ import java.util.*;
  * @author Carlos Eduardo Endler Genz
  * @date 09/02/2009
  */
-public final class OptionalRadioSection <T extends Enum<?>> {
+public final class OptionalRadioSection<T extends Enum<?>> {
 	private T value;
-	private Map<T, LinkedHashMap<String, Object>> dependencies;
+	private Map<T, StructuredProperties> dependencies;
 
 	public OptionalRadioSection(T value) {
 		this.value = value;
-		dependencies = new HashMap<T, LinkedHashMap<String,Object>>();
+		dependencies = new HashMap<T, StructuredProperties>();
 	}
 
 	/** @return the dependencies for a particular option. */
-	public Map<String, Object> getDependencies(T value) {
+	public StructuredProperties getDependencies(T value) {
 		return dependencies.get(value);
 	}
 	
 	/** Gets all dependencies. */
-	public Collection<LinkedHashMap<String, Object>> getAllDependencies() {
+	public Collection<StructuredProperties> getAllDependencies() {
 		return this.dependencies.values();
 	}
 
 	public void addDependency(T value, String property, Object propValue) {
 		if (!dependencies.containsKey(value)) {
-			dependencies.put(value, new LinkedHashMap<String, Object>());
+			dependencies.put(value, new StructuredProperties());
 		}
 		dependencies.get(value).put(property, propValue);
 	}

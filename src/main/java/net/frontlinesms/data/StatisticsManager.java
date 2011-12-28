@@ -16,7 +16,7 @@ import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.domain.KeywordAction;
 import net.frontlinesms.data.domain.FrontlineMessage;
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistableSettings;
 import net.frontlinesms.data.domain.SmsModemSettings;
 import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.data.repository.KeywordActionDao;
@@ -26,8 +26,8 @@ import net.frontlinesms.data.repository.SmsInternetServiceSettingsDao;
 import net.frontlinesms.data.repository.SmsModemSettingsDao;
 import net.frontlinesms.email.EmailException;
 import net.frontlinesms.email.smtp.SmtpEmailSender;
-import net.frontlinesms.messaging.Provider;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 import org.apache.log4j.Logger;
@@ -278,11 +278,11 @@ public class StatisticsManager {
 	/** Collects the number of {@link SmsInternetService} accounts. */
 	@SuppressWarnings("unchecked")
 	private void collectSmsInternetServices() {
-		Collection<SmsInternetServiceSettings> smsInternetServicesSettings = this.smsInternetServiceSettingsDao.getSmsInternetServiceAccounts();
+		Collection<PersistableSettings> smsInternetServicesSettings = this.smsInternetServiceSettingsDao.getServiceAccounts();
 		
 		Map<String, Integer> counts = new HashMap<String, Integer>();
-		for(SmsInternetServiceSettings settings : smsInternetServicesSettings) {
-			String className = settings.getServiceClassName();
+		for(PersistableSettings settings : smsInternetServicesSettings) {
+			String className = settings.getServiceClass().getName();
 			if(!counts.containsKey(className)) {
 				counts.put(className, 1);
 			} else {
@@ -295,7 +295,7 @@ public class StatisticsManager {
 			
 			try {
 				Class<SmsInternetService> serviceClass = (Class<SmsInternetService>) Class.forName(e.getKey());
-				Provider anna = (Provider) serviceClass.getAnnotation(Provider.class);
+				ConfigurableServiceProperties anna = (ConfigurableServiceProperties) serviceClass.getAnnotation(ConfigurableServiceProperties.class);
 				this.statisticsList.put(I18N_KEY_INTERNET_SERVICE_ACCOUNTS + STATS_LIST_KEY_SEPARATOR + anna.name(), value);
 			} catch (Exception ex) {
 				log.warn("Ignoring unrecognized internet service for stats: " + e.getKey(), ex);

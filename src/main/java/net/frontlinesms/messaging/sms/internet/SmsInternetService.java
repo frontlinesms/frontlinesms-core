@@ -3,17 +3,18 @@
  */
 package net.frontlinesms.messaging.sms.internet;
 
-import java.util.Map;
-
-import net.frontlinesms.data.domain.SmsInternetServiceSettings;
+import net.frontlinesms.data.domain.PersistableSettings;
+import net.frontlinesms.events.EventBus;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.sms.SmsService;
+import net.frontlinesms.serviceconfig.ConfigurableService;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 
 /**
  * Service allowing sending and/or receiving of SMS messages over an internet connection.
  * @author Alex
  */
-public interface SmsInternetService extends SmsService {
+public interface SmsInternetService extends SmsService, ConfigurableService {
 	/**
 	 * Gets an identifier for this instance of {@link SmsInternetService}.  Usually this
 	 * will be the username used to login with the provider, or a similar identifer on
@@ -23,16 +24,19 @@ public interface SmsInternetService extends SmsService {
 	public String getIdentifier();
 
 	/** @return the settings attached to this {@link SmsInternetService} instance. */
-	public SmsInternetServiceSettings getSettings();
+	public PersistableSettings getSettings();
 
 	/**
 	 * Initialise the service using the supplied properties.
 	 * @param settings
 	 */
-	public void setSettings(SmsInternetServiceSettings settings);
+	public void setSettings(PersistableSettings settings);
 	
 	/** Sets the {@link SmsListener} attached to this {@link SmsInternetService}. */
 	public void setSmsListener(SmsListener smsListener);
+
+	/** Sets the {@link EventBus} attached to this {@link SmsInternetService}. */
+	public void setEventBus(EventBus eventBus);
 	
 	/**
 	 * Checks if the service is currently connected.
@@ -42,13 +46,13 @@ public interface SmsInternetService extends SmsService {
 	public boolean isConnected();
 	
 	/** Starts this service. */
-	public void startThisThing(); // FIXME rename method
+	public void startService();
 	
 	/** Re-connects this service. */
-	public void restartThisThing(); // FIXME rename this method
+	public void restartService();
 	
 	/** Stop this service from running */
-	public void stopThisThing(); // FIXME rename this method
+	public void stopService();
 	
 	/**
 	 * Check if this service is encrypted using SSL.
@@ -64,7 +68,7 @@ public interface SmsInternetService extends SmsService {
 	 * TODO should probably be called getDefaultProperties()...
 	 * @return gets the structure for the properties of this service type
 	 */
-	public Map<String, Object> getPropertiesStructure();
+	public StructuredProperties getPropertiesStructure();
 	
 	/** @see SmsService#getStatus() */
 	public SmsInternetServiceStatus getStatus();

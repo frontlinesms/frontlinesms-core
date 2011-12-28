@@ -17,25 +17,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with FrontlineSMS. If not, see <http://www.gnu.org/licenses/>.
  */
-package net.frontlinesms.messaging.sms.properties;
+package net.frontlinesms.serviceconfig;
+
+import java.lang.annotation.*;
 
 /**
- * Encapsulates a String representing a password.
+ * Define an annotation to specify the service provider.
  *
  * @author Carlos Eduardo Endler Genz
- * @date 31/01/2009
+ * @date 06/02/2009
  */
-public final class PasswordString {
-	private String value;
-
-	public PasswordString(String value) {
-		this.value = value;
-	}
-
-	/**
-	 * @return the value
-	 */
-	public String getValue() {
-		return value;
-	}
+@Retention(RetentionPolicy.RUNTIME)// or source or compile
+@Target(ElementType.TYPE)
+public @interface ConfigurableServiceProperties {
+	public String name();
+	public String icon();
 }

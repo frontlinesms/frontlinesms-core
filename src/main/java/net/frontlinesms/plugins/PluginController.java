@@ -45,6 +45,11 @@ public interface PluginController {
 	 */
 	public Object getTab(UiGeneratorController uiController);
 	
+	/**
+	 * N.B. This can be called when a plugin is not enabled.
+	 * @param uiController
+	 * @return
+	 */
 	public PluginSettingsController getSettingsController(UiGeneratorController uiController);
 
 	/**

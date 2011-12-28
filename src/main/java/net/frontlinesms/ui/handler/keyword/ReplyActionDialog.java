@@ -109,7 +109,6 @@ public class ReplyActionDialog extends BaseActionDialog {
 		this.messagePanelHandler.updateMessageDetails(null, text);
 	}
 
-
 	@Override
 	protected void handleRemoved() {
 		// no special action required

@@ -8,17 +8,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.mockito.internal.verification.NoMoreInteractions;
-import org.mockito.internal.verification.Times;
 import org.smslib.CIncomingMessage;
 
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.junit.BaseTestCase;
+import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.sms.MessageType;
 import net.frontlinesms.messaging.sms.SmsServiceManager;
-import net.frontlinesms.messaging.sms.events.SmsServiceStatusNotification;
 import net.frontlinesms.messaging.sms.internet.SmsInternetService;
 import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.messaging.sms.modem.SmsModemStatus;
@@ -30,21 +28,34 @@ import static org.mockito.Mockito.*;
  * @author aga
  */
 public class SmsServiceManagerTest extends BaseTestCase {
+	/** instance of {@link SmsServiceManager} under test. */
+	SmsServiceManager manager;
+	EventBus mockEventBus;
+		
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		mockEventBus = mock(EventBus.class);
+		manager = new SmsServiceManager(mock(SmsListener.class), mockEventBus);
+	}
+	
 	/**
 	 * Test that all messages sent will be given to the {@link SmsInternetService} in preference to
 	 * any {@link SmsModem}s available.
+	 * @throws IllegalAccessException 
+	 * @throws NoSuchFieldException 
+	 * @throws IllegalArgumentException 
+	 * @throws SecurityException 
 	 */
-	public void testMessageDispatchPriorities_text() {
-		SmsServiceManager manager = new SmsServiceManager();
-
+	public void testMessageDispatchPriorities_text() throws SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
 		SmsInternetService sisNoSend = createMockSmsInternetService(false, true);
-		manager.addSmsInternetService(sisNoSend);
+		addSmsInternetService(manager, 1, sisNoSend);
 		SmsInternetService sisNoSendNoBinary = createMockSmsInternetService(false, false);
-		manager.addSmsInternetService(sisNoSendNoBinary);
+		addSmsInternetService(manager, 2, sisNoSendNoBinary);
 		SmsInternetService sisBinary = createMockSmsInternetService(true, true);
-		manager.addSmsInternetService(sisBinary);
+		addSmsInternetService(manager, 3, sisBinary);
 		SmsInternetService sisNoBinary = createMockSmsInternetService(true, false);
-		manager.addSmsInternetService(sisNoBinary);
+		addSmsInternetService(manager, 4, sisNoBinary);
 		
 		SmsModem modem = createMockModem(true, true, true, true);
 		addModem(manager, modem, "TestModem1");
@@ -64,18 +75,20 @@ public class SmsServiceManagerTest extends BaseTestCase {
 	/**
 	 * Test that all messages sent will be given to the {@link SmsInternetService} in preference to
 	 * any {@link SmsModem}s available.
+	 * @throws IllegalAccessException 
+	 * @throws NoSuchFieldException 
+	 * @throws IllegalArgumentException 
+	 * @throws SecurityException 
 	 */
-	public void testMessageDispatchPriorities_binary() {
-		SmsServiceManager manager = new SmsServiceManager();
-
+	public void testMessageDispatchPriorities_binary() throws SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
 		SmsInternetService sisNoSend = createMockSmsInternetService(false, true);
-		manager.addSmsInternetService(sisNoSend);
+		addSmsInternetService(manager, 1, sisNoSend);
 		SmsInternetService sisNoSendNoBinary = createMockSmsInternetService(false, false);
-		manager.addSmsInternetService(sisNoSendNoBinary);
+		addSmsInternetService(manager, 2, sisNoSendNoBinary);
 		SmsInternetService sisBinary = createMockSmsInternetService(true, true);
-		manager.addSmsInternetService(sisBinary);
+		addSmsInternetService(manager, 3, sisBinary);
 		SmsInternetService sisNoBinary = createMockSmsInternetService(true, false);
-		manager.addSmsInternetService(sisNoBinary);
+		addSmsInternetService(manager, 4, sisNoBinary);
 		
 		SmsModem modem = createMockModem(true, true, true, true);
 		addModem(manager, modem, "TestModem1");
@@ -92,10 +105,16 @@ public class SmsServiceManagerTest extends BaseTestCase {
 		verify(sisBinary, times(20)).sendSMS(any(FrontlineMessage.class));
 	}
 	
+	@SuppressWarnings("unchecked")
+	private void addSmsInternetService(SmsServiceManager manager, long id,
+			SmsInternetService service) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+		Field f = manager.getClass().getDeclaredField("smsInternetServices");
+		f.setAccessible(true);
+		((Map<Long, SmsInternetService>) f.get(manager)).put(id, service);
+	}
+
 	/** Test that text messages are sent only with suitable modems. */
 	public void testModemSend_text() {
-		SmsServiceManager manager = new SmsServiceManager();
-		
 		SmsModem disconnectedModem = createMockModem(false, false, true, true);
 		addModem(manager, disconnectedModem, "Disconnected.");
 		SmsModem gsmOnlyModem = createMockModem(true, true, false, false);
@@ -128,8 +147,6 @@ public class SmsServiceManagerTest extends BaseTestCase {
 	
 	/** Test that binary messages are sent only with suitable modems. */
 	public void testModemSend_binary() {
-		SmsServiceManager manager = new SmsServiceManager();
-		
 		SmsModem disconnectedModem = createMockModem(false, false, true, true);
 		addModem(manager, disconnectedModem, "Disconnected.");
 		SmsModem gsmOnlyModem = createMockModem(true, true, false, false);
@@ -154,8 +171,6 @@ public class SmsServiceManagerTest extends BaseTestCase {
 	
 	/** Test that binary messages are sent only with suitable modems. */
 	public void testModemSend_ucs2() {
-		SmsServiceManager manager = new SmsServiceManager();
-		
 		SmsModem disconnectedModem = createMockModem(false, false, true, true);
 		addModem(manager, disconnectedModem, "Disconnected.");
 		SmsModem gsmOnlyModem = createMockModem(true, true, false, false);
@@ -180,8 +195,6 @@ public class SmsServiceManagerTest extends BaseTestCase {
 	
 	/** Test that messages are polled from all modems who have message receiving enabled. */
 	public void testModemMessageReceive() {
-		SmsServiceManager manager = new SmsServiceManager();
-		
 		SmsModem[] receiveModems = new SmsModem[10];
 		for (int i = 0; i < receiveModems.length; i++) {
 			SmsModem modem = createMockModem(i%2==0, true, i%3==0, i%5==0);
@@ -227,48 +240,16 @@ public class SmsServiceManagerTest extends BaseTestCase {
 	
 	/** Tests that when there are no SMS devices, the messages are left in outbox. */
 	public void testNoSmsDevices() {
-		SmsServiceManager manager = new SmsServiceManager();
+		// given
 		FrontlineMessage m = FrontlineMessage.createOutgoingMessage(System.currentTimeMillis(), "+123456", "+987654", "Hi");
+
+		// when
 		manager.sendSMS(m);
 		manager.doRun();
 		
+		// then
 		assertEquals(Status.OUTBOX, m.getStatus());
 	}
-	
-	public void testSmsDeviceEvent () {
-		SmsServiceManager manager = new SmsServiceManager();
-		
-		EventBus mockEventBus = mock(EventBus.class);
-		manager.setEventBus(mockEventBus);
-		
-		// Testing if the event is triggered with one failed-status device and a DORMANT device <SHOULD NOT>
-		SmsModem modem1 = mock(SmsModem.class);
-		addModem(manager, modem1, "will_fail");
-		SmsModem modem2 = mock(SmsModem.class);
-		addModem(manager, modem2, "will_be_owned");
-		
-		when(modem1.getStatus()).thenReturn(SmsModemStatus.FAILED_TO_CONNECT);
-		when(modem2.getStatus()).thenReturn(SmsModemStatus.DORMANT);
-		manager.smsDeviceEvent(modem1, SmsModemStatus.FAILED_TO_CONNECT);
-		verify(mockEventBus, new NoMoreInteractions()).notifyObservers(any(SmsServiceStatusNotification.class));
-		
-		// Testing if the event is triggered with one failed-status device and a CONNECTING device <SHOULD NOT>
-		when(modem2.getStatus()).thenReturn(SmsModemStatus.CONNECTING);
-		manager.smsDeviceEvent(modem1, SmsModemStatus.FAILED_TO_CONNECT);
-		verify(mockEventBus, new NoMoreInteractions()).notifyObservers(any(SmsServiceStatusNotification.class));
-		
-		// Testing if the event is triggered with the connecting device failing <SHOULD>
-		when(modem2.getStatus()).thenReturn(SmsModemStatus.OWNED_BY_SOMEONE_ELSE);
-		manager.smsDeviceEvent(modem2, SmsModemStatus.OWNED_BY_SOMEONE_ELSE);
-		verify(mockEventBus, new Times(1)).notifyObservers(any(SmsServiceStatusNotification.class));
-		
-		// Testing if the event is triggered with one failed-status device and a CONNECTED device <SHOULD NOT>
-		SmsModem modem3 = createMockModem(true, true, true, true);
-		addModem(manager, modem3, "connected");
-		manager.smsDeviceEvent(modem1, SmsModemStatus.FAILED_TO_CONNECT);
-		verify(mockEventBus, new NoMoreInteractions()).notifyObservers(any(SmsServiceStatusNotification.class));
-	}
-	
 	
 //> PRIVATE HELPER METHODS
 	/** @return a mock {@link SmsInternetService} with certain important methods stubbed */

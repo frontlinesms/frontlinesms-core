@@ -23,8 +23,12 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.*;
 
 import net.frontlinesms.FrontlineUtils;
@@ -329,5 +333,22 @@ public class ResourceUtils {
 		return new File(ResourceUtils.getConfigDirectoryPath()
 				+ PROPERTIES_DIRECTORY_NAME + File.separatorChar
 				+ propertySetName + PROPERTIES_EXTENSION);
+	}
+	
+	public static Set<String> getResourceFileContents(String path) {
+		Enumeration<URL> resources;
+		try {
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+			resources = classLoader.getResources(path);
+		} catch (IOException e) {
+			LOG.warn("Resource(s) not found at " + path, e);
+			return Collections.emptySet();
+		}
+		
+		HashSet<String> names = new HashSet<String>();
+		for(URL resourceUrl : new IterableEnumeration<URL>(resources)) {
+			names.addAll(getUsefulLines(resourceUrl));
+		}
+		return names;
 	}
 }

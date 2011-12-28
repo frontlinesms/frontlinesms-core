@@ -14,4 +14,4 @@ Symbian
 Samsung			SamsungElectronics, SamsungElectronicsCorporation
 Siemens
 Huawei
-simcom_ltd	Simcom
+Wavecom			Wavecomwirelesscpu

@@ -1,7 +1,7 @@
 package net.frontlinesms.messaging.sms.internet;
 
-import net.frontlinesms.messaging.Provider;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
 
-@Provider(name="The Hive Projects", icon = "/icons/hive_projects_logo.png")
+@ConfigurableServiceProperties(name="The Hive Projects", icon = "/icons/hive_projects_logo.png")
 public class TheHiveProjectsInternetService extends ClickatellInternetService {
 }

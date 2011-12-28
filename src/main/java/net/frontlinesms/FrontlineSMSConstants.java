@@ -41,7 +41,7 @@ public final class FrontlineSMSConstants {
 	public static final String URL_FRONTLINESMS_COMMUNITY = "http://community.frontlinesms.com";
 	/** Phone number to submit usage statistics to over SMS.
 	 * N.B. This should be an INTERNATIONAL number (i.e. +XXYYYY) */
-	public static final String FRONTLINE_STATS_PHONE_NUMBER = "+447716355738";
+	public static final String FRONTLINE_STATS_PHONE_NUMBER = "+447936357684";
 	
 	/** Number of days to wait before prompting to submit statistics after the previous time */
 	public static final int STATISTICS_DAYS_BEFORE_RELAUNCH = 28;
@@ -63,8 +63,6 @@ public final class FrontlineSMSConstants {
 	public static final int MOBILE_ID_LIMIT = 256;
 	
 	public static final String DEFAULT_DATABASE_NAME = "frontline_database";
-	
-	public static final String PROPERTIES_SMS_INTERNET_ICONS = "sms.internet.icons";
 
 	public static final int RESULTS_PER_PAGE_DEFAULT = 100;
 

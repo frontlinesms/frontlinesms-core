@@ -97,9 +97,20 @@ public class CatHandlerAliasMatcher {
 		
 		String alias = manufacturerAliases.get(manufacturer);
 		if (alias == null)
-			return manufacturer;
+			return capitalise(manufacturer);
 		else
 			return alias;
+	}
+
+	/** Capitalise the first character of a string.
+	 * Case of other letters is unchanged. */
+	private String capitalise(String string) {
+		if(string == null) return null;
+		else if(string.length() <= 0) return "";
+		else if(string.length() == 1) return string.toUpperCase();
+		else {
+			return string.substring(0, 1).toUpperCase() + string.substring(1);
+		}
 	}
 
 	/**

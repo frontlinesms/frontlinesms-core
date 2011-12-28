@@ -25,10 +25,11 @@ import net.frontlinesms.*;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.email.receive.*;
-import net.frontlinesms.messaging.Provider;
-import net.frontlinesms.messaging.sms.properties.OptionalSection;
-import net.frontlinesms.messaging.sms.properties.PasswordString;
-import net.frontlinesms.messaging.sms.properties.PhoneSection;
+import net.frontlinesms.serviceconfig.OptionalSection;
+import net.frontlinesms.serviceconfig.PasswordString;
+import net.frontlinesms.serviceconfig.PhoneNumber;
+import net.frontlinesms.serviceconfig.ConfigurableServiceProperties;
+import net.frontlinesms.serviceconfig.StructuredProperties;
 import net.frontlinesms.ui.handler.settings.SmsInternetServiceSettingsHandler;
 
 import org.apache.log4j.Logger;
@@ -45,7 +46,7 @@ import IntelliSoftware.SMSGateway.SDK.IntelliSMSJavaSDK.*;
  * @author Carlos Eduardo Endler Genz
  * @date 31/01/2009
  */
-@Provider(name = "IntelliSms", icon = "/icons/sms_http.png") 
+@ConfigurableServiceProperties(name = "IntelliSms", icon = "/icons/sms_http.png") 
 public class IntelliSmsInternetService extends AbstractSmsInternetService implements EmailReceiveProcessor {
 	
 //> STATIC CONSTANTS
@@ -203,10 +204,10 @@ public class IntelliSmsInternetService extends AbstractSmsInternetService implem
 					remainingCredit = -1;
 				}
 				
-				this.stopThisThing();
+				this.stopService();
 				setStatus(SmsInternetServiceStatus.LOW_CREDIT, Integer.toString(remainingCredit));
 			} else {
-				this.stopThisThing();
+				this.stopService();
 				this.setStatus(SmsInternetServiceStatus.DISCONNECTED, e.getResultCode() + ": " + e.getMessage());
 			}
 		} finally {
@@ -268,11 +269,11 @@ public class IntelliSmsInternetService extends AbstractSmsInternetService implem
 	/** 
 	 * Get the default properties for this class. 
 	 */
-	public LinkedHashMap<String, Object> getPropertiesStructure() {
-		LinkedHashMap<String, Object> defaultSettings = new LinkedHashMap<String, Object>();
+	public StructuredProperties getPropertiesStructure() {
+		StructuredProperties defaultSettings = new StructuredProperties();
 		defaultSettings.put(PROPERTY_USERNAME, "");
 		defaultSettings.put(PROPERTY_PASSWORD, new PasswordString(""));
-		defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneSection(""));
+		defaultSettings.put(PROPERTY_FROM_MSISDN, new PhoneNumber(""));
 		defaultSettings.put(PROPERTY_SSL, Boolean.FALSE);
 		defaultSettings.put(PROPERTY_USE_FOR_SENDING, Boolean.TRUE);
 		// Proxy properties
@@ -300,7 +301,7 @@ public class IntelliSmsInternetService extends AbstractSmsInternetService implem
 	 * Gets the MSISDN that numbers sent from this service will appear to be from. 
 	 */
 	public String getMsisdn() {
-		return getPropertyValue(PROPERTY_FROM_MSISDN, PhoneSection.class).getValue();
+		return getPropertyValue(PROPERTY_FROM_MSISDN, PhoneNumber.class).getValue();
 	}
 
 	/**

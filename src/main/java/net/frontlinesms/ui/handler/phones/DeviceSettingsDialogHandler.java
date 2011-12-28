@@ -1,16 +1,23 @@
 package net.frontlinesms.ui.handler.phones;
 
+import net.frontlinesms.BuildProperties;
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.SmsModemSettings;
 import net.frontlinesms.data.repository.SmsModemSettingsDao;
 import net.frontlinesms.messaging.sms.modem.SmsModem;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
+import net.frontlinesms.ui.handler.phones.debug.stk.StkMenuNavigator;
+import net.frontlinesms.ui.handler.phones.debug.ussd.UssdInitialRequestDialog;
 import net.frontlinesms.ui.handler.settings.SettingsDeviceSectionHandler;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.i18n.TextResourceKeyOwner;
 
 import org.apache.log4j.Logger;
+import org.smslib.handler.ATHandler;
+import org.smslib.stk.StkMenu;
+import org.smslib.stk.StkRequest;
+import org.smslib.stk.StkResponse;
 
 /**
  * @author Morgan Belkadi <morgan@frontlinesms.com>
@@ -34,8 +41,12 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 	private static final String COMPONENT_PHONE_RECEIVING = "cbReceiving";
 	/** UI Component name: checkbox for delete read messages on/off setting */
 	private static final String COMPONENT_PHONE_DELETE = "cbDeleteMsgs";
+	/** UI Component name: checkbox for read only unread messages on/off setting */
+	private static final String COMPONENT_PHONE_READ_ONLY_UNREAD = "cbReadOnlyUnread";
 	/** UI Component name: checkbox for delivery reports on/off setting */
 	private static final String COMPONENT_PHONE_DELIVERY_REPORTS = "cbUseDeliveryReports";
+	/** UI Component name: checkbox for monitoring calls on/off setting */
+	private static final String COMPONENT_PHONE_MONITOR_CALLS = "cbMonitorCalls";
 	/** UI Component name: TODO */
 	private static final String COMPONENT_PN_PHONE_SETTINGS = "pnPhoneSettings";
 	/** UI Component name: textfield containing the SMSC number */
@@ -90,11 +101,16 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 				Object cbDeleteMessages = this.find(COMPONENT_PHONE_DELETE);
 				this.ui.setEnabled(cbDeleteMessages, useForReceiving);
 				this.ui.setSelected(cbDeleteMessages, device.isDeleteMessagesAfterReceiving());
+				Object cbReadOnlyUnreadMessages = this.find(COMPONENT_PHONE_READ_ONLY_UNREAD);
+				this.ui.setEnabled(cbReadOnlyUnreadMessages, useForReceiving);
+				this.ui.setSelected(cbReadOnlyUnreadMessages, device.isReadOnlyUnreadMessages());
 			} else {
 				ui.setSelected(find("rbPhoneDetailsDisable"), true);
 				ui.setSelected(find(COMPONENT_RB_PHONE_DETAILS_ENABLE), false);
 				ui.deactivate(find(COMPONENT_PN_PHONE_SETTINGS));
 			}
+			
+			ui.setSelected(find(COMPONENT_PHONE_MONITOR_CALLS), device.isMonitoringCalls());
 		}
 		
 		if(!device.supportsReceive()) {
@@ -102,9 +118,17 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 			// the user.  We also want to gray out the options for receiving.
 			ui.setEnabled(find(COMPONENT_PHONE_RECEIVING), false);
 			ui.setEnabled(find(COMPONENT_PHONE_DELETE), false);
+			ui.setEnabled(find(COMPONENT_PHONE_READ_ONLY_UNREAD), false);
 		} else {
 			// No error, so remove the error message.
 			ui.remove(find("lbReceiveNotSupported"));
+		}
+		
+		if(BuildProperties.getInstance().isSnapshot()) {
+			ui.setText(find("tfCatHandler"), device.getCService().getAtHandlerName());
+			ui.setText(find("tfSerial"), device.getSerial());
+		} else {
+			ui.remove(find("pnDebug"));
 		}
 		
 		ui.setAttachedObject(dialogComponent, device);
@@ -129,16 +153,22 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 		boolean useDeliveryReports;
 		boolean useForReceiving;
 		boolean deleteMessagesAfterReceiving;
+		boolean readOnlyUnread;
+		boolean monitorCalls;
 		if(ui.isSelected(find(COMPONENT_RB_PHONE_DETAILS_ENABLE))) {
 			useForSending = ui.isSelected(find(COMPONENT_PHONE_SENDING));
 			useDeliveryReports = ui.isSelected(find(COMPONENT_PHONE_DELIVERY_REPORTS));
 			useForReceiving = ui.isSelected(find(COMPONENT_PHONE_RECEIVING));
 			deleteMessagesAfterReceiving = ui.isSelected(find(COMPONENT_PHONE_DELETE));
+			readOnlyUnread = ui.isSelected(find(COMPONENT_PHONE_READ_ONLY_UNREAD));
+			monitorCalls = ui.isSelected(find(COMPONENT_PHONE_MONITOR_CALLS));
 		} else {
 			useForSending = false;
 			useDeliveryReports = false;
 			useForReceiving = false;
 			deleteMessagesAfterReceiving = false;
+			readOnlyUnread = false;
+			monitorCalls = false;
 		}
 		String smscNumber = ui.getText(find(COMPONENT_SMSC_NUMBER));
 		String simPin = ui.getText(find(COMPONENT_SIM_PIN));
@@ -148,10 +178,13 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 		if(device.supportsReceive()) {
 			device.setUseForReceiving(useForReceiving);
 			device.setDeleteMessagesAfterReceiving(deleteMessagesAfterReceiving);
+			device.setReadOnlyUnreadMessages(readOnlyUnread);
 		} else {
 			useForReceiving = false;
 			deleteMessagesAfterReceiving = false;
+			readOnlyUnread = false;
 		}
+		device.setMonitorCalls(monitorCalls);
 		
 		SmsModemSettingsDao smsModemSettingsDao = ui.getFrontlineController().getSmsModemSettingsDao();
 		SmsModemSettings settings = smsModemSettingsDao.getSmsModemSettings(serial);
@@ -169,6 +202,8 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 		settings.setUseDeliveryReports(useDeliveryReports);
 		settings.setUseForReceiving(useForReceiving);
 		settings.setDeleteMessagesAfterReceiving(deleteMessagesAfterReceiving);
+		settings.setReadOnlyUnreadMessages(readOnlyUnread);
+		settings.setMonitorCalls(monitorCalls);
 		settings.setSmscNumber(smscNumber);
 		settings.setSimPin(simPin);
 		
@@ -203,6 +238,7 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 			if(!this.device.supportsReceive()) {
 				ui.setEnabled(ui.find(pnPhoneSettings, COMPONENT_PHONE_RECEIVING), false);
 				ui.setEnabled(ui.find(pnPhoneSettings, COMPONENT_PHONE_DELETE), false);
+				ui.setEnabled(ui.find(pnPhoneSettings, COMPONENT_PHONE_READ_ONLY_UNREAD), false);
 			}
 		} else ui.deactivate(pnPhoneSettings);
 	}
@@ -223,5 +259,30 @@ public class DeviceSettingsDialogHandler implements ThinletUiEventHandler {
 	/** @return UI component with the supplied name, or <code>null</code> if none could be found */
 	private Object find(String componentName) {
 		return ui.find(this.dialogComponent, componentName);
+	}
+	
+//> DEBUG METHODS
+	public void debug_ussd() {
+		try {
+			ATHandler h = this.device.getCService().getAtHandler();
+			new UssdInitialRequestDialog(h, ui).show();
+		} catch(Throwable t) {
+			t.printStackTrace();
+		}
+	}
+	
+	public void debug_stk() {
+		try {
+			ATHandler h = this.device.getCService().getAtHandler();
+			h.stkInit();
+			StkResponse response = h.stkRequest(StkRequest.GET_ROOT_MENU);
+			if(response instanceof StkMenu) {
+				new StkMenuNavigator(h, ui, (StkMenu) response).show();
+			} else {
+				ui.alert("Got response: " + response);
+			}
+		} catch(Throwable t) {
+			t.printStackTrace();
+		}
 	}
 }

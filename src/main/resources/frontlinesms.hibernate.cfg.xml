@@ -12,8 +12,8 @@
 		<mapping class="net.frontlinesms.data.domain.FrontlineMessage" />
 		<mapping class="net.frontlinesms.data.domain.FrontlineMultimediaMessage" />
 		<mapping class="net.frontlinesms.data.domain.FrontlineMultimediaMessagePart" />
-		<mapping class="net.frontlinesms.data.domain.SmsInternetServiceSettings" />
-		<mapping class="net.frontlinesms.data.domain.SmsInternetServiceSettingValue" />
+		<mapping class="net.frontlinesms.data.domain.PersistableSettings" />
+		<mapping class="net.frontlinesms.data.domain.PersistableSettingValue" />
 		<mapping class="net.frontlinesms.data.domain.SmsModemSettings" />
 	</session-factory>
 </hibernate-configuration>
