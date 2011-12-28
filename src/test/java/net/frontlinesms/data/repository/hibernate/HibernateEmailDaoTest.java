@@ -3,7 +3,6 @@
  */
 package net.frontlinesms.data.repository.hibernate;
 
-import net.frontlinesms.junit.HibernateTestCase;
 
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.Order;
@@ -12,6 +11,7 @@ import net.frontlinesms.data.domain.EmailAccount;
 import net.frontlinesms.data.repository.EmailAccountDao;
 import net.frontlinesms.data.repository.EmailDao;
 import net.frontlinesms.email.EmailUtils;
+import net.frontlinesms.junit.HibernateTestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -5,12 +5,12 @@ package net.frontlinesms.data.repository.hibernate;
 
 import java.util.List;
 
-import net.frontlinesms.junit.HibernateTestCase;
 
 import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.domain.KeywordAction;
 import net.frontlinesms.data.repository.KeywordActionDao;
 import net.frontlinesms.data.repository.KeywordDao;
+import net.frontlinesms.junit.HibernateTestCase;
 
 import org.springframework.beans.factory.annotation.Required;
 

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package net.frontlinesms.plugins;
 
 /**
@@ -9,7 +6,6 @@ package net.frontlinesms.plugins;
  */
 @SuppressWarnings("serial")
 public class PluginInitialisationException extends Exception {
-
 	/**
 	 * Create a new {@link PluginInitialisationException} with a particular cause.
 	 * @param cause
@@ -17,5 +13,4 @@ public class PluginInitialisationException extends Exception {
 	public PluginInitialisationException(Throwable cause) {
 		super(cause);
 	}
-
 }

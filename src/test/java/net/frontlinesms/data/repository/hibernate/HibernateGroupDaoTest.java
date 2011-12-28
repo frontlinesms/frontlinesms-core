@@ -6,7 +6,6 @@ package net.frontlinesms.data.repository.hibernate;
 import java.util.Collection;
 import java.util.List;
 
-import net.frontlinesms.junit.HibernateTestCase;
 
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
@@ -19,6 +18,7 @@ import net.frontlinesms.data.repository.GroupMembershipDao;
 import net.frontlinesms.data.repository.KeywordActionDao;
 import net.frontlinesms.data.repository.KeywordDao;
 import net.frontlinesms.events.EventBus;
+import net.frontlinesms.junit.HibernateTestCase;
 import static org.mockito.Mockito.*;
 
 import org.springframework.beans.factory.annotation.Required;

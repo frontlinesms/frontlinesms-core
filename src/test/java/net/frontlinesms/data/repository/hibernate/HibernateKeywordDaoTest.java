@@ -3,11 +3,11 @@
  */
 package net.frontlinesms.data.repository.hibernate;
 
-import net.frontlinesms.junit.HibernateTestCase;
 
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.repository.KeywordDao;
+import net.frontlinesms.junit.HibernateTestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
