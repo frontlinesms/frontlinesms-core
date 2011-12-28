@@ -125,7 +125,7 @@ public abstract class BasePluginController implements PluginController {
 	 * @param nameExtensions extensions added to the end of the standard filename.  These will be separated from the base name and each other by underscores.
 	 * @return The text resource, or <code>null</code> if the resource could not be found.
 	 */
-	private final Map<String, String> getTextResource(String... nameExtensions) {
+	final Map<String, String> getTextResource(String... nameExtensions) {
 		String resourceFilePath = getTextResourcePath(nameExtensions);
 		
 		// Attempt to load the text resource using relative path with local classloader
