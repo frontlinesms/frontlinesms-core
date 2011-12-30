@@ -9,17 +9,14 @@ import net.frontlinesms.events.FrontlineEventNotification;
  * @author Alex Anderson <alex@frontlinesms.com>
  */
 public abstract class DatabaseEntityNotification<E> implements FrontlineEventNotification {
-
-	/**
-	 * The object that this notification is about, which has presumably just been updated
-	 */
+	/** The object that this notification is about, which has presumably just been updated */
 	protected E databaseEntity;
 	
-	public DatabaseEntityNotification(E databaseEntity){
+	public DatabaseEntityNotification(E databaseEntity) {
 		this.databaseEntity = databaseEntity;
 	}
 	
-	public E getDatabaseEntity(){
+	public E getDatabaseEntity() {
 		return databaseEntity;
 	}
 }
