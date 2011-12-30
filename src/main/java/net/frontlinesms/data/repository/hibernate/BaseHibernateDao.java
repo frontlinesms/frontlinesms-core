@@ -5,6 +5,8 @@ package net.frontlinesms.data.repository.hibernate;
 
 import java.util.List;
 
+import javax.persistence.Entity;
+
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.EntityField;
 import net.frontlinesms.data.Order;
@@ -47,6 +49,9 @@ public abstract class BaseHibernateDao<E> extends HibernateDaoSupport {
 	 * @param clazz
 	 */
 	protected BaseHibernateDao(Class<E> clazz) {
+		if(clazz.getAnnotation(Entity.class) == null)
+			throw new IllegalArgumentException("Cannot create DAO for class " + clazz.getName() +
+					" as it is not annotated with " + Entity.class.getName());
 		this.clazz = clazz;
 		this.className = clazz.getName();
 	}

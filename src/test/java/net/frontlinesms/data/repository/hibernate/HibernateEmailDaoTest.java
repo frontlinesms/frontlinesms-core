@@ -3,7 +3,6 @@
  */
 package net.frontlinesms.data.repository.hibernate;
 
-
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.Order;
 import net.frontlinesms.data.domain.Email;
@@ -13,8 +12,6 @@ import net.frontlinesms.data.repository.EmailDao;
 import net.frontlinesms.email.EmailUtils;
 import net.frontlinesms.junit.HibernateTestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Required;
 
 /**
@@ -23,8 +20,6 @@ import org.springframework.beans.factory.annotation.Required;
  */
 public class HibernateEmailDaoTest extends HibernateTestCase {
 //> PROPERTIES
-	/** Logging object */
-	private final Log log = LogFactory.getLog(getClass());
 	/** Instance of this DAO implementation we are testing. */
 	private EmailDao emailDao;
 	/** Dao for email accounts */

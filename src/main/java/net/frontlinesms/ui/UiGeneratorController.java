@@ -240,16 +240,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			// Find the languages submenu, and add all present language packs to it
 			addLanguageMenu(find("menu_language"));
 			
-//			setText(find(COMPONENT_TF_COST_PER_SMS), InternationalisationUtils.formatCurrency(this.getCostPerSms(), false));
-//			setText(find(COMPONENT_LB_COST_PER_SMS_PREFIX),
-//					InternationalisationUtils.isCurrencySymbolPrefix() 
-//							? InternationalisationUtils.getCurrencySymbol()
-//							: "");
-//			setText(find(COMPONENT_LB_COST_PER_SMS_SUFFIX),
-//					InternationalisationUtils.isCurrencySymbolSuffix() 
-//					? InternationalisationUtils.getCurrencySymbol()
-//					: "");
-			
 			Object tabbedPane = find(COMPONENT_TABBED_PANE);
 			
 			this.phoneTabController = new PhoneTabHandler(this);

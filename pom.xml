@@ -205,5 +205,11 @@
 			<artifactId>h2</artifactId>
 			<version>1.2.127</version>
 		</dependency>
+		
+		<!-- TEST dependencies -->
+		<dependency>
+			<groupId>net.frontlinesms.test</groupId>
+			<artifactId>frontlinesms-test</artifactId>
+		</dependency>
 	</dependencies>
 </project>
