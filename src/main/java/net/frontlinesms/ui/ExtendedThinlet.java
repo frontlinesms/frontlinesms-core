@@ -52,6 +52,12 @@ private static final String START = "start";
 		}
 	}
 	
+	public final void setChildrenEditable(Object parent, boolean value) {
+		for(Object child : getItems(parent)) {
+			setEditable(child, value);
+		}
+	}
+	
 	/**
 	 * @param component
 	 * @return The current position on an editable component
