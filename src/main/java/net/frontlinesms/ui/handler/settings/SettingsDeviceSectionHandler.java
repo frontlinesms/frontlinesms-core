@@ -123,6 +123,8 @@ public class SettingsDeviceSectionHandler extends BaseSectionHandler implements 
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_DELETE_MESSAGES, deleteMessages);
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_READ_ONLY_UNREAD, readOnlyUnread);
 		this.saveAndMarkUnchanged(SECTION_ITEM_DEVICE_MONITOR_CALLS, monitorCalls);
+
+		ui.remove(find("pnDebug"));
 	}
 	
 	private void saveAndMarkUnchanged(String sectionItem, Object value) {
@@ -226,5 +228,19 @@ public class SettingsDeviceSectionHandler extends BaseSectionHandler implements 
 
 	public SmsModemSettings getDeviceSettings() {
 		return deviceSettings;
+	}
+	
+//> DEBUG METHODS
+	public void debug_stk() {
+		debug();
+	}
+
+	public void debug_ussd() {
+		debug();
+	}
+
+	private void debug() {
+		// debug_*() are only accessible from the device config screen viewable from Connections tab.
+		throw new IllegalStateException("Debug methods should not be triggerable from this view.");
 	}
 }
