@@ -17,11 +17,13 @@ public interface ConfigurableServiceSettingsDao<T extends ConfigurableService> {
 	/** Gets an instance of {@link PersistableSettings} by its database ID. */
 	public PersistableSettings getById(long id);
 
-	/** Gets an instance of {@link PersistableSettings} by its database ID. */
 	public PersistableSettings getByProperty(String key, String value);
+	
+	public PersistableSettings getByProperties(String... keyValuePairs);
 
-	/** Gets an instance of {@link PersistableSettings} by its database ID. */
 	public Collection<PersistableSettings> getAllByProperty(String key, String value);
+	
+	public Collection<PersistableSettings> getAllByProperties(String... keyValuePairs);
 	
 	/**
 	 * Saves {@link PersistableSettings} to the data source 

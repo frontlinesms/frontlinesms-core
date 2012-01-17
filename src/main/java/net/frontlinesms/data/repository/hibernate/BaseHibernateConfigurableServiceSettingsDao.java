@@ -31,12 +31,22 @@ public abstract class BaseHibernateConfigurableServiceSettingsDao extends BaseHi
 	}
 	
 	public PersistableSettings getByProperty(String key, String value) {
-		Collection<PersistableSettings> allByProperty = getAllByProperty(key, value);
+		return getByProperties(key, value);
+	}
+	
+	public PersistableSettings getByProperties(String... keyValuePairs) {
+		assert((keyValuePairs.length & 1) == 0);
+		Collection<PersistableSettings> allByProperty = getAllByProperties(keyValuePairs);
 		if(allByProperty.size() == 0) return null;
 		else return (PersistableSettings) allByProperty.toArray()[0];
 	}
 	
 	public Collection<PersistableSettings> getAllByProperty(String key, String value) {
+		return getAllByProperties(key, value);
+	}
+	
+	public Collection<PersistableSettings> getAllByProperties(String... keyValuePairs) {
+		assert((keyValuePairs.length & 1) == 0);
 		// FIXME should do something clever here with criteria/HQL instead of manual match, e.g.:
 //		return getList("PersistableSettings_PersistableSettingValue as pv, " +
 //				"PersistableSettingValue as v " +
@@ -48,10 +58,14 @@ public abstract class BaseHibernateConfigurableServiceSettingsDao extends BaseHi
 		List<PersistableSettings> all = getAll();
 		List<PersistableSettings> matching = new LinkedList<PersistableSettings>();
 		for(PersistableSettings s : all) {
-			boolean keep = false;
-			if(s.getProperties().containsKey(key)) {
-				if(value == null) keep = s.get(key).getValue()==null;
-				else keep = value.equals(s.get(key).getValue());
+			boolean keep = true;
+			for(int i=0; i<keyValuePairs.length; i+=2) {
+				String key = keyValuePairs[i];
+				String value = keyValuePairs[i+1];
+				if(keep && s.getProperties().containsKey(key)) {
+					if(value == null) keep = s.get(key).getValue()==null;
+					else keep = value.equals(s.get(key).getValue());
+				} else keep = false;
 			}
 			if(keep) matching.add(s);
 		}
