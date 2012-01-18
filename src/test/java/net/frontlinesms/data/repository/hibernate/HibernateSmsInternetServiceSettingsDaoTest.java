@@ -3,6 +3,8 @@
  */
 package net.frontlinesms.data.repository.hibernate;
 
+import java.util.Collection;
+
 import net.frontlinesms.junit.HibernateTestCase;
 import net.frontlinesms.listener.SmsListener;
 import net.frontlinesms.messaging.sms.internet.ClickatellInternetService;
@@ -30,10 +32,10 @@ public class HibernateSmsInternetServiceSettingsDaoTest extends HibernateTestCas
 
 //> TEST METHODS
 	/**
-	 * Test everything all at once!
+	 * Test saving and deleting
 	 * @throws DuplicateKeyException 
 	 */
-	public void test() throws DuplicateKeyException {
+	public void testSaveAndDelete() throws DuplicateKeyException {
 		assertEquals(0, dao.getServiceAccounts().size());
 		
 		ClickatellInternetService clickatell = new ClickatellInternetService();
@@ -75,7 +77,68 @@ public class HibernateSmsInternetServiceSettingsDaoTest extends HibernateTestCas
 		PersistableSettings s = dao.getByProperty("test-property-1", "xyz");
 		
 		// then
-		assertEquals(settings2.getId(), s.getId());
+		assertEquals(settings2, s);
+	}
+	
+	public void testGetAllByProperties_valuesSet() throws Exception {
+		// given
+		createWithProperties("a", "A1",
+				"b", "B1");
+		PersistableSettings expected = createWithProperties("a", "A1",
+				"b", "B2");
+		createWithProperties("a", "A2",
+				"b", "B2");
+		
+		// when
+		Collection<PersistableSettings> actual = dao.getAllByProperties("a", "A1", "b", "B2");
+		
+		// then
+		assertEquals(expected, actual);
+	}
+	
+	public void testGetAllByProperties_nullValueWithUnsetProperty() throws Exception {
+		// given
+		createWithProperties("a", "A1",
+				"b", "B1");
+		PersistableSettings expected = createWithProperties("a", "A1");
+		createWithProperties("a", "A2");
+		
+		// when
+		Collection<PersistableSettings> actual = dao.getAllByProperties("a", "A1", "b", null);
+		
+		// then
+		assertEquals(expected, actual);
+	}
+	
+	public void testGetAllByProperties_nullValueWithSetProperty() throws Exception {
+		// given
+		createWithProperties("a", "A1",
+				"b", "B1");
+		createWithProperties("a", "A1",
+				"b", "B2");
+		createWithProperties("a", "A2",
+				"b", "B2");
+		
+		// when
+		Collection<PersistableSettings> actual = dao.getAllByProperties("a", "A1", "b", null);
+		
+		// then
+		assertEquals(0, actual.size());
+	}
+	
+	public void testGetAllByProperties_setValueWithUnsetProperty() throws Exception {
+		// given
+		createWithProperties("a", "A1",
+				"b", "B1");
+		createWithProperties("a", "A1");
+		createWithProperties("a", "A2",
+				"b", "B2");
+		
+		// when
+		Collection<PersistableSettings> actual = dao.getAllByProperties("a", "A1", "b", "B2");
+		
+		// then
+		assertEquals(0, actual.size());
 	}
 
 	private PersistableSettings createWithProperties(String... propertyNamesAndValues) throws DuplicateKeyException {
@@ -93,6 +156,16 @@ public class HibernateSmsInternetServiceSettingsDaoTest extends HibernateTestCas
 	@Required
 	public void setSmsInternetServiceSettingsDao(SmsInternetServiceSettingsDao d) {
 		this.dao = (HibernateSmsInternetServiceSettingsDao) d;
+	}
+	
+//> ASSERT METHODS
+	private static void assertEquals(PersistableSettings expected, PersistableSettings actual) {
+		assertEquals(expected.getId(), actual.getId());
+	}
+	
+	private static void assertEquals(PersistableSettings expected, Collection<PersistableSettings> actual) {
+		assertEquals(1, actual.size());
+		assertEquals(expected.getId(), actual.toArray(new PersistableSettings[0])[0].getId());
 	}
 }
 

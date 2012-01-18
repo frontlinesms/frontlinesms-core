@@ -62,10 +62,11 @@ public abstract class BaseHibernateConfigurableServiceSettingsDao extends BaseHi
 			for(int i=0; i<keyValuePairs.length; i+=2) {
 				String key = keyValuePairs[i];
 				String value = keyValuePairs[i+1];
-				if(keep && s.getProperties().containsKey(key)) {
-					if(value == null) keep = s.get(key).getValue()==null;
-					else keep = value.equals(s.get(key).getValue());
-				} else keep = false;
+				if(keep) {
+					boolean isSet = s.getProperties().containsKey(key);
+					if(value == null) keep = !isSet;
+					else keep = isSet && value.equals(s.get(key).getValue());
+				}
 			}
 			if(keep) matching.add(s);
 		}
