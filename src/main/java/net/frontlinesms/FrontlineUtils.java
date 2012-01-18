@@ -282,11 +282,11 @@ public class FrontlineUtils {
 
 	/**
 	 * Decodes the supplied string from Base64.
-	 * @param passwordEncrypted
+	 * @param passwordEncoded
 	 * @return decoded value of the supplied base64 string
 	 */
-	public static String decodeBase64(String passwordEncrypted) {
-		byte[] data = Base64Utils.decode(passwordEncrypted);
+	public static String decodeBase64(String passwordEncoded) {
+		byte[] data = Base64Utils.decode(passwordEncoded);
 		String decoded;
 		try {
 			decoded = new String(data, "UTF-8");
