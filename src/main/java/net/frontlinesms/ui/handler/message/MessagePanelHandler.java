@@ -196,7 +196,7 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 	
 	/** Method which triggers showing of the group selecter. */
 	public void selectGroup() {
-		GroupSelecterDialog groupSelect = new GroupSelecterDialog(this.uiController, this);
+		GroupSelecterDialog groupSelect = new GroupSelecterDialog(this.uiController, this, uiController.getFrontlineController().getGroupDao());
 		groupSelect.init(this.uiController.getRootGroup());
 		
 		groupSelect.show();

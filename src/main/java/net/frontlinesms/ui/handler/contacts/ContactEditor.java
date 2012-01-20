@@ -17,6 +17,7 @@ import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.Group;
 import net.frontlinesms.data.repository.ContactDao;
+import net.frontlinesms.data.repository.GroupDao;
 import net.frontlinesms.data.repository.GroupMembershipDao;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.ThinletUiEventHandler;
@@ -52,11 +53,12 @@ public class ContactEditor implements ThinletUiEventHandler, SingleGroupSelecter
 	private static final String I18N_SENTENCE_TRY_INTERNATIONAL = "sentence.try.international";
 
 //> INSTANCE PROPERTIES
-	private Logger LOG = Logger.getLogger(this.getClass());
-	private UiGeneratorController ui;
-	private ContactDao contactDao;
-	private GroupMembershipDao groupMembershipDao;
-	private ContactEditorOwner owner;
+	private final Logger LOG = Logger.getLogger(this.getClass());
+	private final UiGeneratorController ui;
+	private final ContactDao contactDao;
+	private final GroupDao groupDao;
+	private final GroupMembershipDao groupMembershipDao;
+	private final ContactEditorOwner owner;
 	/** UI Component: the dialog that will contain the contact editor */
 	private Object dialogComponent;
 	/** UI Component: the list of groups that the contact is a member of */
@@ -77,6 +79,7 @@ public class ContactEditor implements ThinletUiEventHandler, SingleGroupSelecter
 		this.ui = ui;
 		this.contactDao = ui.getFrontlineController().getContactDao();
 		this.groupMembershipDao = ui.getFrontlineController().getGroupMembershipDao();
+		this.groupDao = ui.getFrontlineController().getGroupDao();
 		this.owner = owner;
 		this.hiddenGroups = new LinkedList<Group>();
 	}
@@ -301,7 +304,7 @@ public class ContactEditor implements ThinletUiEventHandler, SingleGroupSelecter
 	
 	/** Show selecter for new groups. */
 	public void addNewGroup() {
-		GroupSelecterDialog dialog = new GroupSelecterDialog(ui, this);
+		GroupSelecterDialog dialog = new GroupSelecterDialog(ui, this, groupDao);
 		dialog.init(ui.getRootGroup(), hiddenGroups);
 		dialog.show();
 	}

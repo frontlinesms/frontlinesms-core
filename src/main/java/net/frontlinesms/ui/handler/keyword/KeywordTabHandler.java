@@ -35,6 +35,7 @@ import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Group;
 import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.domain.KeywordAction;
+import net.frontlinesms.data.repository.GroupDao;
 import net.frontlinesms.data.repository.KeywordActionDao;
 import net.frontlinesms.data.repository.KeywordDao;
 import net.frontlinesms.events.FrontlineEventNotification;
@@ -76,8 +77,9 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 	private static final String I18N_KEYWORD_ACTION_NO_GROUP = "common.keyword.actions.no.group";
 	private static final String I18N_COMMON_NONE = "common.none";
 
-	private KeywordDao keywordDao;
-	private KeywordActionDao keywordActionDao;
+	private final KeywordDao keywordDao;
+	private final KeywordActionDao keywordActionDao;
+	private final GroupDao groupDao;
 
 	private Object keywordListComponent;
 	private ComponentPagingHandler keywordListPagingHandler;
@@ -92,6 +94,7 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 		
 		FrontlineSMS frontlineController = ui.getFrontlineController();
 		this.keywordDao = frontlineController.getKeywordDao();
+		this.groupDao = frontlineController.getGroupDao();
 		this.keywordActionDao = frontlineController.getKeywordActionDao(); 
 	}
 
@@ -579,7 +582,7 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 	/** Show group selecter for choosing the group to join. */
 	public void selectJoinGroup() {
 		selectingJoinGroup = true;
-		GroupSelecterDialog groupSelect = new GroupSelecterDialog(ui, this);
+		GroupSelecterDialog groupSelect = new GroupSelecterDialog(ui, this, groupDao);
 		groupSelect.init(ui.getRootGroup());
 
 		// TODO should select the current leave group in the dialog
@@ -595,7 +598,7 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 	/** Show group selecter for choosing the group to leave. */
 	public void selectLeaveGroup() {
 		selectingJoinGroup = false;
-		GroupSelecterDialog groupSelect = new GroupSelecterDialog(ui, this);
+		GroupSelecterDialog groupSelect = new GroupSelecterDialog(ui, this, groupDao);
 		groupSelect.init(ui.getRootGroup());
 
 		// TODO should select the current leave group in the dialog

@@ -103,7 +103,7 @@ public class ContactsTabHandler extends BaseTabHandler implements PagedComponent
 		this.contactDao = ui.getFrontlineController().getContactDao();
 		this.groupDao = ui.getFrontlineController().getGroupDao();
 		this.groupMembershipDao = ui.getFrontlineController().getGroupMembershipDao();
-		this.groupSelecter = new GroupSelecterPanel(ui, this);
+		this.groupSelecter = new GroupSelecterPanel(ui, this, groupDao);
 	}
 	
 	@Override

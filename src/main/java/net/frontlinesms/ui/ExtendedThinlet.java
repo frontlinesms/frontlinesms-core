@@ -54,7 +54,14 @@ private static final String START = "start";
 	
 	public final void setChildrenEditable(Object parent, boolean value) {
 		for(Object child : getItems(parent)) {
-			setEditable(child, value);
+			String childClass = getClass(child);
+			if(childClass.equals(TEXTFIELD) ||
+					childClass.equals(PASSWORDFIELD) ||
+					childClass.equals(TEXTAREA) ||
+					childClass.equals(COMBOBOX) ||
+					childClass.equals(SPINBOX)) {
+				setEditable(child, value);
+			}
 		}
 	}
 	

@@ -13,7 +13,9 @@ import thinlet.Thinlet;
 
 import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.data.domain.Group;
+import net.frontlinesms.data.repository.GroupDao;
 import net.frontlinesms.data.repository.unmodifiable.UnmodifiableGroupDao;
+import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -33,6 +35,7 @@ public class GroupSelecterPanel extends BasePanelHandler {
 	
 	private GroupSelecterPanelOwner owner;
 
+	private final GroupDao normalGroupDao;
 	private UnmodifiableGroupDao groupDao;
 	
 	private boolean allowMultipleSelections;
@@ -42,9 +45,10 @@ public class GroupSelecterPanel extends BasePanelHandler {
 	private final HashSet<Group> hiddenGroups = new HashSet<Group>();
 
 //> CONSTRUCTORS
-	public GroupSelecterPanel(UiGeneratorController ui, GroupSelecterPanelOwner owner) {
+	public GroupSelecterPanel(FrontlineUI ui, GroupSelecterPanelOwner owner, GroupDao groupDao) {
 		super(ui);
 		this.owner = owner;
+		this.normalGroupDao = groupDao;
 		
 		allowMultipleSelections = owner instanceof MultiGroupSelecterPanelOwner;
 	}
@@ -77,8 +81,7 @@ public class GroupSelecterPanel extends BasePanelHandler {
 	public void refresh(boolean showRoot) {
 		Object groupTree = getGroupTreeComponent();
 		
-		FrontlineSMS frontlineController = ((UiGeneratorController) super.ui).getFrontlineController();
-		this.groupDao = new UnmodifiableGroupDao(frontlineController.getGroupDao());
+		this.groupDao = new UnmodifiableGroupDao(normalGroupDao);
 		
 		ui.removeAll(groupTree);
 		Object node = createNode(getRootGroup(), showRoot);

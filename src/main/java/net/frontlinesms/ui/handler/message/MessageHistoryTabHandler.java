@@ -245,7 +245,7 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 		
 		// Initialise and cache the group tree
 		Object oldGroupTreeComponent = ui.find(tabComponent, COMPONENT_GROUP_LIST);
-		groupSelecter = new GroupSelecterPanel(ui, this);
+		groupSelecter = new GroupSelecterPanel(ui, this, ui.getFrontlineController().getGroupDao());
 		groupSelecter.init(ui.getRootGroup());
 		
 		Object groupTreeParent = ui.getParent(oldGroupTreeComponent);

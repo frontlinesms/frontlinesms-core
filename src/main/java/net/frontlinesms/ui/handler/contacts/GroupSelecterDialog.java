@@ -6,22 +6,23 @@ import java.util.Set;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.data.domain.Group;
+import net.frontlinesms.data.repository.GroupDao;
+import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.ThinletUiEventHandler;
-import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 public class GroupSelecterDialog implements ThinletUiEventHandler, SingleGroupSelecterPanelOwner {
 	private static final String XML_LAYOUT_GROUP_SELECTER_DIALOG = "/ui/core/contacts/dgGroupSelecter.xml";
-	private UiGeneratorController ui;
-	
+	private FrontlineUI ui;
+	private final GroupDao groupDao;
 	private SingleGroupSelecterDialogOwner owner;
-	
 	private GroupSelecterPanel selecter;
 	private Object dialogComponent;
 	
-	public GroupSelecterDialog(UiGeneratorController ui, SingleGroupSelecterDialogOwner owner) {
+	public GroupSelecterDialog(FrontlineUI ui, SingleGroupSelecterDialogOwner owner, GroupDao groupDao) {
 		this.ui = ui;
 		this.owner = owner;
+		this.groupDao = groupDao;
 	}
 	
 	/** Init with default title and no hidden groups */
@@ -45,7 +46,7 @@ public class GroupSelecterDialog implements ThinletUiEventHandler, SingleGroupSe
 		dialogComponent = ui.loadComponentFromFile(XML_LAYOUT_GROUP_SELECTER_DIALOG, this);
 		this.setTitle(title);
 		
-		this.selecter = new GroupSelecterPanel(ui, this);
+		this.selecter = new GroupSelecterPanel(ui, this, groupDao);
 		selecter.init(rootGroup, hiddenGroups);
 		selecter.refresh(false);
 		
@@ -90,6 +91,6 @@ public class GroupSelecterDialog implements ThinletUiEventHandler, SingleGroupSe
 //> UI HELPER METHODS
 	/** Enable or disable the DONE button */
 	private void setDoneButtonEnabled(boolean enabled) {
-		ui.setEnabled(ui.find(this.dialogComponent, "btGroupSelecterDone"), enabled);
+		ui.setEnabled(FrontlineUI.find(this.dialogComponent, "btGroupSelecterDone"), enabled);
 	}
 }

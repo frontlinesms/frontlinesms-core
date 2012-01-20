@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<dialog closable="true" close="removeDialog" bottom="4" gap="8" icon="/icons/group.png" left="4" modal="true" right="4" top="4" columns="1" resizable="true" halign="center" width="320" height="320">
+<dialog name="dgGroupSelecter" closable="true" close="removeDialog" bottom="4" gap="8" icon="/icons/group.png" left="4" modal="true" right="4" top="4" columns="1" resizable="true" halign="center" width="320" height="320">
 	<panel halign="center" gap="8">
 	    <button action="done" icon="/icons/tick.png" text="i18n.action.ok" name="btGroupSelecterDone"/>
 	    <button action="removeDialog" icon="/icons/cross.png" text="i18n.action.cancel"/>
