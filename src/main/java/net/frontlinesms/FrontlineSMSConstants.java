@@ -36,7 +36,7 @@ public final class FrontlineSMSConstants {
 	/** SMTP server to submit {@link #FRONTLINE_STATS_EMAIL} to. */
 	public static final String FRONTLINE_SUPPORT_EMAIL_SERVER = "mail.kiwanja.net";
 	/** Email address to send usage statistics to */
-	public static final String FRONTLINE_STATS_EMAIL = "stats@frontlinesms.com";
+	public static final String FRONTLINE_STATS_EMAIL = "frontlinesms-stats@kiwanja.net";
 	/** URL of the FrontlineSMS Community website */
 	public static final String URL_FRONTLINESMS_COMMUNITY = "http://community.frontlinesms.com";
 	/** Phone number to submit usage statistics to over SMS.

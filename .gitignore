@@ -31,6 +31,9 @@ test_temp/
 /.classpath
 /.tmp
 
+# Redcar settings directories
+.redcar
+
 # FrontlineSMS ini file for applying local settings
 frontlinesms.ini
 .bak/
@@ -40,3 +43,4 @@ frontlinesms.ini
 
 # JNI libraries
 librxtxSerial.jnilib
+
