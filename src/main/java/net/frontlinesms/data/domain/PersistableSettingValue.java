@@ -54,6 +54,10 @@ public class PersistableSettingValue {
 	public String getValue() {
 		return this.value;
 	}
+	
+	public void setValue(String value) {
+		this.value = value;
+	}
 
 //> INSTANCE HELPER METHODS
 	/**

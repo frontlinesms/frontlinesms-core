@@ -59,15 +59,20 @@ public class PersistableSettings {
 	 * @param key The key of the property to save
 	 * @param value The value of the property to save
 	 */
-	public void set(String key, Object value) {
-		this.properties.put(key, PersistableSettingValue.create(value));
+	public synchronized void set(String key, Object value) {
+		PersistableSettingValue newValue = PersistableSettingValue.create(value);
+		if(this.properties.containsKey(key)) {
+			this.properties.get(key).setValue(newValue.getValue());
+		} else {
+			this.properties.put(key, newValue);
+		}
 	}
 	
 	/**
 	 * @param key the key of the property to fetch
 	 * @return the value stored for the supplied key, or <code>null</code> if no value is stored.
 	 */
-	public PersistableSettingValue get(String key) {
+	public synchronized PersistableSettingValue get(String key) {
 		return this.properties.get(key);
 	}
 	
