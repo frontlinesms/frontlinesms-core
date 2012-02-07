@@ -3,7 +3,7 @@
 	<artifactId>frontlinesms-core</artifactId>
 	<name>frontlinesms</name>
 	<description>FrontlineSMS core application</description>
-	<version>1.7.0-beta-7-SNAPSHOT</version>
+	<version>1.7.0-beta-7</version>
 	<parent>
 		<groupId>net.frontlinesms.core</groupId>
 		<artifactId>frontlinesms-pom-parent</artifactId>
