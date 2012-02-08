@@ -439,6 +439,10 @@ public class InternationalisationUtils {
 		return new SimpleDateFormat(
 				getI18nString(FrontlineSMSConstants.DATEFORMAT_YMD));
 	}
+	
+	public static String formatDate(long date) {
+		return getDateFormat().format(new Date(date));
+	}
 
 	/**
 	 * This is not used for parsing user-entered data.
