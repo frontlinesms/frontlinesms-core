@@ -354,7 +354,7 @@ private static final String START = "start";
 	 * Invoke the ACTION method on a component.
 	 * @param component The component whose ACTION should be invoked
 	 */
-	public final void invokeAction(Object component) {
+	public void invokeAction(Object component) {
 		invoke(component, null, Thinlet.ATTRIBUTE_ACTION);
 	}
 	
