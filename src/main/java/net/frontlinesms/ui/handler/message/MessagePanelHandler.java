@@ -39,6 +39,8 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import org.apache.log4j.Logger;
 import org.smslib.util.GsmAlphabet;
 
+import thinlet.Thinlet;
+
 /**
  * Controller for a panel which allows sending of text SMS messages
  * @author Alex
@@ -96,7 +98,7 @@ public class MessagePanelHandler implements ThinletUiEventHandler, SingleGroupSe
 	}
 
 	private Object find(String component) {
-		return this.uiController.find(this.messagePanel, component);
+		return Thinlet.find(this.messagePanel, component);
 	}
 
 //> ACCESSORS
