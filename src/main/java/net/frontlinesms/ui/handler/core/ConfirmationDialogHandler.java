@@ -19,6 +19,11 @@ public class ConfirmationDialogHandler implements ThinletUiEventHandler {
 		ui.add(dialog);
 	}
 	
+	public ConfirmationDialogHandler(FrontlineUI ui, ThinletUiEventHandler handler, String methodToBeCalled, String message) {
+		this(ui, handler, methodToBeCalled);
+		ui.setText(Thinlet.find(dialog, "lbText"), message);
+	}
+	
 	public void removeDialog(Object dialog) {
 		ui.remove(dialog);
 	}
