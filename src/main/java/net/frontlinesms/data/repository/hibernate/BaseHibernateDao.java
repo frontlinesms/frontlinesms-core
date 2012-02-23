@@ -245,11 +245,19 @@ public abstract class BaseHibernateDao<E> extends HibernateDaoSupport {
 	}
 	
 	/**
-	 * Gets a {@link DetachedCriteria} to sort by a particular field.
-	 * @return {@link DetachedCriteria} with order and sort field set
+	 * Gets a {@link DetachedCriteria} to fetch instances of the base entity.
+	 * @return {@link DetachedCriteria} to fetch instances of the base entity.
 	 */
 	protected DetachedCriteria getCriterion() {
-		DetachedCriteria criteria = DetachedCriteria.forClass(this.clazz);
+		return getCriterion(this.clazz);
+	}
+	
+	/**
+	 * Gets a {@link DetachedCriteria} to fetch instances of the base entity.
+	 * @return {@link DetachedCriteria} to fetch instances of the base entity.
+	 */
+	protected DetachedCriteria getCriterion(Class<?> entityClass) {
+		DetachedCriteria criteria = DetachedCriteria.forClass(entityClass);
 		criteria.setResultTransformer(DistinctRootEntityResultTransformer.INSTANCE);
 		return criteria;
 	}
