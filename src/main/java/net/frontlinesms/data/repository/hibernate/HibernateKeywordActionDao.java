@@ -9,6 +9,7 @@ import java.util.List;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 
+import net.frontlinesms.data.domain.EmailAccount;
 import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.domain.KeywordAction;
 import net.frontlinesms.data.repository.KeywordActionDao;
@@ -27,6 +28,10 @@ public class HibernateKeywordActionDao extends BaseHibernateDao<KeywordAction> i
 	/** @see KeywordActionDao#deleteKeywordAction(KeywordAction) */
 	public void deleteKeywordAction(KeywordAction action) {
 		super.delete(action);
+	}
+
+	public void deleteForEmailAccount(EmailAccount emailAccount) {
+		super.getHibernateTemplate().bulkUpdate("DELETE FROM KeywordAction WHERE emailAccount=?", emailAccount);
 	}
 
 	/** @see KeywordActionDao#getReplyActions() */

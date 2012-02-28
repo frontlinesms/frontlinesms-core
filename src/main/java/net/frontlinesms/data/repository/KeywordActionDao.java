@@ -80,4 +80,6 @@ public interface KeywordActionDao {
 	 * @param action
 	 */
 	public void incrementCounter(KeywordAction action);
+
+	public void deleteForEmailAccount(EmailAccount email);
 }

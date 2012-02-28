@@ -27,8 +27,10 @@ import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.data.domain.FrontlineMessage.Type;
 import net.frontlinesms.data.events.DatabaseEntityNotification;
+import net.frontlinesms.data.events.EntityDeleteWarning;
 import net.frontlinesms.data.events.EntityDeletedNotification;
 import net.frontlinesms.data.events.EntitySavedNotification;
+import net.frontlinesms.data.events.EntityUpdatedNotification;
 import net.frontlinesms.data.repository.*;
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.events.EventObserver;
@@ -654,14 +656,21 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 		} else if (notification instanceof DatabaseEntityNotification<?>) {
 			// Database notification
 			Object entity = ((DatabaseEntityNotification<?>) notification).getDatabaseEntity();
-			if (entity instanceof EmailAccount && ((EmailAccount) entity).isForReceiving()) {
+			if (entity instanceof EmailAccount) {
+				EmailAccount email = (EmailAccount) entity;
+				if (notification instanceof EntityDeleteWarning<?>) {
+					this.keywordActionDao.deleteForEmailAccount(email);
+				} 
+					
 				// If there is any change in the E-Mail accounts, we refresh the list of MmsEmailServices
-				if (notification instanceof EntityDeletedNotification<?>) {
-					this.mmsServiceManager.removeMmsEmailReceiver((EmailAccount) entity);
-				} else if (notification instanceof EntitySavedNotification<?>) {
-					this.mmsServiceManager.addMmsEmailReceiver((EmailAccount) entity);
-				} else {
-					this.mmsServiceManager.updateMmsEmailService((EmailAccount) entity);	
+				if(email.isForReceiving()) {
+					if (notification instanceof EntityDeletedNotification<?>) {
+						this.mmsServiceManager.removeMmsEmailReceiver(email);
+					} else if (notification instanceof EntitySavedNotification<?>) {
+						this.mmsServiceManager.addMmsEmailReceiver(email);
+					} else if (notification instanceof EntityUpdatedNotification<?>) {
+						this.mmsServiceManager.updateMmsEmailService(email);	
+					}
 				}
 			}
 		} else if (notification instanceof SmsModemStatusNotification) {
