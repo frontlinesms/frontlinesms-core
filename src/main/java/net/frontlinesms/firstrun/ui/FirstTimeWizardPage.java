@@ -30,6 +30,14 @@ public abstract class FirstTimeWizardPage implements ThinletUiEventHandler {
 		ui.showHelpPage(page);
 	}
 	
+	public void next() {
+		ui.gotoNextPage();
+	}
+	
+	public void back() {
+		ui.goBack();
+	}
+	
 //> UI HELPER METHODS
 	public Object find(String componentName) {
 		return FrontlineUI.find(page, componentName);

@@ -5,6 +5,6 @@
         <list perform="setLanguage(languagesList)" name="languagesList" weightx="1" weighty="1"/>
     </panel>
     <panel gap="5" halign="right" weightx="1">
-        <button action="setLanguage(languagesList)" icon="/icons/tick.png" text="i18n.action.done"/>
+        <button action="setLanguage(languagesList)" icon="/icons/right.png" text="i18n.action.next"/>
     </panel>
 </panel>

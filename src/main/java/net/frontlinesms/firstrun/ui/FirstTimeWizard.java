@@ -73,6 +73,7 @@ public class FirstTimeWizard extends FrontlineUI {
 		add(root);
 		
 		pages.add(new LanguageChooserPage(this));
+		pages.add(new CountryChooserPage(this));
 		
 		for(Class<? extends FirstTimeWizardPageProvider> s : new FirstTimeWizardPageProviderLoader().getAll()) {
 			try {

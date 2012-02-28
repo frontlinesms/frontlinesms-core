@@ -1,0 +1,7 @@
+<panel weightx="1" weighty="1" columns="2" gap="8" left="8" right="8" top="8" bottom="8">
+	<label text="i18n.settings.general.select.country" colspan="2"/>
+	<list colspan="2" name="lsCountry"
+			weightx="1" weighty="1"/>
+	<button action="back" text="i18n.action.back" icon="/icons/left.png"/>
+	<button action="next" text="i18n.action.next" icon="/icons/right.png" halign="right"/>
+</panel>
