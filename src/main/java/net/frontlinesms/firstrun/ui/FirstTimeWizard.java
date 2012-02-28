@@ -47,6 +47,8 @@ public class FirstTimeWizard extends FrontlineUI {
 	public static final String I18N_FIRST_TIME_WIZARD_TITLE = "common.first.time.wizard";
 	
 //> INSTANCE VARIABLES
+	/** Root item in the UI */
+	private Object root;
 	/** The page from {@link #pages} that we are currently viewing.  This is used for searching. */
 	private Object currentPage;
 	/** Index in {@link #pages} that the {@link #currentPage} is located at. */
@@ -57,7 +59,7 @@ public class FirstTimeWizard extends FrontlineUI {
 	private FrameLauncher frameLauncher;
 	/** The instance of the {@link FrontlineSMS} engine that will be started once the wizard has completed */
 	private FrontlineSMS frontline;
-
+	
 //> CONSTRUCTORS
 	/**
 	 * 
@@ -66,10 +68,19 @@ public class FirstTimeWizard extends FrontlineUI {
 	public FirstTimeWizard(FrontlineSMS frontline) {
 		this.frontline = frontline;
 		
-		frameLauncher = new FrameLauncher(InternationalisationUtils.getI18nString(I18N_FIRST_TIME_WIZARD_TITLE), this, 510, 380, getIcon(Icon.FRONTLINE_ICON));
-		frameLauncher.setResizable(false);
+		frameLauncher = new FrameLauncher(InternationalisationUtils.getI18nString(I18N_FIRST_TIME_WIZARD_TITLE), this, 512, 380, getIcon(Icon.FRONTLINE_ICON));
+		root = createPanel("pnRoot");
+		add(root);
 		
 		pages.add(new LanguageChooserPage(this));
+		
+		for(Class<? extends FirstTimeWizardPageProvider> s : new FirstTimeWizardPageProviderLoader().getAll()) {
+			try {
+				pages.addAll(s.newInstance().getPages());
+			} catch(Exception ex) {
+				log.error("Cannot load first time wizard pages for " + s.getClass(), ex);
+			}
+		}
 		
 		pages.add(new StartApplicationPage(this));
 		
@@ -113,6 +124,6 @@ public class FirstTimeWizard extends FrontlineUI {
 		remove(currentPage);
 		currentPageIndex = newPageIndex;
 		currentPage = pages.get(currentPageIndex).getPage();
-		add(currentPage);
+		add(root, currentPage);
 	}
 }

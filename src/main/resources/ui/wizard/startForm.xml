@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<panel bottom="10" columns="1" gap="10" left="10" right="10" top="10">
-    <panel columns="1" gap="5" weightx="1" weighty="1">
+<panel bottom="10" columns="1" gap="10" left="10" right="10" top="10" weightx="1" weighty="1">
+    <panel columns="1" gap="5" halign="center" weightx="1" weighty="1">
         <label icon="/icons/frontlineSMS_logo.png"/>
         <panel weightx="1" gap="2">
         	<label icon="/icons/help.png" text="i18n.common.visit"/>
         	<button action="showHelpPage('help-menu.htm')" text="FrontlineSMS" type="link"/>
         	<label text="i18n.message.for.info.tutorials"/>
-        	<panel left="5" halign="right" weightx="1">
-        		<button action="startFrontline()" icon="/icons/frontline_icon.png" text="i18n.action.start.frontline"/>
-    		</panel>
         </panel>
+       	<panel left="5" halign="right" weightx="1">
+       		<button action="startFrontline()" icon="/icons/frontline_icon.png" text="i18n.action.start.frontline"/>
+   		</panel>
     </panel>
 </panel>
