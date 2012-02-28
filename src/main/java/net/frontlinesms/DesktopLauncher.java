@@ -28,8 +28,8 @@ import java.io.InputStream;
 import javax.swing.UIManager;
 
 import net.frontlinesms.encoding.Base64Utils;
+import net.frontlinesms.firstrun.ui.FirstTimeWizard;
 import net.frontlinesms.resources.ResourceUtils;
-import net.frontlinesms.ui.FirstTimeWizard;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.handler.core.DatabaseConnectionFailedDialog;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;

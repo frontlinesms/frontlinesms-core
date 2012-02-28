@@ -75,8 +75,7 @@ public final class AppProperties extends UserHomeFilePropertySet {
 	}
 	/** @return <code>true</code> if first time wizard should be shown; <code>false</code> otherwise */
 	public boolean isShowWizard() {
-		boolean showWizard = super.getPropertyAsBoolean(KEY_SHOW_WIZARD, true);
-		return showWizard;
+		return super.getPropertyAsBoolean(KEY_SHOW_WIZARD, true);
 	}
 	/** @param showWizard <code>true</code> if the wizard should be shown, <code>false</code> otherwise */
 	public void setShowWizard(boolean showWizard) {
