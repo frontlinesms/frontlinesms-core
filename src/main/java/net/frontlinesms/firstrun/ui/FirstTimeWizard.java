@@ -68,7 +68,7 @@ public class FirstTimeWizard extends FrontlineUI {
 	public FirstTimeWizard(FrontlineSMS frontline) {
 		this.frontline = frontline;
 		
-		frameLauncher = new FrameLauncher(InternationalisationUtils.getI18nString(I18N_FIRST_TIME_WIZARD_TITLE), this, 512, 380, getIcon(Icon.FRONTLINE_ICON));
+		frameLauncher = new FrameLauncher(InternationalisationUtils.getI18nString(I18N_FIRST_TIME_WIZARD_TITLE), this, 524, 380, getIcon(Icon.FRONTLINE_ICON));
 		root = createPanel("pnRoot");
 		add(root);
 		
@@ -76,7 +76,9 @@ public class FirstTimeWizard extends FrontlineUI {
 		
 		for(Class<? extends FirstTimeWizardPageProvider> s : new FirstTimeWizardPageProviderLoader().getAll()) {
 			try {
-				pages.addAll(s.newInstance().getPages());
+				FirstTimeWizardPageProvider newInstance = s.newInstance();
+				newInstance.setOwner(this);
+				pages.addAll(newInstance.getPages());
 			} catch(Exception ex) {
 				log.error("Cannot load first time wizard pages for " + s.getClass(), ex);
 			}

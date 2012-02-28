@@ -4,8 +4,8 @@ import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 
 public abstract class FirstTimeWizardPage implements ThinletUiEventHandler {
-	final FirstTimeWizard ui;
-	Object page;
+	protected final FirstTimeWizard ui;
+	protected Object page;
 	
 //> CONSTRUCTORS
 	public FirstTimeWizardPage(FirstTimeWizard ui) {

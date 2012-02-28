@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <panel bottom="10" columns="1" gap="10" left="10" right="10" top="10" weightx="1" weighty="1">
     <panel columns="1" gap="5" halign="center" weightx="1" weighty="1">
-        <label icon="/icons/frontlineSMS_logo.png"/>
+        <label icon="/icons/frontlineSMS_logo.png" weightx="1" weighty="1"/>
         <panel weightx="1" gap="2">
         	<label icon="/icons/help.png" text="i18n.common.visit"/>
         	<button action="showHelpPage('help-menu.htm')" text="FrontlineSMS" type="link"/>

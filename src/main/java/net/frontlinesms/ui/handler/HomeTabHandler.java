@@ -233,25 +233,29 @@ public class HomeTabHandler extends BaseTabHandler {
 			String imageLocation = UiProperties.getInstance().getHometabLogoPath();
 			boolean useDefault = true;
 			if (UiProperties.getInstance().isHometabCustomLogo() && imageLocation != null && imageLocation.length() > 0) {
-				// Absolute or relative path provided
-				try {
-					BufferedImage homeTabLogoImage = ImageIO.read(new File(imageLocation));
-					
-					// If the "Keep original size" box is unchecked, we resize the image
-					if (!UiProperties.getInstance().isHometabLogoOriginalSizeKept())
-					{
-						ui.setIcon(lbLogo, 
-								FrontlineUiUtils.getLimitedSizeImage(homeTabLogoImage,
-										FRONTLINE_LOGO_MAX_WIDTH, FRONTLINE_LOGO_MAX_HEIGHT));
+				if(imageLocation.startsWith("classpath:")) {
+					Image icon = ui.getIcon(imageLocation.substring("classpath:".length()));
+					if(icon != null) {
+						ui.setIcon(lbLogo, icon);
+						useDefault = false;
 					}
-					else
-						ui.setIcon(lbLogo, homeTabLogoImage);
-
-					
-					useDefault = false;
-				} catch (IOException e) {
-					// We are unable to find the specified image, using the default
-					log.warn("We are unable to find the specified image [" + imageLocation + "], using the default one.", e);
+				} else {
+					// Absolute or relative path provided
+					try {
+						BufferedImage homeTabLogoImage = ImageIO.read(new File(imageLocation));
+						
+						// If the "Keep original size" box is unchecked, we resize the image
+						if (!UiProperties.getInstance().isHometabLogoOriginalSizeKept()) {
+							ui.setIcon(lbLogo, 
+									FrontlineUiUtils.getLimitedSizeImage(homeTabLogoImage,
+											FRONTLINE_LOGO_MAX_WIDTH, FRONTLINE_LOGO_MAX_HEIGHT));
+						} else ui.setIcon(lbLogo, homeTabLogoImage);
+						
+						useDefault = false;
+					} catch (IOException e) {
+						// We are unable to find the specified image, using the default
+						log.warn("We are unable to find the specified image [" + imageLocation + "], using the default one.", e);
+					}
 				}
 			}
 			if (useDefault) {
