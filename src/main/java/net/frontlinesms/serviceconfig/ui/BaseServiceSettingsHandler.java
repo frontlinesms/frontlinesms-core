@@ -142,12 +142,7 @@ public abstract class BaseServiceSettingsHandler<T extends ConfigurableService>
 	}
 
 	public void refreshAccounts(Object accountList) {
-		// Remove each list item individually as there seems to be a bug when
-		// calling removeAll() - causes the screen to 'squash' as if we were
-		// doing this update on the wrong thread.
-		for(Object child: ui.getItems(accountList)) {
-			ui.remove(child);
-		}
+		ui.removeAll(accountList);
 		for(PersistableSettings s : settingsDao.getServiceAccounts()) {
 			String description = getProviderName(s.getServiceClass()) + " - " +
 					s.getId(); // TODO should use something more user friendly than database ID here

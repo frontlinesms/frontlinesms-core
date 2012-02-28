@@ -137,6 +137,7 @@ public class DesktopLauncher {
 					connected = true;
 				} catch(RuntimeException ex) {
 					LOG.warn("Problem initialising application context.", ex);
+					ex.printStackTrace();
 					frontline.deinitApplicationContext();
 					DatabaseConnectionFailedDialog.create(ex).acquireSettings();
 				}

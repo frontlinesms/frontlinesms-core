@@ -13,7 +13,7 @@ import net.frontlinesms.events.FrontlineEventNotification;
  * @author Dieterich Lawson <dieterich@medic.frontlinesms.com>
  * @author Alex Anderson <alex@frontlinesms.com>
  */
-public class FrontlineEventBus implements EventBus{
+public class FrontlineEventBus implements EventBus {
 	
 	/** the observers that receive event notifications */
 	private CopyOnWriteArrayList<EventObserver> observers;

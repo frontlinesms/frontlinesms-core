@@ -3,6 +3,7 @@
  */
 package net.frontlinesms.ui.handler.mms;
 
+import thinlet.Thinlet;
 import net.frontlinesms.AppProperties;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -113,6 +114,6 @@ public class MmsSettingsDialogHandler implements ThinletUiEventHandler {
 	 * @return the ui component, or <code>null</code> if it could not be found
 	 */
 	private Object find(String componentName) {
-		return ui.find(this.dialogComponent, componentName);
+		return Thinlet.find(this.dialogComponent, componentName);
 	}
 }

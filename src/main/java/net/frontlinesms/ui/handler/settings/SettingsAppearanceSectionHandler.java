@@ -126,11 +126,11 @@ public class SettingsAppearanceSectionHandler extends BaseSectionHandler impleme
 		log.trace("Saving appearance settings...");
 		
 		/**** LOGO ****/
-		boolean invisible 			= this.ui.isSelected(this.ui.find(panel, COMPONENT_CB_HOME_TAB_LOGO_INVISIBLE));
-		boolean isCustomLogo 		= this.ui.isSelected(this.ui.find(panel, COMPONENT_CB_HOME_TAB_USE_CUSTOM_LOGO));
-		boolean isOriginalSizeKept 	= this.ui.isSelected(this.ui.find(panel, COMPONENT_CB_HOME_TAB_LOGO_KEEP_ORIGINAL_SIZE));
+		boolean invisible = ui.isSelected(find(COMPONENT_CB_HOME_TAB_LOGO_INVISIBLE));
+		boolean isCustomLogo = ui.isSelected(find(COMPONENT_CB_HOME_TAB_USE_CUSTOM_LOGO));
+		boolean isOriginalSizeKept = ui.isSelected(find(COMPONENT_CB_HOME_TAB_LOGO_KEEP_ORIGINAL_SIZE));
 		
-		String imgSource = this.ui.getText(this.ui.find(panel, COMPONENT_TF_IMAGE_SOURCE));
+		String imgSource = ui.getText(find(COMPONENT_TF_IMAGE_SOURCE));
 		log.debug("Hidden? " + invisible);
 		log.debug("Logo: " + (isCustomLogo ? "default" : "custom"));
 		log.debug("Image location [" + imgSource + "]");

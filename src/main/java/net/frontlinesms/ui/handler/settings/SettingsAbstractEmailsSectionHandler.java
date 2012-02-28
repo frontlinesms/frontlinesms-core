@@ -21,6 +21,8 @@ import net.frontlinesms.ui.settings.UiSettingsSectionHandler;
 
 import org.apache.log4j.Logger;
 
+import thinlet.Thinlet;
+
 /**
  * UI Handler for the sections incorporating a list of email accounts
  * @author Morgan Belkadi <morgan@frontlinesms.com>
@@ -64,7 +66,7 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	}
 
 	public void refresh() {
-		Object table = this.ui.find(this.accountsListPanel, UI_COMPONENT_ACCOUNTS_LIST);
+		Object table = Thinlet.find(this.accountsListPanel, UI_COMPONENT_ACCOUNTS_LIST);
 		if (table != null) {
 			this.ui.removeAll(table);
 			Collection<EmailAccount> emailAccounts;
@@ -79,11 +81,7 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 				this.ui.add(table, this.ui.getRow(acc));
 			}
 			
-			new FrontlineUiUpdateJob() {
-				public void run() {
-					enableBottomButtons(null);	
-				}
-			}.execute();
+			enableBottomButtons(null);
 		}
 	}
 
@@ -109,13 +107,14 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	
 	public void enableBottomButtons(Object table) {
 		if (table == null) {
-			table = this.ui.find(UI_COMPONENT_ACCOUNTS_LIST);
+			table = Thinlet.find(accountsListPanel, UI_COMPONENT_ACCOUNTS_LIST);
 		}
+		
 		
 		boolean enableEditAndDelete = (this.ui.getSelectedIndex(table) >= 0);
 		
-		this.ui.setEnabled(this.ui.find(this.accountsListPanel, UI_COMPONENT_BT_EDIT), enableEditAndDelete);
-		this.ui.setEnabled(this.ui.find(this.accountsListPanel, UI_COMPONENT_BT_DELETE), enableEditAndDelete);
+		this.ui.setEnabled(Thinlet.find(accountsListPanel, UI_COMPONENT_BT_EDIT), enableEditAndDelete);
+		this.ui.setEnabled(Thinlet.find(accountsListPanel, UI_COMPONENT_BT_DELETE), enableEditAndDelete);
 	}
 	
 	/**
@@ -156,7 +155,7 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	public void removeSelectedFromAccountList() {
 		LOG.trace("ENTER");
 		this.ui.removeConfirmationDialog();
-		Object list = this.ui.find(this.accountsListPanel, UI_COMPONENT_ACCOUNTS_LIST);
+		Object list = Thinlet.find(this.accountsListPanel, UI_COMPONENT_ACCOUNTS_LIST);
 		Object[] selected = this.ui.getSelectedItems(list);
 		for (Object o : selected) {
 			EmailAccount acc = this.ui.getAttachedObject(o, EmailAccount.class);
@@ -202,6 +201,5 @@ public abstract class SettingsAbstractEmailsSectionHandler extends BaseSectionHa
 	/** @see UiGeneratorController#removeDialog(Object) */
 	public void removeDialog(Object dialog) {
 		this.ui.removeDialog(dialog);
-	}	
-//> UI HELPER METHODS
+	}
 }

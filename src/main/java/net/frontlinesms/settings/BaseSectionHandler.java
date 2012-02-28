@@ -3,6 +3,8 @@ package net.frontlinesms.settings;
 import java.util.HashMap;
 import java.util.Map;
 
+import thinlet.Thinlet;
+
 import net.frontlinesms.events.EventBus;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.settings.SettingsChangedEventNotification;
@@ -71,6 +73,6 @@ public abstract class BaseSectionHandler {
 	}
 	
 	protected Object find (String component) {
-		return this.ui.find(this.panel, component);
+		return Thinlet.find(this.panel, component);
 	}
 }

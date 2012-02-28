@@ -787,6 +787,15 @@ private static final String START = "start";
 		setText(item, text);
 		return item;
 	}
+	
+	public void removeAll(Object component) {
+		// Remove each list item individually as there seems to be a bug when
+		// calling removeAll() - causes the screen to 'squash' as if we were
+		// doing this update on the wrong thread.
+		for(Object child: getItems(component)) {
+			remove(child);
+		}
+	}
 
 //> STATIC FACTORIES
 

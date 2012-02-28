@@ -7,6 +7,8 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
+import thinlet.Thinlet;
+
 import net.frontlinesms.EmailSender;
 import net.frontlinesms.EmailServerHandler;
 import net.frontlinesms.FrontlineSMS;
@@ -21,6 +23,7 @@ import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiDestroyEvent;
 import net.frontlinesms.ui.UiGeneratorController;
+import net.frontlinesms.ui.events.FrontlineUiUpdateJob;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.i18n.TextResourceKeyOwner;
 
@@ -85,6 +88,14 @@ public class EmailAccountDialogHandler implements ThinletUiEventHandler, EventOb
 		}
 		this.refresh();
 	}
+	
+	private void threadSafeRefresh() {
+		new FrontlineUiUpdateJob() {
+			public void run() {
+				refresh();
+			}
+		}.execute();
+	}
 
 	public void refresh() {
 		Object table = find(UI_COMPONENT_ACCOUNTS_LIST);
@@ -107,7 +118,7 @@ public class EmailAccountDialogHandler implements ThinletUiEventHandler, EventOb
 	public void finishEmailManagement(Object dialog) {
 		Object att = ui.getAttachedObject(dialog);
 		if (att != null) {
-			Object list = ui.find(att, UI_COMPONENT_ACCOUNTS_LIST);
+			Object list = Thinlet.find(att, UI_COMPONENT_ACCOUNTS_LIST);
 			ui.removeAll(list);
 			for (EmailAccount acc : emailAccountDao.getAllEmailAccounts()) {
 				Object item = ui.createListItem(acc.getAccountName(), acc);
@@ -198,7 +209,7 @@ public class EmailAccountDialogHandler implements ThinletUiEventHandler, EventOb
 	public void notify(FrontlineEventNotification event) {
 		if(event instanceof DatabaseEntityNotification<?>) {
 			if(((DatabaseEntityNotification<?>)event).getDatabaseEntity() instanceof EmailAccount) {
-				this.refresh();
+				this.threadSafeRefresh();
 			}
 		} else if (event instanceof UiDestroyEvent) {
 			if(((UiDestroyEvent) event).isFor(this.ui)) {
@@ -232,7 +243,7 @@ public class EmailAccountDialogHandler implements ThinletUiEventHandler, EventOb
 	 * @return the ui component, or <code>null</code> if it could not be found
 	 */
 	private Object find(String componentName) {
-		return ui.find(this.getDialogComponent(), componentName);
+		return Thinlet.find(this.getDialogComponent(), componentName);
 	}
 
 	public void setDialogComponent(Object dialogComponent) {
