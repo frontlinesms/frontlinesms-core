@@ -1012,7 +1012,7 @@ public class SmsModem extends Thread implements SmsService, ICallListener {
 				// Ok, finished with the message parameters, now send it!
 				try {
 					cService.sendMessage(cMessage);
-					if (cMessage.getRefNo() != -1) {
+					if (cMessage.getRefNo() >= 0) {
 						message.setSmscReference(cMessage.getRefNo());
 						message.setStatus(Status.SENT);
 						if(LOG.isDebugEnabled()) LOG.debug("Message [" + message.getTextContent() + "] was sent to [" + message.getRecipientMsisdn() + "]");
