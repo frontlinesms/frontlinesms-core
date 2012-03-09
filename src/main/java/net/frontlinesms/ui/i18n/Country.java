@@ -1,7 +1,7 @@
-package net.frontlinesms.ui;
+package net.frontlinesms.ui.i18n;
 
 /** Countries selectable in the UI */
-public enum EnumCountry {
+public enum Country {
 	AFGHANISTAN("af","Afghanistan"),
 	ALAND_ISLANDS("ax","Åland Islands"),
 	ALBANIA("al","Albania"),
@@ -246,7 +246,7 @@ public enum EnumCountry {
 	ZAMBIA("zm","Zambia"),
 	ZIMBABWE("zw","Zimbabwe");
 	
-	EnumCountry(String code, String englishName) {
+	Country(String code, String englishName) {
 		this.code = code;
 		this.englishName = englishName;
 	}

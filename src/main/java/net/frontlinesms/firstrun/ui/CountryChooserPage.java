@@ -1,7 +1,7 @@
 package net.frontlinesms.firstrun.ui;
 
 import net.frontlinesms.AppProperties;
-import net.frontlinesms.ui.EnumCountry;
+import net.frontlinesms.ui.i18n.Country;
 
 public class CountryChooserPage extends FirstTimeWizardPage {
 	public CountryChooserPage(FirstTimeWizard ui) {
@@ -14,8 +14,8 @@ public class CountryChooserPage extends FirstTimeWizardPage {
 		Object currentCountry = AppProperties.getInstance().getUserCountry();
 
 		int selectedIndex = -1;
-		for (int i = 0 ; i < EnumCountry.values().length ; ++i) {
-			EnumCountry enumCountry = EnumCountry.values()[i];
+		for (int i = 0 ; i < Country.values().length ; ++i) {
+			Country enumCountry = Country.values()[i];
 			
 			Object listItem = ui.createListItem(enumCountry.getEnglishName(),
 					enumCountry.getCode().toUpperCase());

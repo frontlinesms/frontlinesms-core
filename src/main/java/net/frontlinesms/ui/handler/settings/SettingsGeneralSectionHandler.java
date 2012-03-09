@@ -8,10 +8,10 @@ import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.events.AppPropertiesEventNotification;
 import net.frontlinesms.settings.BaseSectionHandler;
 import net.frontlinesms.settings.FrontlineValidationMessage;
-import net.frontlinesms.ui.EnumCountry;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.UiProperties;
+import net.frontlinesms.ui.i18n.Country;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import net.frontlinesms.ui.settings.UiSettingsSectionHandler;
 
@@ -103,8 +103,8 @@ public class SettingsGeneralSectionHandler extends BaseSectionHandler implements
 		Object currentCountry = AppProperties.getInstance().getUserCountry();
 
 		// Missing translation files
-		for (int i = 0 ; i < EnumCountry.values().length ; ++i) {
-			EnumCountry enumCountry = EnumCountry.values()[i];
+		for (int i = 0 ; i < Country.values().length ; ++i) {
+			Country enumCountry = Country.values()[i];
 			
 			Object comboBoxChoice = this.ui.createComboboxChoice(enumCountry.getEnglishName(), enumCountry.getCode().toUpperCase());
 			this.ui.setIcon(comboBoxChoice, this.ui.getFlagIcon(enumCountry.getCode()));

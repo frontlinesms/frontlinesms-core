@@ -1,7 +1,5 @@
 package net.frontlinesms.ui.i18n;
 
-import net.frontlinesms.AppProperties;
-
 /**
  * International area codes
  * This has been taken from http://countrycode.org/, using the following regexp
