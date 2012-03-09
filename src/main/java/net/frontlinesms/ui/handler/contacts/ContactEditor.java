@@ -12,6 +12,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import thinlet.Thinlet;
+
 import net.frontlinesms.AppProperties;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.domain.Contact;
@@ -337,7 +339,7 @@ public class ContactEditor implements ThinletUiEventHandler, SingleGroupSelecter
 //> UI HELPER METHODS
 	/** Find a component in the contact edit dialog. */
 	private Object find(String componentName) {
-		return this.ui.find(this.dialogComponent, componentName);
+		return Thinlet.find(this.dialogComponent, componentName);
 	}
 	
 	/** Check if all required fields have been filled */

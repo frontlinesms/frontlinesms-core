@@ -544,6 +544,21 @@ public class InternationalisationUtils {
 				.getLocale()
 				: new Locale("en", "gb");
 	}
+
+	/** Check if the supplied phone number is a valid international phone number. */
+	public static boolean isValidInternationalPhoneNumber(String phoneNumber) {
+		return CountryCallingCode.isValidInternationalNumber(phoneNumber);
+	}
+	
+	/** Check if the supplied phone number is a valid local or international phone number. */
+	public static boolean isValidLocalPhoneNumber(String phoneNumber) {
+		return CountryCallingCode.isValidLocalNumber(phoneNumber, AppProperties.getInstance().getUserCountry());
+	}
+	
+	/** Check if the supplied phone number is a valid local or international phone number. */
+	public static boolean isValidPhoneNumber(String phoneNumber) {
+		return isValidLocalPhoneNumber(phoneNumber) || isValidInternationalPhoneNumber(phoneNumber);
+	}
 	
 	public static String getInternationalPhoneNumber(String phoneNumber) {
 		return CountryCallingCode.format(phoneNumber, AppProperties.getInstance().getUserCountry());
