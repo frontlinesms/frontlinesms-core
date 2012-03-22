@@ -37,6 +37,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Currency;
 import java.util.Date;
@@ -303,7 +304,7 @@ public class InternationalisationUtils {
 		}
 	}
 
-	// > LANGUAGE BUNDLE LOADING METHODS
+//> LANGUAGE BUNDLE LOADING METHODS
 	/**
 	 * Loads the default, english {@link LanguageBundle} from the classpath
 	 * 
@@ -428,20 +429,37 @@ public class InternationalisationUtils {
 				LANGUAGES_DIRECTORY_NAME);
 	}
 
-	// > DATE FORMAT GETTERS
+//> DATE FORMAT GETTERS
 	/**
 	 * N.B. This {@link DateFormat} may be used for parsing user-entered data.
-	 * 
-	 * @return date format for displaying and entering year (4 digits), month
-	 *         and day.
+	 * @return date format for displaying and entering year (4 digits), month and day.
 	 */
 	public static DateFormat getDateFormat() {
 		return new SimpleDateFormat(
 				getI18nString(FrontlineSMSConstants.DATEFORMAT_YMD));
 	}
 	
+	/**
+	 * N.B. This {@link DateFormat} may be used for parsing user-entered data.
+	 * @return date format for displaying and entering hours and minutes
+	 */
+	public static DateFormat getDateFormatHM() {
+		return new SimpleDateFormat(
+				getI18nString(FrontlineSMSConstants.DATEFORMAT_HM));
+	}
+	
+	/**
+	 * Formats date suitable for user's locale including day of month,
+	 * month and year.
+	 * @param date
+	 * @return formatted date
+	 */
 	public static String formatDate(long date) {
 		return getDateFormat().format(new Date(date));
+	}
+	
+	public static String formatTime(long time) {
+		return getDateFormatHM().format(new Date(time));
 	}
 
 	/**
@@ -469,14 +487,27 @@ public class InternationalisationUtils {
 	 * Parse the supplied {@link String} into a {@link Date}. This method
 	 * assumes that the supplied date is in the same format as
 	 * {@link #getDateFormat()}.
-	 * 
-	 * @param date
-	 *            A date {@link String} formatted with {@link #getDateFormat()}
+	 * @param date A date {@link String} formatted with {@link #getDateFormat()}
 	 * @return a java {@link Date} object describing the supplied date
 	 * @throws ParseException
 	 */
 	public static Date parseDate(String date) throws ParseException {
 		return getDateFormat().parse(date);
+	}
+	
+	public static Date parseTime(Date date, String time) throws ParseException {
+		Calendar forReadingTime = Calendar.getInstance();
+		forReadingTime.setTime(getDateFormatHM().parse(time));
+		
+		Calendar toModify = Calendar.getInstance();
+		toModify.setTime(date);
+		int hour = forReadingTime.get(Calendar.HOUR_OF_DAY);
+		toModify.add(Calendar.HOUR_OF_DAY, hour);
+		toModify.set(Calendar.MINUTE, forReadingTime.get(Calendar.MINUTE));
+		
+		System.out.println("InternationalisationUtils.parseTime() >> " + toModify);
+		
+		return toModify.getTime();
 	}
 
 	/**

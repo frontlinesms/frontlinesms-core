@@ -299,5 +299,8 @@ public final class FrontlineSMSConstants {
 	public static final String DATEFORMAT_YMD = "date.keyword.action.format";
 	/** [i18n key to Date format] This date format is for displaying the date and time of an event, message etc.  It is not used for parsing input. */
 	public static final String DATEFORMAT_YMD_HMS = "date.message.format";
+	/** [i18n key to Date format] hours and minutes
+	 * This will be used for parsing entered times as well as displaying used ones. */
+	public static final String DATEFORMAT_HM = "date.format.hm";
 	public static final String MMS_KEYWORD = "<MMS>";
 }
