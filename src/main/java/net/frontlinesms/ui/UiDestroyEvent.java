@@ -12,14 +12,14 @@ import net.frontlinesms.events.FrontlineEventNotification;
  * @author Alex Anderson <alex@frontlinesms.com>
  */
 public class UiDestroyEvent implements FrontlineEventNotification {
-	private final UiGeneratorController ui;
+	private final FrontlineUI ui;
 	
-	UiDestroyEvent(UiGeneratorController ui) {
+	public UiDestroyEvent(FrontlineUI ui) {
 		assert ui != null;
 		this.ui = ui;
 	}
 	
-	public boolean isFor(UiGeneratorController ui) {
+	public boolean isFor(FrontlineUI ui) {
 		return this.ui == ui; // N.B. this is checking reference, not .equals() deliberately
 	}
 }

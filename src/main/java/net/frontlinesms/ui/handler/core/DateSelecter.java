@@ -29,13 +29,15 @@ import org.apache.log4j.Logger;
 
 import net.frontlinesms.FrontlineSMSConstants;
 import net.frontlinesms.FrontlineUtils;
-import net.frontlinesms.ui.UiGeneratorController;
+import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 import thinlet.Thinlet;
 
+import static thinlet.Thinlet.find;
+import static net.frontlinesms.ui.i18n.InternationalisationUtils.parseDate;
+
 /**
  * @author kadu
- *
  */
 public class DateSelecter {
 	
@@ -59,7 +61,7 @@ public class DateSelecter {
 	/** A year value with a poorly-defined role */
 	private int curYear;
 	/** The {@link Thinlet} ui controller */
-	private UiGeneratorController ui;
+	private FrontlineUI ui;
 	/** The textfield that the date will be inserted into when date selection has completed. */
 	private Object textField;
 	private int dayToHighlight;
@@ -72,7 +74,7 @@ public class DateSelecter {
 	 * @param ui The thinlet ui controller
 	 * @param textField The textfield that the selected date will be entered into
 	 */
-	public DateSelecter(UiGeneratorController ui, Object textField) {
+	public DateSelecter(FrontlineUI ui, Object textField) {
 		this.ui = ui;
 		this.textField = textField;
 	}
@@ -95,10 +97,10 @@ public class DateSelecter {
 	 */
 	private void init(Object dialog) {
 		log.trace("ENTER");
-		Object prev = ui.find(dialog, COMPONENT_BT_PREVIOUS);
+		Object prev = find(dialog, COMPONENT_BT_PREVIOUS);
 		ui.setCloseAction(dialog, "closeDialog(this)", dialog, this);
 		ui.setAction(prev, "previousMonth(dateSelecter)", dialog, this);
-		Object next = ui.find(dialog, COMPONENT_BT_NEXT);
+		Object next = find(dialog, COMPONENT_BT_NEXT);
 		ui.setAction(next, "nextMonth(dateSelecter)", dialog, this);
 		current = Calendar.getInstance();
 		setDayToHighlight();
@@ -106,7 +108,7 @@ public class DateSelecter {
 		if (!ui.getText(textField).equals("")) {
 			log.debug("Previous date is [" + ui.getText(textField) + "]");
 			try {
-				Date d = InternationalisationUtils.getDateFormat().parse(ui.getText(textField));
+				Date d = parseDate(ui.getText(textField));
 				current.setTime(d);
 				setDayToHighlight();
 			} catch (ParseException e) {}
@@ -164,7 +166,7 @@ public class DateSelecter {
 		log.trace("ENTER");
 		current.set(Calendar.DATE, 1);
 		String curMonth = getMonthAsString(this.curMonth) + " " + curYear;
-		Object lbMonth = ui.find(dialog, COMPONENT_LB_MONTH);
+		Object lbMonth = find(dialog, COMPONENT_LB_MONTH);
 		log.debug("Current month [" + curMonth + "]");
 		ui.setText(lbMonth, curMonth);
 		for (int i = 1; i <= 6; i++) {
@@ -178,7 +180,7 @@ public class DateSelecter {
 		c.set(Calendar.DATE, Integer.parseInt(day));
 		c.set(Calendar.MONTH, this.curMonth);
 		c.set(Calendar.YEAR, this.curYear);
-		String date = InternationalisationUtils.getDateFormat().format(c.getTime());
+		String date = InternationalisationUtils.formatDate(c.getTime());
 		ui.setText(textField, date);
 		ui.remove(dialog);
 		ui.invokeAction(this.textField);
@@ -198,7 +200,7 @@ public class DateSelecter {
 	 * @param pnName
 	 */
 	private void fillRow(Object dialog, String pnName) {
-		Object panel = ui.find(dialog, pnName);
+		Object panel = find(dialog, pnName);
 		Object buttons[] = ui.getItems(panel);
 		cleanButtons(buttons);
 		

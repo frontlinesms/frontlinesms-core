@@ -455,7 +455,17 @@ public class InternationalisationUtils {
 	 * @return formatted date
 	 */
 	public static String formatDate(long date) {
-		return getDateFormat().format(new Date(date));
+		return formatDate(new Date(date));
+	}
+	
+	/**
+	 * Formats date suitable for user's locale including day of month,
+	 * month and year.
+	 * @param date
+	 * @return formatted date
+	 */
+	public static String formatDate(Date date) {
+		return getDateFormat().format(date);
 	}
 	
 	public static String formatTime(long time) {
@@ -504,8 +514,6 @@ public class InternationalisationUtils {
 		int hour = forReadingTime.get(Calendar.HOUR_OF_DAY);
 		toModify.add(Calendar.HOUR_OF_DAY, hour);
 		toModify.set(Calendar.MINUTE, forReadingTime.get(Calendar.MINUTE));
-		
-		System.out.println("InternationalisationUtils.parseTime() >> " + toModify);
 		
 		return toModify.getTime();
 	}
