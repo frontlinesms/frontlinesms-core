@@ -9,7 +9,7 @@
 		<version>1.7.0-beta-10</version>
 		<relativePath>../pom-parent</relativePath>
 	</parent>
-	<version>1.7.0-beta-10-SNAPSHOT</version>
+	<version>1.7.0-beta-10</version>
 	
 	<scm>
 		<connection>scm:git://github.com/frontlinesms/frontlinesms-core.git</connection>
