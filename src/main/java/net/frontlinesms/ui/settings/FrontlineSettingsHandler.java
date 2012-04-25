@@ -24,6 +24,8 @@ import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
 import org.apache.log4j.Logger;
 
+import thinlet.Thinlet;
+
 /**
  * Ui Handler for {@link FrontlineSettingsHandler} settings.
  * The whole settings dialog system is handled by this class.
@@ -162,7 +164,7 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 
 	private Object getOtherTree(Object tree) {
 		String otherName = uiController.getName(tree).equals(UI_COMPONENT_CORE_TREE)? UI_COMPONENT_PLUGIN_TREE: UI_COMPONENT_CORE_TREE;
-		return uiController.find(settingsDialog, otherName);
+		return Thinlet.find(settingsDialog, otherName);
 	}
 
 	/**
@@ -206,7 +208,7 @@ public class FrontlineSettingsHandler implements ThinletUiEventHandler, EventObs
 	}
 	
 	private Object find (String componentName) {
-		return this.uiController.find(settingsDialog, componentName);
+		return Thinlet.find(settingsDialog, componentName);
 	}
 	
 	public void save () {
