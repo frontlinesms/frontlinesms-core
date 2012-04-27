@@ -165,6 +165,7 @@ public class FrontlineMessage {
 	@Column(name=COLUMN_TEXT_CONTENT, length=SMS_MAX_CHARACTERS)
 	private String textMessageContent;
 	/** Binary content of this message. */
+	@Column(length=8*140)
 	private byte[] binaryMessageContent;
 	
 //> CONSTRUCTOR

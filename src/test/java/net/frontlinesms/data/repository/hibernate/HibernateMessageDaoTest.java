@@ -49,6 +49,13 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 	private KeywordDao keywordDao;
 	
 //> TEST METHODS
+	public void testSaveBinaryMessageLength() {
+		for(int messageLength : new int[]{0, 127, 128, 255, 256, 8*140}) {
+			FrontlineMessage m = FrontlineMessage.createBinaryIncomingMessage(DATE_2000, "+1234567890", "+0987654321", 0,
+					new byte[messageLength]);
+			dao.saveMessage(m);
+		}
+	}
 
 	/**
 	 * Test everything all at once!
