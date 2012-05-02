@@ -363,6 +363,7 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 	
 	public void testSenderNameBlank() {
 		// given
+		assertEquals(0, dao.getAllMessages().size());
 		dao.saveMessage(FrontlineMessage.createIncomingMessage(DATE_2010, "123", "987", "test"));
 		setComplete();
 		endTransaction();
@@ -375,11 +376,12 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 		assertNull(m.getSenderName());
 		
 		// cleanup
-		deleteFromTables(new String[]{"contact", "message"});
+		cleanupMessagesAndContactsAndEndTransaction();
 	}
 	
 	public void testSenderNameSet() throws Exception {
 		// given
+		assertEquals(0, dao.getAllMessages().size());
 		dao.saveMessage(FrontlineMessage.createIncomingMessage(DATE_2010, "123", "987", "test"));
 		contactDao.saveContact(new Contact("bob", "123", null, null, null, true));
 		setComplete();
@@ -393,11 +395,12 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 		assertEquals("bob", m.getSenderName());
 		
 		// cleanup
-		deleteFromTables(new String[]{"contact", "message"});
+		cleanupMessagesAndContactsAndEndTransaction();
 	}
 	
 	public void testRecipientNameBlank() {
 		// given
+		assertEquals(0, dao.getAllMessages().size());
 		dao.saveMessage(FrontlineMessage.createOutgoingMessage(DATE_2010, "123", "987", "test"));
 		setComplete();
 		endTransaction();
@@ -410,12 +413,13 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 		assertNull(m.getRecipientName());
 		
 		// cleanup
-		deleteFromTables(new String[]{"contact", "message"});
+		cleanupMessagesAndContactsAndEndTransaction();
 	}
 	
 	public void testRecipientNameSet() throws Exception {
 		// given
-		dao.saveMessage(FrontlineMessage.createOutgoingMessage(DATE_2010, "123", "987", "test"));
+		assertEquals(0, dao.getAllMessages().size());
+		dao.saveMessage(FrontlineMessage.createOutgoingMessage(DATE_2010, "987", "123", "test"));
 		contactDao.saveContact(new Contact("bob", "123", null, null, null, true));
 		setComplete();
 		endTransaction();
@@ -428,7 +432,7 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 		assertEquals("bob", m.getRecipientName());
 		
 		// cleanup
-		deleteFromTables(new String[]{"contact", "message"});
+		cleanupMessagesAndContactsAndEndTransaction();
 	}
 
 //> INSTANCE HELPER METHODS
@@ -437,6 +441,17 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 	 */
 	private void checkSanity() {
 		assertEquals(dao.getSMSCount(0l, Long.MAX_VALUE), dao.getAllMessages().size());
+	}
+
+	private void cleanupMessagesAndContactsAndEndTransaction() {
+		for(FrontlineMessage message : dao.getAllMessages()) {
+			dao.deleteMessage(message);
+		}
+		for(Contact c : contactDao.getAllContacts()) {
+			contactDao.deleteContact(c);
+		}
+		setComplete();
+		endTransaction();
 	}
 	
 //> STATIC HELPER METHODS
