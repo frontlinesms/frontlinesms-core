@@ -21,7 +21,8 @@ test_temp/
 *.log
 
 # Ignore binary libraries placed in the home directory to allow for JNI access
-*.dll
+/*.dll
+/*.jnilib
 
 # Added on OSX Eclipse as entries above not effective
 /.settings
@@ -30,6 +31,9 @@ test_temp/
 /.project
 /.classpath
 /.tmp
+
+# Vim tempfiles
+*.swp
 
 # Redcar settings directories
 .redcar
@@ -40,7 +44,4 @@ frontlinesms.ini
 
 # OSX files
 .DS_Store
-
-# JNI libraries
-librxtxSerial.jnilib
 

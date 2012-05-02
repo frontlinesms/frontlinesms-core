@@ -471,29 +471,6 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 			}
 		}.execute();
 	}
-
-	/**
-	 * Gets the string to display for the recipient of a message.
-	 * @param message The message whose recipient to get the name of
-	 * @return This will be the name of the contact who received the message, or the recipient's phone number if they are not a contact.
-	 */
-	public String getRecipientDisplayValue(FrontlineMessage message) {
-		Contact recipient = contactDao.getFromMsisdn(message.getRecipientMsisdn());
-		String recipientDisplayName = recipient != null ? recipient.getDisplayName() : message.getRecipientMsisdn();
-		return recipientDisplayName;
-	}
-
-	/**
-	 * Gets the string to display for the sender of a message.
-	 * @param message The message whose sender to get the name of
-	 * @return This will be the name of the contact who sent the message, or the sender's phone number if they are not a contact.
-	 * @deprecated should be moved to message tab cont
-	 */
-	public String getSenderDisplayValue(FrontlineMessage message) {
-		Contact sender = contactDao.getFromMsisdn(message.getSenderMsisdn());
-		String senderDisplayName = sender != null ? sender.getDisplayName() : message.getSenderMsisdn();
-		return senderDisplayName;
-	}
 	
 	/**
 	 * Checks if the supplied group is a real group, or just one of the default groups
@@ -1244,11 +1221,8 @@ public class UiGeneratorController extends FrontlineUI implements EmailListener,
 	private Object getRowForPending(FrontlineMessage message) {
 		Object row = createTableRow(message);
 
-		String senderDisplayName = getSenderDisplayValue(message);
-		String recipientDisplayName = getRecipientDisplayValue(message);
-		
-		add(row, createTableCell(senderDisplayName));
-		add(row, createTableCell(recipientDisplayName));
+		add(row, createTableCell(message.getSenderDisplayName()));
+		add(row, createTableCell(message.getRecipientDisplayName()));
 		add(row, createTableCell(message.getTextContent()));
 
 		return row;

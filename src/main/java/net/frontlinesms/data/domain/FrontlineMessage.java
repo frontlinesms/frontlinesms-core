@@ -24,6 +24,7 @@ import java.util.Arrays;
 import javax.persistence.*;
 
 import org.hibernate.annotations.DiscriminatorFormula;
+import org.hibernate.annotations.Formula;
 import org.smslib.util.GsmAlphabet;
 import org.smslib.util.HexUtils;
 import org.smslib.util.TpduUtils;
@@ -150,11 +151,15 @@ public class FrontlineMessage {
 	private int retriesRemaining;
 	private Status status;
 	private String recipientMsisdn;
+	@Formula("SELECT c.name FROM Contact c WHERE c.phoneNumber=recipientMsisdn")
+	private String recipientName;
 	private int recipientSmsPort;
 	private int smsPartsCount;
 	private long date;
 	private Integer smscReference;
 	private String senderMsisdn;
+	@Formula("SELECT c.name FROM Contact c WHERE c.phoneNumber=senderMsisdn")
+	private String senderName;
 	/** Optional variable for recording the ID of the local endpoint which sent or received this message.  For 
 	 * failed outgoing messages, this should be the last device sending was attempted with.
 	 * 
@@ -211,6 +216,21 @@ public class FrontlineMessage {
 	public String getSenderMsisdn() {
 		return this.senderMsisdn;
 	}
+
+	/**
+	 * Gets the name of the {@link Contact} with phone number matching
+	 * this message's {@link #senderMsisdn}.
+	 * @return the name of the sender, or <code>null</code> if there was no match
+	 */
+	public String getSenderName() {
+		return senderName;
+	}
+	
+	/** @return friendly String representing sender of this message */
+	public String getSenderDisplayName() {
+		if(senderName!=null && senderName.length()>0) return senderName;
+		else return senderMsisdn;
+	}
 	
 	/**
 	 * sets the sender number of an outgoing message, 
@@ -244,6 +264,22 @@ public class FrontlineMessage {
 	 */
 	public String getRecipientMsisdn() {
 		return this.recipientMsisdn;
+	}
+
+	/**
+	 * Gets the name of the {@link Contact} with phone number matching
+	 * this message's {@link #recipientMsisdn}.
+	 * @return the name of the recipient, or <code>null</code> if there
+	 * was no match
+	 */
+	public String getRecipientName() {
+		return recipientName;
+	}
+	
+	/** @return friendly string representing recipient of this message */
+	public String getRecipientDisplayName() {
+		if(recipientName!=null && recipientName.length()>0) return recipientName;
+		else return recipientMsisdn;
 	}
 	
 	/**

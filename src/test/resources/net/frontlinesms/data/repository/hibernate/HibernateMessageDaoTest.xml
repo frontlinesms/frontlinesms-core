@@ -8,4 +8,5 @@
 	
 	<bean id="messageDao" class="net.frontlinesms.data.repository.hibernate.HibernateMessageDao" parent="baseHibernateDao"/>
 	<bean id="keywordDao" class="net.frontlinesms.data.repository.hibernate.HibernateKeywordDao" parent="baseHibernateDao"/>
+	<bean id="contactDao" class="net.frontlinesms.data.repository.hibernate.HibernateContactDao" parent="baseHibernateDao"/>
 </beans>

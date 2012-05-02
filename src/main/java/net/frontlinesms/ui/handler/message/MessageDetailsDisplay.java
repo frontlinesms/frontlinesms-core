@@ -10,6 +10,8 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import thinlet.Thinlet;
+
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMultimediaMessage;
@@ -52,8 +54,8 @@ public class MessageDetailsDisplay implements ThinletUiEventHandler {
 		this.dialog = ui.loadComponentFromFile(UI_FILE_MSG_DETAILS_FORM, this);
 		
 		setText(UI_COMPONENT_TF_STATUS, InternationalisationUtils.getI18nString(message.getStatus()));
-		setText(UI_COMPONENT_TF_SENDER, ui.getSenderDisplayValue(message));
-		setText(UI_COMPONENT_TF_RECIPIENT, ui.getRecipientDisplayValue(message));
+		setText(UI_COMPONENT_TF_SENDER, message.getSenderDisplayName() + " (" + message.getSenderMsisdn() + ")");
+		setText(UI_COMPONENT_TF_RECIPIENT, message.getRecipientDisplayName() + " (" + message.getRecipientMsisdn() + ")");
 		setText(UI_COMPONENT_TF_DATE, InternationalisationUtils.getDatetimeFormat().format(message.getDate()));
 		
 		if (message instanceof FrontlineMultimediaMessage && ((FrontlineMultimediaMessage) message).getSubject().length() > 0) {
@@ -158,6 +160,6 @@ public class MessageDetailsDisplay implements ThinletUiEventHandler {
 	}
 	
 	private Object find(String componentName) {
-		return this.ui.find(this.dialog, componentName);
+		return Thinlet.find(this.dialog, componentName);
 	}
 }

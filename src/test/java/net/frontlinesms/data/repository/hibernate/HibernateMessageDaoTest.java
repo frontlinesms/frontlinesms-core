@@ -12,18 +12,20 @@ import java.util.TimeZone;
 
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.Order;
+import net.frontlinesms.data.domain.Contact;
 import net.frontlinesms.data.domain.FrontlineMultimediaMessage;
 import net.frontlinesms.data.domain.FrontlineMultimediaMessagePart;
 import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Type;
+import net.frontlinesms.data.repository.ContactDao;
 import net.frontlinesms.data.repository.KeywordDao;
 import net.frontlinesms.data.repository.MessageDao;
 import net.frontlinesms.junit.HibernateTestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import static net.frontlinesms.junit.BaseTestCase.*;
 
 /**
  * Test class for {@link HibernateMessageDao}
@@ -41,12 +43,12 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 	private static final long DATE_2010 = createDate(2010);
 	
 //> INSTANCE PROPERTIES
-	/** Logging object */
-	private final Log log = LogFactory.getLog(getClass());
 	/** Instance of this DAO implementation we are testing. */
-	private MessageDao dao;
+	@Autowired private MessageDao dao;
 	/** Keyword DAO */
-	private KeywordDao keywordDao;
+	@Autowired private KeywordDao keywordDao;
+	/** Contact DAO */
+	@Autowired private ContactDao contactDao;
 	
 //> TEST METHODS
 	public void testSaveBinaryMessageLength() {
@@ -358,6 +360,76 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 		
 		// Delete messages
 	}
+	
+	public void testSenderNameBlank() {
+		// given
+		dao.saveMessage(FrontlineMessage.createIncomingMessage(DATE_2010, "123", "987", "test"));
+		setComplete();
+		endTransaction();
+		startNewTransaction();
+		
+		// when
+		FrontlineMessage m = dao.getAllMessages().get(0);
+		
+		// then
+		assertNull(m.getSenderName());
+		
+		// cleanup
+		deleteFromTables(new String[]{"contact", "message"});
+	}
+	
+	public void testSenderNameSet() throws Exception {
+		// given
+		dao.saveMessage(FrontlineMessage.createIncomingMessage(DATE_2010, "123", "987", "test"));
+		contactDao.saveContact(new Contact("bob", "123", null, null, null, true));
+		setComplete();
+		endTransaction();
+		startNewTransaction();
+		
+		// when
+		FrontlineMessage m = dao.getAllMessages().get(0);
+		
+		// then
+		assertEquals("bob", m.getSenderName());
+		
+		// cleanup
+		deleteFromTables(new String[]{"contact", "message"});
+	}
+	
+	public void testRecipientNameBlank() {
+		// given
+		dao.saveMessage(FrontlineMessage.createOutgoingMessage(DATE_2010, "123", "987", "test"));
+		setComplete();
+		endTransaction();
+		startNewTransaction();
+		
+		// when
+		FrontlineMessage m = dao.getAllMessages().get(0);
+		
+		// then
+		assertNull(m.getRecipientName());
+		
+		// cleanup
+		deleteFromTables(new String[]{"contact", "message"});
+	}
+	
+	public void testRecipientNameSet() throws Exception {
+		// given
+		dao.saveMessage(FrontlineMessage.createOutgoingMessage(DATE_2010, "123", "987", "test"));
+		contactDao.saveContact(new Contact("bob", "123", null, null, null, true));
+		setComplete();
+		endTransaction();
+		startNewTransaction();
+		
+		// when
+		FrontlineMessage m = dao.getAllMessages().get(0);
+		
+		// then
+		assertEquals("bob", m.getRecipientName());
+		
+		// cleanup
+		deleteFromTables(new String[]{"contact", "message"});
+	}
 
 //> INSTANCE HELPER METHODS
 	/**
@@ -365,17 +437,6 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 	 */
 	private void checkSanity() {
 		assertEquals(dao.getSMSCount(0l, Long.MAX_VALUE), dao.getAllMessages().size());
-	}
-//> ACCESSORS
-	/** @param d The DAO to use for the test. */
-	@Required
-	public void setMessageDao(MessageDao d) {
-		this.dao = d;
-	}
-	
-	@Required
-	public void setKeywordDao(KeywordDao keywordDao) {
-		this.keywordDao = keywordDao;
 	}
 	
 //> STATIC HELPER METHODS

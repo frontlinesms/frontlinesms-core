@@ -228,23 +228,23 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 
 		Object tabComponent = ui.loadComponentFromFile(UI_FILE_MESSAGES_TAB, this);
 		
-		messageListComponent = ui.find(tabComponent, COMPONENT_MESSAGE_LIST);
+		messageListComponent = Thinlet.find(tabComponent, COMPONENT_MESSAGE_LIST);
 		messagePagingHandler = new ComponentPagingHandler(this.ui, this, this.messageListComponent);
-		Object pnBottom = ui.find(tabComponent, COMPONENT_PN_BOTTOM);
+		Object pnBottom = Thinlet.find(tabComponent, COMPONENT_PN_BOTTOM);
 		ui.add(pnBottom, messagePagingHandler.getPanel(), 0);
 
 		// Cache the contacts list, and add paging
-		contactListComponent = ui.find(tabComponent, COMPONENT_CONTACT_LIST);
+		contactListComponent = Thinlet.find(tabComponent, COMPONENT_CONTACT_LIST);
 		contactListPagingHandler = new ComponentPagingHandler(ui, this, this.contactListComponent);
-		ui.add(ui.find(tabComponent, COMPONENT_CONTACT_PANEL), contactListPagingHandler.getPanel());
+		ui.add(Thinlet.find(tabComponent, COMPONENT_CONTACT_PANEL), contactListPagingHandler.getPanel());
 
 		// Cache the keywords list, and add paging
-		keywordListComponent = ui.find(tabComponent, COMPONENT_KEYWORD_LIST);
+		keywordListComponent = Thinlet.find(tabComponent, COMPONENT_KEYWORD_LIST);
 		keywordListPagingHandler = new ComponentPagingHandler(ui, this, this.keywordListComponent);
-		ui.add(ui.find(tabComponent, COMPONENT_KEYWORD_PANEL), keywordListPagingHandler.getPanel());
+		ui.add(Thinlet.find(tabComponent, COMPONENT_KEYWORD_PANEL), keywordListPagingHandler.getPanel());
 		
 		// Initialise and cache the group tree
-		Object oldGroupTreeComponent = ui.find(tabComponent, COMPONENT_GROUP_LIST);
+		Object oldGroupTreeComponent = Thinlet.find(tabComponent, COMPONENT_GROUP_LIST);
 		groupSelecter = new GroupSelecterPanel(ui, this, ui.getFrontlineController().getGroupDao());
 		groupSelecter.init(ui.getRootGroup());
 		
@@ -257,8 +257,8 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 		// Set the types for the message list columns...
 		initMessageTableForSorting();
 		
-		showReceivedMessagesComponent = ui.find(tabComponent, COMPONENT_RECEIVED_MESSAGES_TOGGLE);
-		showSentMessagesComponent = ui.find(tabComponent, COMPONENT_SENT_MESSAGES_TOGGLE);
+		showReceivedMessagesComponent = Thinlet.find(tabComponent, COMPONENT_RECEIVED_MESSAGES_TOGGLE);
+		showSentMessagesComponent = Thinlet.find(tabComponent, COMPONENT_SENT_MESSAGES_TOGGLE);
 		
 		LOG.trace("EXIT");
 		return tabComponent;
@@ -812,8 +812,8 @@ public class MessageHistoryTabHandler extends BaseTabHandler implements PagedCom
 
 		ui.add(row, ui.createTableCell(InternationalisationUtils.getI18nString(message.getStatus())));
 		ui.add(row, ui.createTableCell(InternationalisationUtils.getDatetimeFormat().format(message.getDate())));
-		ui.add(row, ui.createTableCell(message.getSenderMsisdn()));
-		ui.add(row, ui.createTableCell(message.getRecipientMsisdn()));
+		ui.add(row, ui.createTableCell(message.getSenderDisplayName()));
+		ui.add(row, ui.createTableCell(message.getRecipientDisplayName()));
 		
 		if (message instanceof FrontlineMultimediaMessage && ((FrontlineMultimediaMessage) message).getSubject().length() > 0) {
 			ui.add(row, ui.createTableCell(((FrontlineMultimediaMessage) message).getSubject()));
