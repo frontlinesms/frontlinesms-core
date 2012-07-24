@@ -310,9 +310,13 @@ public class ResourceUtils {
 				LOG.warn("Problem locating resource path property.", t);
 			}
 
-			// If resource path has not been set yet, use the default value
 			if(resourcePath == null) {
+				// If resource path has not been set yet, use the default value
 				resourcePath = getUserHome() + File.separatorChar + "FrontlineSMS" + File.separatorChar;
+			} else if(resourcePath.length()>0 && resourcePath.charAt(0)=='~') {
+				// If resource path is set with reference to the user home directory (linux-style),
+				// then manually convert that.
+				resourcePath = getUserHome() + resourcePath.substring(1);
 			}
 			
 			// If the resource path does not end with a /, add one so that we don't have to worry about this later
