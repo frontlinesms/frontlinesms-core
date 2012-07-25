@@ -821,13 +821,14 @@ public class KeywordTabHandler extends BaseTabHandler implements PagedComponentI
 	 * @return
 	 */
 	public static String getDisplayableDescription(Keyword keyword) {
-		boolean hasDescription = (keyword.getDescription() != null && keyword.getDescription().length() > 0); 
-		if (keyword.getKeyword().length() == 0 && !hasDescription) return InternationalisationUtils.getI18nString(FrontlineSMSConstants.MESSAGE_BLANK_KEYWORD_DESCRIPTION);
-		else if (keyword.getKeyword().equals(FrontlineSMSConstants.MMS_KEYWORD)){
-			return InternationalisationUtils.getI18nString(FrontlineSMSConstants.MESSAGE_MMS_KEYWORD_DESCRIPTION);
-		} else {
+		boolean hasDescription = (keyword.getDescription() != null && keyword.getDescription().length() > 0);
+		if(hasDescription) {
 			return keyword.getDescription();
-		}
+		} else if(keyword.getKeyword().length() == 0) {
+			return InternationalisationUtils.getI18nString(FrontlineSMSConstants.MESSAGE_BLANK_KEYWORD_DESCRIPTION);
+		} else if(keyword.getKeyword().equals(FrontlineSMSConstants.MMS_KEYWORD)) {
+			return InternationalisationUtils.getI18nString(FrontlineSMSConstants.MESSAGE_MMS_KEYWORD_DESCRIPTION);
+		} else return "";
 	}
 	
 	/**
