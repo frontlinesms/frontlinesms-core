@@ -141,10 +141,9 @@ public class IncomingMessageProcessor extends Thread {
 						// We've got a new message, so process it.
 						processIncomingMessageDetails(queueItem);
 					} catch(Throwable t) {
-						// There was a problem processing the message.  At this stage, any issue should be a database
-						// connectivity issue.  Stop processing messages for a while, and re-queue this one.
-						LOG.warn("Error processing message.  It will be queued for re-processing.", t);
-						incomingMessageQueue.add(queueItem);
+						// Do not requeue failed messages, as it's likely to cause ongoing issues.
+						// Instead, just mark it as failed.
+						LOG.warn("Error processing message: " + queueItem, t);
 						FrontlineUtils.sleep_ignoreInterrupts(THREAD_SLEEP_AFTER_PROCESSING_FAILED);
 					}
 				} 
@@ -571,6 +570,27 @@ class IncomingMessageDetails implements IncomingMessageProcessorQueueItem {
 	public SmsService getReceiver() {
 		return receiver;
 	}
+	
+	@Override
+	public String toString() {
+		return super.toString() +
+				"receiver.serviceIdentification: " + this.receiver.getServiceIdentification() +
+				"message.destinationPort: " + this.message.getDestinationPort() +
+				"message.id: " + this.message.getId() +
+				"message.memIndex: " + this.message.getMemIndex() +
+				"message.memLocation: " + this.message.getMemLocation() +
+				"message.mpRefNo: " + this.message.getMpRefNo() +
+				"message.originator: " + this.message.getOriginator() +
+				"message.pid: " + this.message.getPid() +
+				"message.refNo: " + this.message.getRefNo() +
+				"message.sourcePort: " + this.message.getSourcePort() +
+				"message.text: " + this.message.getText() +
+				"message.type: " + this.message.getType() +
+				"message.date: " + this.message.getDate() +
+				"message.binary: " + this.message.getBinary() +
+				"message.class: " + this.message.getClass() +
+				"message.messageEncoding: " + this.message.getMessageEncoding();
+	}
 }
 
 /**
@@ -592,6 +612,16 @@ class IncomingMms implements IncomingMessageProcessorQueueItem {
 	/** @return the message received */
 	public MmsMessage getMessage() {
 		return message;
+	}
+	
+	@Override
+	public String toString() {
+		return super.toString() +
+				"date: " + message.getDate() +
+				"parts: " + message.getParts() +
+				"subject: " + message.getSubject() +
+				"receiver: " + message.getReceiver() +
+				"sender: " + message.getSender();
 	}
 }
 
