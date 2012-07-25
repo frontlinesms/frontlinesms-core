@@ -390,13 +390,10 @@ public class FrontlineUtils {
 	/**
 	 * Opens an email editor in the default email client
 	 * @param uri
+	 * @throws IOException 
 	 */
-	public static void openDefaultMailClient(URI uri) {
-		if (uri != null) {
-			try {
-				Desktop.getDesktop().mail(uri.resolve(uri.toString().replace("#", "")));
-			} catch (IOException e) {}
-		}
+	public static void openDefaultMailClient(URI uri) throws IOException {
+		Desktop.getDesktop().mail(uri.resolve(uri.toString().replace("#", "")));
 	}
 	
 	private final static String getOnlineHelpUrl(String page) {

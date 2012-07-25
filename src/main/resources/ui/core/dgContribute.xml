@@ -15,7 +15,7 @@
 	<separator/>
 	<panel gap="5">
 		<label text="i18n.contribute.join.community"/>
-		<button type="link" text="i18n.contribute.click.to.know.more" action="showHelpPage('http://frontlinesms.ning.com')"/>
+		<button type="link" text="i18n.contribute.click.to.know.more" action="showHelpPage('http://community.frontlinesms.com')"/>
 	</panel>
 	
 	<panel gap="5">

@@ -1,18 +1,23 @@
 package net.frontlinesms.ui.handler.help;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+
+import thinlet.Thinlet;
 
 import net.frontlinesms.FrontlineUtils;
 import net.frontlinesms.ui.ThinletUiEventHandler;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.i18n.InternationalisationUtils;
 
+import static net.frontlinesms.ui.i18n.InternationalisationUtils.getI18nString;
+
 public class ContributeDialog implements ThinletUiEventHandler {
 	private static final String UI_FILE_CONTRIBUTE_DIALOG = "/ui/core/dgContribute.xml";
 	
 	private static final String I18N_CONTRIBUTE_EXPLANATION = "contribute.explanation";
 	private static final String I18N_CONTRIBUTE_EMAIL_US = "contribute.click.to.email.us";
+
+	private static final String I18N_EMAIL_ERROR_NO_CLIENT = "contribute.email.client.error";
 	
 	private final UiGeneratorController ui;
 	private Object dialog;
@@ -70,9 +75,9 @@ public class ContributeDialog implements ThinletUiEventHandler {
 		Object linkGuestPost = find("linkGuestPost");
 		Object linkNotWorking = find("linkNotWorking");
 		
-		ui.setText(linkWorking, InternationalisationUtils.getI18nString(I18N_CONTRIBUTE_EMAIL_US, "you2us@frontlinesms.com"));
-		ui.setText(linkGuestPost, InternationalisationUtils.getI18nString(I18N_CONTRIBUTE_EMAIL_US, "you2us@frontlinesms.com"));
-		ui.setText(linkNotWorking, InternationalisationUtils.getI18nString(I18N_CONTRIBUTE_EMAIL_US, "frontlinesupport@kiwanja.net"));
+		ui.setText(linkWorking, getI18nString(I18N_CONTRIBUTE_EMAIL_US, "you2us@frontlinesms.com"));
+		ui.setText(linkGuestPost, getI18nString(I18N_CONTRIBUTE_EMAIL_US, "you2us@frontlinesms.com"));
+		ui.setText(linkNotWorking, getI18nString(I18N_CONTRIBUTE_EMAIL_US, "frontlinesupport@kiwanja.net"));
 	}
 	
 	/**
@@ -86,13 +91,14 @@ public class ContributeDialog implements ThinletUiEventHandler {
 		if (body.length() > 0) {
 			body = (subject.length() > 0 ? "&" : "?") + "body=" + body;
 		}
-		this.ui.alert(subject + body);
 		try {
 			FrontlineUtils.openDefaultMailClient(new URI("mailto", emailAddress, subject + body));
-		} catch (URISyntaxException e1) {}
+		} catch (Exception ex) {
+			ui.alert(getI18nString(I18N_EMAIL_ERROR_NO_CLIENT, emailAddress));
+		}
 	}
 	
 	private Object find(String name) {
-		return ui.find(this.dialog, name);
+		return Thinlet.find(this.dialog, name);
 	}
 }
