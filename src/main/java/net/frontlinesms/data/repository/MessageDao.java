@@ -25,6 +25,7 @@ import java.util.List;
 import net.frontlinesms.data.Order;
 import net.frontlinesms.data.domain.*;
 import net.frontlinesms.data.domain.FrontlineMessage.Field;
+import net.frontlinesms.data.domain.FrontlineMessage.Status;
 
 /**
  * Factory for creating instances of net.frontlinesms.data.Message
@@ -204,12 +205,14 @@ public interface MessageDao {
 	
 	/**
 	 * Gets the outgoing message with the matching SMSC Reference Number sent to
-	 * a number ending with the supplied msisdn suffix.
-	 * @param targetMsisdnSuffix last N digits of the target's msisdn
+	 * a number ending with the supplied phone number.  This method will only
+	 * return the most recent message which matches, and only messages with
+	 * {@link Status#PENDING}.
+	 * @param targetPhoneNumber target's phone number
 	 * @param smscReference
-	 * @return
+	 * @return the message matching the status report, or <code>null</code> if none could be found
 	 */
-	public FrontlineMessage getMessageForStatusUpdate(String targetMsisdnSuffix, int smscReference);
+	public FrontlineMessage getMessageForStatusUpdate(String targetPhoneNumber, int smscReference);
 	
 	/** @return the number of messages sent to the specified phone numbers within the specified dates */
 	public int getMessageCount(FrontlineMessage.Type messageType, List<String> phoneNumbers, Long messageHistoryStart, Long messageHistoryEnd);

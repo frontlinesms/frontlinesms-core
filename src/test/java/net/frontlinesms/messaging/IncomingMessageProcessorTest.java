@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.mockito.Mock;
 import org.smslib.CIncomingMessage;
 
 import net.frontlinesms.FrontlineSMS;
@@ -33,11 +34,11 @@ import net.frontlinesms.messaging.sms.SmsService;
 public class IncomingMessageProcessorTest extends BaseTestCase {
 	/** A phone number used for initialising {@link CIncomingMessage}s */
 	private static final String TEST_ORIGINATOR = "+123456789";
-	private FrontlineSMS frontline;
-	private ContactDao contactDao;
-	private MessageDao messageDao;
-	private KeywordDao keywordDao;
-	private KeywordActionDao keywordActionDao;
+	@Mock private FrontlineSMS frontline;
+	@Mock private ContactDao contactDao;
+	@Mock private MessageDao messageDao;
+	@Mock private KeywordDao keywordDao;
+	@Mock private KeywordActionDao keywordActionDao;
 	
 	private IncomingMessageProcessor imp;
 	private BlockingIncomingMessageEventListener bimel;
@@ -48,15 +49,9 @@ public class IncomingMessageProcessorTest extends BaseTestCase {
 		super.setUp();
 	
 		// Set up the Frontline controller
-		frontline = mock(FrontlineSMS.class);
-
-		contactDao = mock(ContactDao.class);
 		when(frontline.getContactDao()).thenReturn(contactDao);
-		messageDao = mock(MessageDao.class);
 		when(frontline.getMessageDao()).thenReturn(messageDao);
-		keywordDao = mock(KeywordDao.class);
 		when(frontline.getKeywordDao()).thenReturn(keywordDao);
-		keywordActionDao = mock(KeywordActionDao.class);
 		when(frontline.getKeywordActionDao()).thenReturn(keywordActionDao);
 		
 		imp = new IncomingMessageProcessor(frontline);

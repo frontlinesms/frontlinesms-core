@@ -13,6 +13,7 @@ import java.util.TimeZone;
 import net.frontlinesms.data.DuplicateKeyException;
 import net.frontlinesms.data.Order;
 import net.frontlinesms.data.domain.Contact;
+import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.data.domain.FrontlineMultimediaMessage;
 import net.frontlinesms.data.domain.FrontlineMultimediaMessagePart;
 import net.frontlinesms.data.domain.Keyword;
@@ -25,8 +26,6 @@ import net.frontlinesms.junit.HibernateTestCase;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static net.frontlinesms.junit.BaseTestCase.*;
-
 /**
  * Test class for {@link HibernateMessageDao}
  * @author Alex
@@ -35,6 +34,7 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 //> STATIC CONSTANTS
 	private static final String ARTHUR = "+44123456789";
 	private static final String BERNADETTE = "+447890123456";
+	private static final String TEST_MSISDN = ARTHUR;
 
 	private static final long DATE_1970 = createDate(1970);
 	private static final long DATE_1980 = createDate(1980);
@@ -433,6 +433,62 @@ public class HibernateMessageDaoTest extends HibernateTestCase {
 		
 		// cleanup
 		cleanupMessagesAndContactsAndEndTransaction();
+	}
+	
+	public void testGetForStatusUpdateShouldGetNullIfNoMatch() {
+		// expect
+		assertNull(dao.getMessageForStatusUpdate(TEST_MSISDN, 1));
+	}
+	
+	public void testGetForStatusUpdateShouldGetMessageIfOneMatch() {
+		// given
+		FrontlineMessage pendingMessage = createMessageWithStatus(Status.PENDING, 1);
+		
+		// expect
+		assertEquals(pendingMessage, dao.getMessageForStatusUpdate(TEST_MSISDN, 1));
+	}
+	
+	public void testGetForStatusUpdateShouldGetSingleMessageIfTwoIdenticalMatches() {
+		// given
+		createMessageWithStatus(Status.PENDING, 1);
+		createMessageWithStatus(Status.PENDING, 1);
+		
+		// expect
+		assertNotNull(dao.getMessageForStatusUpdate(TEST_MSISDN, 1));
+	}
+	
+	public void testGetForStatusUpdateShouldGetMostRecentMessageIfMultipleMatches() {
+		// given
+		createMessageWithStatus(Status.PENDING, 1, DATE_1970);
+		FrontlineMessage mostRecent = createMessageWithStatus(Status.PENDING, 1, DATE_1990);
+		createMessageWithStatus(Status.PENDING, 1, DATE_1980);
+		
+		// expect
+		assertEquals(mostRecent, dao.getMessageForStatusUpdate(TEST_MSISDN, 1));
+	}
+	
+	public void testGetForStatusUpdateShouldOnlyGetPendingMessages() {
+		// given
+		createMessageWithStatus(Status.FAILED, 1);
+		createMessageWithStatus(Status.SENT, 2);
+		FrontlineMessage pendingMessage = createMessageWithStatus(Status.PENDING, 3);
+		
+		// expect
+		assertNull(dao.getMessageForStatusUpdate(TEST_MSISDN, 1));
+		assertNull(dao.getMessageForStatusUpdate(TEST_MSISDN, 2));
+		assertEquals(pendingMessage, dao.getMessageForStatusUpdate(TEST_MSISDN, 3));
+	}
+	
+	private FrontlineMessage createMessageWithStatus(FrontlineMessage.Status status, int smscReference) {
+		return createMessageWithStatus(status, smscReference, DATE_1990);
+	}
+	
+	private FrontlineMessage createMessageWithStatus(FrontlineMessage.Status status, int smscReference, long dateReceived) {
+		FrontlineMessage m = FrontlineMessage.createOutgoingMessage(dateReceived, "000", TEST_MSISDN, "some nonsense");
+		m.setSmscReference(smscReference);
+		m.setStatus(status);
+		dao.saveMessage(m);
+		return m;
 	}
 
 //> INSTANCE HELPER METHODS

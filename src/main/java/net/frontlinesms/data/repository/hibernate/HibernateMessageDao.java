@@ -16,6 +16,7 @@ import org.hibernate.criterion.SimpleExpression;
 import net.frontlinesms.data.EntityField;
 import net.frontlinesms.data.Order;
 import net.frontlinesms.data.domain.Email;
+import net.frontlinesms.data.domain.FrontlineMessage.Status;
 import net.frontlinesms.data.domain.Keyword;
 import net.frontlinesms.data.domain.FrontlineMessage;
 import net.frontlinesms.data.domain.FrontlineMessage.Field;
@@ -100,10 +101,13 @@ public class HibernateMessageDao extends BaseHibernateDao<FrontlineMessage> impl
 
 	/** @see MessageDao#getMessageForStatusUpdate(String, int) */
 	public FrontlineMessage getMessageForStatusUpdate(String targetMsisdnSuffix, int smscReference) {
-		DetachedCriteria criteria = super.getCriterion();
+		DetachedCriteria criteria = super.getSortCriterion(FrontlineMessage.Field.DATE, Order.DESCENDING);
 		criteria.add(Restrictions.eq(Field.RECIPIENT_MSISDN.getFieldName(), targetMsisdnSuffix));
 		criteria.add(Restrictions.eq(Field.SMSC_REFERENCE.getFieldName(), smscReference));
-		return super.getUnique(criteria);
+		criteria.add(Restrictions.eq(Field.STATUS.getFieldName(), Status.PENDING));
+		List<FrontlineMessage> results = super.getList(criteria);
+		if(results.size() == 0) return null;
+		else return results.get(0);
 	}
 
 	/** @see MessageDao#getMessages(int, Field, Order) */
