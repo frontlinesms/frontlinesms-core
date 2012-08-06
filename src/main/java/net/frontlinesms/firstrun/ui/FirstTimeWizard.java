@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.frontlinesms.AppProperties;
-import net.frontlinesms.FrontlineSMS;
 import net.frontlinesms.ui.FrontlineUI;
 import net.frontlinesms.ui.Icon;
 import net.frontlinesms.ui.UiGeneratorController;
@@ -57,16 +56,16 @@ public class FirstTimeWizard extends FrontlineUI {
 	private List<FirstTimeWizardPage> pages = new ArrayList<FirstTimeWizardPage>();
 	/** Thinlet/AWT {@link FrameLauncher} used for displaying the {@link FirstTimeWizard} user interface. */
 	private FrameLauncher frameLauncher;
-	/** The instance of the {@link FrontlineSMS} engine that will be started once the wizard has completed */
-	private FrontlineSMS frontline;
+	/** Callback listener for when the wizard is finished. */
+	private FirstTimeWizardListener listener;
 	
 //> CONSTRUCTORS
 	/**
 	 * 
 	 * @param frontline 
 	 */
-	public FirstTimeWizard(FrontlineSMS frontline) {
-		this.frontline = frontline;
+	public FirstTimeWizard(FirstTimeWizardListener listener) {
+		this.listener = listener;
 		
 		frameLauncher = new FrameLauncher(InternationalisationUtils.getI18nString(I18N_FIRST_TIME_WIZARD_TITLE), this, 524, 380, getIcon(Icon.FRONTLINE_ICON));
 		root = createPanel("pnRoot");
@@ -106,7 +105,7 @@ public class FirstTimeWizard extends FrontlineUI {
 		appProperties.saveToDisk();
 		
 		frameLauncher.dispose();
-		new UiGeneratorController(frontline, false);
+		listener.handleCompleted();
 	}
 	
 	public void setTitle(String title) {

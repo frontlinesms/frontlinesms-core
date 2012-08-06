@@ -29,6 +29,7 @@ import javax.swing.UIManager;
 
 import net.frontlinesms.encoding.Base64Utils;
 import net.frontlinesms.firstrun.ui.FirstTimeWizard;
+import net.frontlinesms.firstrun.ui.FirstTimeWizardListener;
 import net.frontlinesms.resources.ResourceUtils;
 import net.frontlinesms.ui.UiGeneratorController;
 import net.frontlinesms.ui.handler.core.DatabaseConnectionFailedDialog;
@@ -60,7 +61,6 @@ public class DesktopLauncher {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		FrontlineSMS frontline = null;
 		try {
 			AppProperties appProperties = AppProperties.getInstance();
 			final String VERSION = BuildProperties.getInstance().getVersion();
@@ -90,21 +90,45 @@ public class DesktopLauncher {
 			appProperties.setLastRunVersion(VERSION);
 			appProperties.saveToDisk();
 
-			frontline = initFrontline();
 			if (showWizard) {
-				new FirstTimeWizard(frontline);
+				showFirstTimeWizard();
 			} else {
-				// Auto-detect phones.
-				new UiGeneratorController(frontline, true);
+				startFrontlineSMS();
 			}
+		} catch(Throwable t) {
+			handleThrowable(t);
+		}
+	}
+
+	private static void showFirstTimeWizard() {
+		new FirstTimeWizard(new FirstTimeWizardListener() {
+			public void handleCompleted() {
+				try {
+					startFrontlineSMS();
+				} catch (Throwable t) {
+					handleThrowable(t);
+				}
+			}
+		});
+	}
+
+	private static void handleThrowable(Throwable t) {
+		// Rather than swallowing the error, we now display it to the user
+		// so that they can give us some feedback :)
+		ErrorUtils.showErrorDialog("Fatal error starting FrontlineSMS!", "A problem ocurred during FrontlineSMS startup.", t, true);
+	}
+
+	private static void startFrontlineSMS() throws Throwable {
+		FrontlineSMS frontline = null;
+		try {
+			// Auto-detect phones.
+			frontline = initFrontline();
+			new UiGeneratorController(frontline, true);
 		} catch(Throwable t) {
 			if (frontline != null) 
 				frontline.destroy();
-			
-			// Rather than swallowing the error, we now display it to the user
-			// so that they can give us some feedback :)
-			ErrorUtils.showErrorDialog("Fatal error starting FrontlineSMS!", "A problem ocurred during FrontlineSMS startup.", t, true);
-		} 
+			throw t;
+		}
 	}
 
 	/**
@@ -127,7 +151,6 @@ public class DesktopLauncher {
 
 		FrontlineSMS frontline = new FrontlineSMS();
 		try {
-			
 			// Test the database connection is working
 			boolean connected = false;
 			while(!connected) {
