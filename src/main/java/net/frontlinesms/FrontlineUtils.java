@@ -76,13 +76,23 @@ public class FrontlineUtils {
 	 * Reloads the log configuration.
 	 */
 	static void loadLogConfiguration() {
-		File f = new File(ResourceUtils.getConfigDirectoryPath() + ResourceUtils.PROPERTIES_DIRECTORY_NAME + File.separatorChar + "log4j.properties");
-		if (f.exists()) {
-			PropertyConfigurator.configure(f.getAbsolutePath());
-		} else {
+		boolean loaded = false;
+		File unfilteredLogProperties = new File(ResourceUtils.getPropertiesDirectory(), "log4j.properties");
+		if(unfilteredLogProperties.canRead()) {
+			File filteredLogProperties = new File(ResourceUtils.getPropertiesDirectory(), "log4j.filtered.properties");
+			try {
+				ResourceUtils.filterProperties(unfilteredLogProperties, filteredLogProperties);
+				PropertyConfigurator.configure(filteredLogProperties.getAbsolutePath());
+				loaded = true;
+			} catch (IOException ex) {
+				// Would be great to log this exception... but we haven't configured the logger yet ;¬)
+				ex.printStackTrace();
+			}
+		}
+		
+		if(!loaded) {
 			PropertyConfigurator.configure(FrontlineUtils.class.getResource("/log4j.properties"));
 		}
-
 	}
 
 	/**

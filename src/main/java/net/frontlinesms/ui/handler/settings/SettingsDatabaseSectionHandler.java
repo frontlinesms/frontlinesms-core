@@ -46,7 +46,7 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 		this.panel = ui.loadComponentFromFile(UI_SECTION_DATABASE, this);
 		
 		// Populate combobox
-		String selectedDatabaseConfigPath = AppProperties.getInstance().getDatabaseConfigPath();
+		String selectedDatabaseConfigPath = AppProperties.getInstance().getDatabaseConfigFilename();
 		List<DatabaseSettings> databaseSettings = DatabaseSettings.getSettings();
 		Object settingsSelection = find(COMPONENT_SETTINGS_SELECTION);
 		for(int settingsIndex = 0; settingsIndex < databaseSettings.size(); ++settingsIndex) {
@@ -145,7 +145,7 @@ public class SettingsDatabaseSectionHandler extends BaseSectionHandler implement
 		
 		// check if the settings file has changed
 		AppProperties appProperties = AppProperties.getInstance();
-		boolean settingsFileChanged = !selectedSettings.getFilePath().equals(appProperties.getDatabaseConfigPath());
+		boolean settingsFileChanged = !selectedSettings.getFilePath().equals(appProperties.getDatabaseConfigFilename());
 		
 		// If settings file has NOT changed, check if individual settings have changed
 		boolean updateIndividualSettings = false;

@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
  * Base properties wrapper class.
  * @author Alex
  */
-class BasePropertySet {
+abstract class BasePropertySet {
 //> STATIC CONSTANTS
 	/** Logging object for this instance. */
 	public static final Logger LOG = FrontlineUtils.getLogger(BasePropertySet.class);

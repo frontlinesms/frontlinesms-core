@@ -80,7 +80,7 @@ public class FilePropertySet extends BasePropertySet {
 	 * @return The value of the property as a {@link String} or <code>null</code> if it is not set.
 	 */
 	protected synchronized String getProperty(String propertyName) {
-		return this.getProperties().get(propertyName);
+		return super.getProperty(propertyName);
 	}
 	
 	/**

@@ -21,7 +21,7 @@ public final class AppProperties extends UserHomeFilePropertySet {
 	/** Property key (String): the version of the application last time it was run */
 	public static final String KEY_VERSION_LAST_RUN = "version";
 	/** Property key (String): Path to the database config file to use */
-	public static final String KEY_DATABASE_CONFIG_PATH = "database.config";
+	public static final String KEY_DATABASE_CONFIG_FILENAME = "database.config";
 	/** Property key (String): User ID */
 	public static final String KEY_USER_ID = "user.id";
 	/** Property key (String): User Email address */
@@ -50,8 +50,8 @@ public final class AppProperties extends UserHomeFilePropertySet {
 	public static final String KEY_USER_COUNTRY = "user.country";
 
 //> DEFAULT VALUES
-	/** Default value for {@link #KEY_DATABASE_CONFIG_PATH} */
-	private static final String DEFAULT_DATABASE_CONFIG_PATH = "h2.database.xml";
+	/** Default value for {@link #KEY_DATABASE_CONFIG_FILENAME} */
+	private static final String DEFAULT_DATABASE_CONFIG_FILENAME = "h2.database.xml";
 	
 	/** Singleton instance of this class. */
 	private static AppProperties instance;
@@ -89,13 +89,13 @@ public final class AppProperties extends UserHomeFilePropertySet {
 	public void setLastRunVersion(String version) {
 		super.setProperty(KEY_VERSION_LAST_RUN, version);
 	}
-	/** @return the path to the database config file */
-	public String getDatabaseConfigPath() {
-		return super.getProperty(KEY_DATABASE_CONFIG_PATH, DEFAULT_DATABASE_CONFIG_PATH);
+	/** @return the filename of the database config file */
+	public String getDatabaseConfigFilename() {
+		return super.getProperty(KEY_DATABASE_CONFIG_FILENAME, DEFAULT_DATABASE_CONFIG_FILENAME);
 	}
 	/** @param databaseConfigPath new value for the path to the database config file */
 	public void setDatabaseConfigPath(String databaseConfigPath) {
-		super.setProperty(KEY_DATABASE_CONFIG_PATH, databaseConfigPath);
+		super.setProperty(KEY_DATABASE_CONFIG_FILENAME, databaseConfigPath);
 	}
 	
 	/** @return the user Id */

@@ -60,7 +60,7 @@ public class DatabaseSettingsPanel extends BasePanelHandler implements DatabaseS
 		super.loadPanel(XML_SETTINGS_PANEL);
 		
 		// Populate combobox
-		String selectedDatabaseConfigPath = (selectedPath == null ? AppProperties.getInstance().getDatabaseConfigPath() : selectedPath);
+		String selectedDatabaseConfigPath = (selectedPath == null ? AppProperties.getInstance().getDatabaseConfigFilename() : selectedPath);
 		List<DatabaseSettings> databaseSettings = DatabaseSettings.getSettings();
 		Object settingsSelection = getConfigFileSelecter();
 		for(int settingsIndex = 0; settingsIndex < databaseSettings.size(); ++settingsIndex) {
@@ -167,7 +167,7 @@ public class DatabaseSettingsPanel extends BasePanelHandler implements DatabaseS
 		
 		// check if the settings file has changed
 		AppProperties appProperties = AppProperties.getInstance();
-		boolean settingsFileChanged = !selectedSettings.getFilePath().equals(appProperties.getDatabaseConfigPath());
+		boolean settingsFileChanged = !selectedSettings.getFilePath().equals(appProperties.getDatabaseConfigFilename());
 		
 		// If settings file has NOT changed, check if individual settings have changed
 		boolean updateIndividualSettings = false;

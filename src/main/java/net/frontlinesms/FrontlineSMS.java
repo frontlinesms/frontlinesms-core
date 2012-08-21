@@ -161,7 +161,7 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 		baseApplicationContext.registerBeanDefinition("hibernateConfigLocations", createHibernateConfigLocationsBeanDefinition());
 		
 		// Get the spring config locations
-		String databaseExternalConfigPath = ResourceUtils.getConfigDirectoryPath() + ResourceUtils.PROPERTIES_DIRECTORY_NAME + File.separatorChar + appProperties.getDatabaseConfigPath();
+		String databaseExternalConfigPath = ResourceUtils.getConfigDirectoryPath() + ResourceUtils.PROPERTIES_DIRECTORY_NAME + File.separatorChar + appProperties.getDatabaseConfigFilename();
 		String[] configLocations = getSpringConfigLocations(databaseExternalConfigPath);
 		baseApplicationContext.refresh();
 		
@@ -169,11 +169,18 @@ public class FrontlineSMS implements SmsSender, SmsListener, EmailListener, Even
 		this.applicationContext = applicationContext;
 		
 		// Add post-processor to handle substituted database properties
-		PropertyPlaceholderConfigurer propertyPlaceholderConfigurer = new PropertyPlaceholderConfigurer();
-		String databasePropertiesPath = ResourceUtils.getConfigDirectoryPath() + ResourceUtils.PROPERTIES_DIRECTORY_NAME + File.separatorChar + appProperties.getDatabaseConfigPath() + ".properties";
-		propertyPlaceholderConfigurer.setLocation(new FileSystemResource(new File(databasePropertiesPath)));
-		propertyPlaceholderConfigurer.setIgnoreResourceNotFound(true);
-		applicationContext.addBeanFactoryPostProcessor(propertyPlaceholderConfigurer);
+		{
+			Properties properties = new Properties();
+			properties.setProperty("config.home", ResourceUtils.getConfigDirectoryPath());
+		
+			PropertyPlaceholderConfigurer propertyPlaceholderConfigurer = new PropertyPlaceholderConfigurer();
+			propertyPlaceholderConfigurer.setProperties(properties);
+			String databasePropertiesPath = ResourceUtils.getConfigDirectoryPath() + ResourceUtils.PROPERTIES_DIRECTORY_NAME + File.separatorChar + appProperties.getDatabaseConfigFilename() + ".properties";
+			propertyPlaceholderConfigurer.setLocation(new FileSystemResource(new File(databasePropertiesPath)));
+			propertyPlaceholderConfigurer.setIgnoreResourceNotFound(true);
+			applicationContext.addBeanFactoryPostProcessor(propertyPlaceholderConfigurer);
+		}
+		
 		applicationContext.refresh();
 		
 		LOG.info("Context loaded successfully.");

@@ -67,9 +67,12 @@ public class ResourceUtils {
 	private static String resourcePath;
 	
 //> STATIC UTILITY METHODS
-	/** @return the user home path */
-	public static String getUserHome() {
-		return System.getProperty("user.home");
+	/**
+	 * Outside of this class, you should call {@link #getConfigDirectoryPath()}.
+	 * @return the user home path
+	 */
+	private static String getUserHome() {
+		return System.getProperty(SYSPROPERTY_USER_HOME);
 	}
 	
 	/**
@@ -292,6 +295,47 @@ public class ResourceUtils {
 		return new File(getConfigDirectoryPath(), PROPERTIES_DIRECTORY_NAME);
 	}
 	
+	public static void filterProperties(File in, File out) throws IOException {
+		FileInputStream fis = null;
+		FileOutputStream fos = null;
+		try {
+			fis = new FileInputStream(in);
+			fos = new FileOutputStream(out);
+			filterProperties(fis, fos);
+		} finally {
+			try { fis.close(); } catch(Exception ex) {}
+			try { fos.close(); } catch(Exception ex) {}
+		}
+	}
+	
+	private static void filterProperties(InputStream in, OutputStream out) throws IOException {
+		InputStreamReader isr = null;
+		BufferedReader br = null;
+		OutputStreamWriter osw = null;
+		try {
+			isr = new InputStreamReader(in);
+			br = new BufferedReader(isr);
+			osw = new OutputStreamWriter(out);
+			filterProperties(br, osw);
+		} finally {
+			try { isr.close(); } catch(Exception ex) {}
+			try { br.close(); } catch(Exception ex) {}
+			try { osw.close(); } catch(Exception ex) {}
+		}
+	}
+
+	private static void filterProperties(BufferedReader in, OutputStreamWriter out) throws IOException {
+		String line;
+		while((line = in.readLine()) != null) {
+			out.write(filterProperty(line));
+			out.write("\n");
+		}
+	}
+	
+	public static String filterProperty(String in) {
+		return in.replace("${config.home}", getConfigDirectoryPath());
+	}
+
 	/**
 	 * Gets the path to the configuration directory in which languages, conf, and properties directories all lie.
 	 * @return path to the directory containing resources for FrontlineSMS
