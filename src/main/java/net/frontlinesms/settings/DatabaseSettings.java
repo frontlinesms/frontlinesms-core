@@ -120,7 +120,7 @@ public class DatabaseSettings {
 
 class DatabaseSettingsPropertySet extends FilePropertySet {
 	private DatabaseSettingsPropertySet(File parentDirectory, String databaseXmlFilePath) {
-		super(new File(parentDirectory, databaseXmlFilePath + ".properties"), true);
+		super(new File(parentDirectory, databaseXmlFilePath + ".properties"));
 	}
 	
 	Set<String> getKeys() {
