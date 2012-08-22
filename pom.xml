@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>net.frontlinesms.core</groupId>
 		<artifactId>frontlinesms-pom-parent</artifactId>
-		<version>1.7.0-beta-18-SNAPSHOT</version>
+		<version>1.7.0-beta-18</version>
 		<relativePath>../pom-parent</relativePath>
 	</parent>
 	<version>1.7.0-beta-18-SNAPSHOT</version>
